@@ -1,4 +1,5 @@
 import { StripeDivider } from "@/components/ui/StripeDivider";
+import { Logo } from "@/components/ui/logos";
 
 const FOOTER_LINKS = [
   { href: "/", label: "Home" },
@@ -15,24 +16,15 @@ export function Footer() {
   return (
     <footer id="shop" className="bg-tf-black text-tf-white">
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-fluid-lg px-fluid-md py-fluid-2xl text-center">
-        {/* Stacked logo placeholder */}
-        <svg
-          viewBox="0 0 120 120"
-          role="img"
-          aria-label="Tom Foolery Chocolate mark"
-          className="h-14 w-14"
-          fill="none"
-        >
-          <circle cx="60" cy="60" r="56" stroke="currentColor" strokeWidth="3" />
-          <path
-            d="M38 74c6-20 14-32 22-32s16 12 22 32"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
-          <circle cx="60" cy="42" r="6" fill="currentColor" />
-        </svg>
-        <p className="font-featureDeck text-2xl">Tom Foolery Chocolate</p>
+        {/* Guide minimum for this variant is 108px TALL — see
+         * brand/BRAND_REFERENCE.md §4. */}
+        <Logo
+          variant="stacked-signature"
+          tone="negative"
+          width={161}
+          height={120}
+          alt="Tom Foolery Chocolate"
+        />
       </div>
 
       <StripeDivider />

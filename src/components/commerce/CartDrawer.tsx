@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { Button, buttonClasses } from "@/components/ui/Button";
+import { Logo } from "@/components/ui/logos";
 import { useCart } from "./CartProvider";
 import { formatMoney } from "@/lib/shopify/format";
 
@@ -85,23 +86,7 @@ export function CartDrawer() {
         }`}
       >
         <div className="flex items-center justify-between border-b border-tf-white/10 px-fluid-md py-fluid-sm">
-          {/* Negative logo placeholder */}
-          <svg
-            viewBox="0 0 120 120"
-            role="img"
-            aria-label="Tom Foolery Chocolate"
-            className="h-8 w-8 text-tf-white"
-            fill="none"
-          >
-            <circle cx="60" cy="60" r="56" stroke="currentColor" strokeWidth="3" />
-            <path
-              d="M38 74c6-20 14-32 22-32s16 12 22 32"
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-            />
-            <circle cx="60" cy="42" r="6" fill="currentColor" />
-          </svg>
+          <Logo variant="icon" tone="negative" width={32} height={38} alt="Tom Foolery" />
 
           <p className="font-featureDeck text-xl">Your Cart</p>
 

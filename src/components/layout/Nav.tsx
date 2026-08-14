@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { Logo } from "@/components/ui/logos";
 import { useCart } from "@/components/commerce/CartProvider";
 
 /**
@@ -19,25 +20,11 @@ export function Nav() {
         <Link
           href="/"
           aria-label="Tom Foolery Chocolate — home"
-          className="flex min-w-[90px] items-center"
+          className="flex min-w-[144px] items-center"
         >
-          {/* Horizontal signature logo placeholder */}
-          <svg
-            viewBox="0 0 160 32"
-            role="img"
-            aria-hidden="true"
-            className="h-6 w-auto text-tf-black sm:h-7"
-          >
-            <text
-              x="0"
-              y="24"
-              fontFamily="var(--font-feature-deck), Georgia, serif"
-              fontSize="26"
-              fill="currentColor"
-            >
-              Tom Foolery
-            </text>
-          </svg>
+          {/* Guide minimum for this variant is 144px wide — see
+           * brand/BRAND_REFERENCE.md §4. */}
+          <Logo variant="horizontal-signature" tone="positive" width={150} priority />
         </Link>
 
         <nav aria-label="Primary" className="hidden items-center gap-fluid-lg sm:flex">

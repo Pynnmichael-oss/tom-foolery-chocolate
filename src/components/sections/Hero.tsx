@@ -2,10 +2,11 @@
 
 import { useRef } from "react";
 import { PinnedSection } from "@/components/motion/PinnedSection";
+import { Logo } from "@/components/ui/logos";
 import { gsap } from "@/components/motion/gsap";
 
 export function Hero() {
-  const logoRef = useRef<SVGSVGElement>(null);
+  const logoRef = useRef<HTMLImageElement>(null);
   const preheaderRef = useRef<HTMLParagraphElement>(null);
   const headlineRef = useRef<HTMLHeadingElement>(null);
   const accentRef = useRef<HTMLSpanElement>(null);
@@ -66,24 +67,18 @@ export function Hero() {
           .to(cueRef.current, { opacity: 0, duration: 0.3 }, "+=0.3");
       }}
     >
-      {/* Inline SVG logo placeholder — light/negative mark for the dark hero bg. */}
-      <svg
+      {/* Icon mark (negative — light ink for the dark hero bg). */}
+      <Logo
         ref={logoRef}
-        viewBox="0 0 120 120"
-        role="img"
-        aria-label="Tom Foolery Chocolate mark"
-        className="mb-fluid-lg h-16 w-16 text-tf-white sm:h-20 sm:w-20"
-        fill="none"
-      >
-        <circle cx="60" cy="60" r="56" stroke="currentColor" strokeWidth="3" />
-        <path
-          d="M38 74c6-20 14-32 22-32s16 12 22 32"
-          stroke="currentColor"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-        <circle cx="60" cy="42" r="6" fill="currentColor" />
-      </svg>
+        variant="icon"
+        tone="negative"
+        width={80}
+        height={96}
+        sizeBy="height"
+        priority
+        alt="Tom Foolery mark"
+        className="mb-fluid-lg h-16 sm:h-20"
+      />
 
       <p
         ref={preheaderRef}
