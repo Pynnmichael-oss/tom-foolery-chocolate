@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tom Foolery Chocolate
 
-## Getting Started
+Premium chocolate that doesn't take itself too seriously. This is the
+marketing site + headless storefront: a scroll-driven brand story built on
+GSAP/Lenis, backed by a Shopify Storefront API commerce layer (catalog, PDP,
+cart) with no SDK dependency.
 
-First, run the development server:
+**Live a Little.**
+
+## Stack
+
+- **Next.js 16** (App Router, Turbopack, TypeScript)
+- **Tailwind CSS v4** — CSS-first design tokens (`src/app/globals.css`) mapped
+  onto utilities via `tailwind.config.ts`
+- **GSAP + `@gsap/react` + Lenis** — pinned/scrubbed scroll sections, all with
+  a `prefers-reduced-motion` fallback baked in
+- **Shopify Storefront API** — plain `fetch`, typed, no SDK
+  (`src/lib/shopify/`)
+- **React 19** — `useOptimistic` drives the cart drawer's instant
+  add/update/remove feedback
+
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Other scripts: `npm run build` (production build), `npm run start` (serve
+the build), `npm run lint`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment variables
 
-## Learn More
+Copy `.env.example` to `.env.local` and fill in real values to talk to a
+live Shopify store:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+cp .env.example .env.local
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Variable | Description |
+| --- | --- |
+| `SHOPIFY_STORE_DOMAIN` | Your store's `*.myshopify.com` domain |
+| `SHOPIFY_STOREFRONT_ACCESS_TOKEN` | A Storefront API access token (Settings → Apps → Develop apps) |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Neither is required.** If either is unset, `src/lib/shopify/queries.ts`
+transparently falls back to `src/lib/shopify/mock-data.ts` — six in-universe
+placeholder products with brand-colored imagery and a full in-memory mock
+cart, so the entire site (browsing, PDP, cart, checkout link) works out of
+the box with zero configuration. This is also exactly what a first Vercel
+deploy runs on until you add the two env vars.
 
-## Deploy on Vercel
+## Deploying on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This app needs a server runtime — React Server Components, on-demand
+revalidation, and cart cookies all require it, so static hosts like GitHub
+Pages can't run it. Vercel is the natural fit for a Next.js app.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Push this repo to GitHub (already done if you're reading this from there).
+2. On [vercel.com](https://vercel.com), import the repo — no config needed,
+   Vercel auto-detects Next.js.
+3. Optionally add `SHOPIFY_STORE_DOMAIN` and `SHOPIFY_STOREFRONT_ACCESS_TOKEN`
+   as Environment Variables to go live with real product data. Skip this to
+   ship with mock data first.
+4. Deploy. Every push to `main` redeploys automatically.
+
+## Project structure
+
+```
+src/
+├── app/                    — routes (/, /shop, /shop/[handle])
+├── components/
+│   ├── commerce/           — cart, product grid/card/detail, add-to-cart
+│   ├── layout/              — Nav, Footer
+│   ├── motion/               — PinnedSection, shared gsap setup
+│   ├── providers/             — Lenis smooth-scroll wiring
+│   ├── sections/               — Hero, StorySection
+│   └── ui/                       — typography, Button, Marquee, StripeDivider
+└── lib/
+    ├── shopify/                — client, queries, mock-data, types, actions
+    ├── fonts.ts                 — next/font/local setup
+    └── theme.ts                  — brand color token helpers
+```
