@@ -20,7 +20,7 @@ export default function Home() {
           layout="text-left"
         />
         <StorySection
-          bgColor="rose"
+          bgColor="white"
           preheader="Philosophy"
           headline={["Playful,", "Never Precious"]}
           body="Placeholder philosophy copy: We believe the best things in life shouldn't take themselves too seriously — chocolate included. Every bar is built to make you smile first and think later."

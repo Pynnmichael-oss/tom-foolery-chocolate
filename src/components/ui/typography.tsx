@@ -33,7 +33,9 @@ export const Preheader = forwardRef<HTMLParagraphElement, PreheaderProps>(
       <p
         ref={ref}
         className={`font-sofia font-black uppercase tracking-[0.075em] ${className}`}
-        style={{ fontSize: PREHEADER_SIZE[size] }}
+        // Brand guide: line height = type size + 3pt (≈4px @ 1pt=1.3333px).
+        // calc(1em + Npx) reproduces that additive rule exactly at any size.
+        style={{ fontSize: PREHEADER_SIZE[size], lineHeight: "calc(1em + 4px)" }}
       >
         {children}
       </p>
@@ -82,8 +84,10 @@ export const Headline = forwardRef<HTMLHeadingElement, HeadlineProps>(
     return (
       <Tag
         ref={ref}
-        className={`font-featureDeck leading-[0.95] ${className}`}
-        style={{ fontSize: HEADLINE_SIZE[size] }}
+        className={`font-featureDeck ${className}`}
+        // Brand guide: line height = type size + 12pt (≈16px). Always
+        // looser than 1:1 — do not tighten this below 1em for display type.
+        style={{ fontSize: HEADLINE_SIZE[size], lineHeight: "calc(1em + 16px)" }}
       >
         {lines
           ? lines.map((line, i) => (
@@ -128,7 +132,8 @@ export const BodyText = forwardRef<HTMLParagraphElement, BodyTextProps>(
       <p
         ref={ref}
         className={`font-sofia font-normal ${className}`}
-        style={{ fontSize: BODY_SIZE[size] }}
+        // Brand guide: line height = type size + 8pt (≈10.67px).
+        style={{ fontSize: BODY_SIZE[size], lineHeight: "calc(1em + 10.67px)" }}
       >
         {children}
       </p>

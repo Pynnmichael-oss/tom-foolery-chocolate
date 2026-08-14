@@ -87,14 +87,15 @@ export function Hero() {
 
       <p
         ref={preheaderRef}
-        className="mb-fluid-sm max-w-xl font-sofia text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.2em] text-tf-white/90"
+        className="mb-fluid-sm max-w-xl font-sofia text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-white/90"
       >
         Chocolate as interesting as it is irresistible
       </p>
 
       <h1
         ref={headlineRef}
-        className="relative font-featureDeck text-[length:var(--fs-header)] leading-[0.95] text-tf-white"
+        className="relative font-featureDeck text-[length:var(--fs-header)] text-tf-white"
+        style={{ lineHeight: "calc(1em + 16px)" }}
       >
         Live a Little
         <span
@@ -108,7 +109,7 @@ export function Hero() {
         ref={cueRef}
         className="absolute bottom-fluid-md left-1/2 flex -translate-x-1/2 flex-col items-center gap-fluid-xs text-tf-white/70 opacity-0"
       >
-        <span className="font-sofia text-[length:var(--fs-preheader)] uppercase tracking-[0.3em]">
+        <span className="font-sofia text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em]">
           Scroll
         </span>
         <span className="h-8 w-px bg-tf-white/40" />

@@ -10,7 +10,7 @@ export type ButtonVariant = "primary" | "secondary";
 // stylesheet, no JS branching needed.
 const BASE =
   "inline-flex items-center justify-center gap-fluid-xs rounded-full px-fluid-md py-fluid-sm " +
-  "font-sofia text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.05em] " +
+  "font-sofia text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] " +
   "transition-transform duration-200 ease-out cursor-pointer " +
   "motion-safe:hover:-rotate-1 motion-safe:hover:scale-[1.03] motion-safe:active:scale-[0.97] " +
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-cinnamon focus-visible:ring-offset-2 " +

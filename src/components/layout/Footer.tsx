@@ -58,7 +58,7 @@ export function Footer() {
             <a
               key={social.label}
               href={social.href}
-              className="font-sofia text-[length:var(--fs-preheader)] uppercase tracking-[0.075em] text-tf-white/60 transition-colors hover:text-tf-white"
+              className="font-sofia text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-white/60 transition-colors hover:text-tf-white"
             >
               {social.label}
             </a>
