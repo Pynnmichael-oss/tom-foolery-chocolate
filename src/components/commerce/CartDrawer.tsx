@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
-import { Button, buttonClasses } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
+import { buttonClasses } from "@/components/ui/buttonClasses";
 import { Logo } from "@/components/ui/logos";
 import { useCart } from "./CartProvider";
 import { formatMoney } from "@/lib/shopify/format";

@@ -1,12 +1,17 @@
+import type { Metadata } from "next";
 import { Hero } from "@/components/sections/Hero";
 import { Marquee } from "@/components/ui/Marquee";
 import { StorySection } from "@/components/sections/StorySection";
 import { StripeDivider } from "@/components/ui/StripeDivider";
 import { Footer } from "@/components/layout/Footer";
 
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
+
 export default function Home() {
   return (
-    <main>
+    <main id="main-content">
       <Hero />
 
       <Marquee className="bg-tf-black py-fluid-sm" />
