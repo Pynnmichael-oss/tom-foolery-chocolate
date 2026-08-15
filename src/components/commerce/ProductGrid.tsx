@@ -8,7 +8,7 @@ export async function ProductGrid() {
 
   if (products.length === 0) {
     return (
-      <p className="font-sofia text-fg/70">
+      <p className="font-sans text-fg/70">
         No products available right now — check back soon.
       </p>
     );

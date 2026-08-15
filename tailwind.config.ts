@@ -3,7 +3,7 @@ import type { Config } from "tailwindcss";
 /**
  * CSS-first tokens live in `src/app/globals.css` (`@theme` / `:root`).
  * This file just maps them onto Tailwind's theme so they're usable as
- * utility classes (bg-tf-turmeric, font-featureDeck, p-fluid-lg, ...).
+ * utility classes (bg-tf-turmeric, font-display, p-fluid-lg, ...).
  * Loaded via the `@config` directive at the top of globals.css.
  *
  * The fluid spacing scale is namespaced `fluid-*` (not bare `xs`/`sm`/...):
@@ -28,9 +28,9 @@ const config: Config = {
         fg: "var(--fg)",
       },
       fontFamily: {
-        featureDeck: ["var(--font-feature-deck)", "Georgia", "serif"],
-        sofia: [
-          "var(--font-sofia)",
+        display: ["var(--font-display)", "Georgia", "serif"],
+        sans: [
+          "var(--font-sans)",
           "ui-sans-serif",
           "system-ui",
           "sans-serif",

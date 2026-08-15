@@ -29,13 +29,13 @@ export function Nav() {
         <nav aria-label="Primary" className="hidden items-center gap-fluid-lg sm:flex">
           <a
             href="#story"
-            className="font-sofia text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-black transition-colors hover:text-tf-cinnamon"
+            className="font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-black transition-colors hover:text-tf-cinnamon"
           >
             Story
           </a>
           <Link
             href="/shop"
-            className="font-sofia text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-black transition-colors hover:text-tf-cinnamon"
+            className="font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-black transition-colors hover:text-tf-cinnamon"
           >
             Shop
           </Link>
@@ -51,7 +51,7 @@ export function Nav() {
           {itemCount > 0 && (
             <span
               aria-hidden="true"
-              className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-tf-black px-1 font-sofia text-[10px] font-black text-tf-white"
+              className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-tf-black px-1 font-sans text-[10px] font-black text-tf-white"
             >
               {itemCount}
             </span>

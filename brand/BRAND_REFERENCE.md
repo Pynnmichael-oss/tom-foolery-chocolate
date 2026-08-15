@@ -116,6 +116,35 @@ wait. Have some chocolate."*
 | Header | Feature Deck **Regular** | Title Case | 0 | type size **+ 12pt** |
 | Body Copy | Sofia Pro **Regular** | Sentence case. All caps must never be used in body paragraphs. | 0 | type size **+ 8pt** |
 
+**RESOLVED — typeface substitution, as of August 2026.** The licensed
+Feature Deck / Sofia Pro files never arrived (and licensed faces are
+explicitly off the table for now — see product decision). The site runs
+open-source stand-ins chosen for *role* fit, not lookalike matching:
+
+- **Fraunces** stands in for Feature Deck (Header role). Both are serif
+  display faces (see item 7 below) — Fraunces adds a variable `opsz` axis
+  (auto-tracks optical size to font-size, so it stays sharp from card
+  headings up through the ~9rem hero tier) and a `WONK` axis, dialed to a
+  light touch (`0.5`) only at Hero's headline, giving "Live a Little" a bit
+  of personality without tipping into a full handwritten/childish register
+  elsewhere. Headline weight is set to 600 (not variable-default 400) —
+  Fraunces reads thin and spindly at display sizes below that.
+- **Figtree** stands in for Sofia Pro (Preheader + Body role), loaded at
+  weights 400 (Regular) and 900 (Black) — the same two weights Sofia Pro
+  was used at, so every existing size/case/tracking rule in the table above
+  still applies unchanged.
+
+This is a deliberate, documented substitution, not a placeholder: `lib/fonts.ts`
+now loads both via `next/font/google` (self-hosted at build time, same as
+`next/font/local` was) instead of the OFL-Geist-renamed-as-a-stand-in files
+that lived in `public/fonts/` before this change (now removed). **Swapping
+to the real licensed faces later is a one-file change** — replace the two
+declarations in `lib/fonts.ts` with `next/font/local` pointed at the
+licensed WOFF2s; every consumer in the codebase reads the `--font-display` /
+`--font-sans` CSS variables (as the `font-display` / `font-sans` Tailwind
+utilities), never these font objects by name, so nothing else needs to
+change.
+
 **Proportionality rule** (stated verbatim): *"Type styles should always be
 proportional to each other (i.e., Preheader should never appear larger than
 Header, etc.)"*
@@ -154,9 +183,10 @@ translation and should be preferred.)*
 ### Font substitutions (print/email fallback only)
 
 Only for extremely limited cases where brand fonts aren't installed (e.g.
-email, form-fillable PDF) — **not** relevant to the web build, which
-self-hosts the real files via `next/font/local`, but documented for
-completeness:
+email, form-fillable PDF) — **not** relevant to the web build (which, as of
+the resolution above, runs Fraunces/Figtree via `next/font/google` rather
+than either the licensed files or these print fallbacks), but documented
+for completeness:
 
 - Sofia Pro Black → Arial Black
 - Feature Deck Regular → Georgia Regular
@@ -333,8 +363,9 @@ code fix.
    never had to consider. Documented here so it doesn't look like an
    arbitrary invention later.
 
-6. **PARTIALLY RESOLVED — logo assets are real vectors now; fonts still
-   pending.** `src/components/ui/logos.tsx` renders five real marks —
+6. **RESOLVED (with substitution) — logo assets are real vectors; fonts
+   now run open-source stand-ins.** See item 7 below for the typography
+   half; `src/components/ui/logos.tsx` renders five real marks —
    PrimaryLogo, SecondaryLogo, HorizontalSignature, StackedSignature,
    EyesHatIcon — as inline SVG (`fill="currentColor"`, themed via
    `tone="positive"|"negative"` + Tailwind's `text-tf-black`/`text-tf-white`,
@@ -363,13 +394,15 @@ code fix.
    (not used anywhere in the current app) — see the audit below for
    exactly what was pulled and from where.
 
-7. **Feature Deck is a serif display face**, per the guide's own type
-   specimen and the "Live a Little" example — not a script/cursive face.
-   Our current placeholder webfont (a borrowed OFL "Geist" file, sans-serif
-   — see `public/fonts/README.md`) doesn't visually match it, though our
-   CSS fallback stack (`Georgia, serif`) does. No action needed beyond
-   swapping in the real licensed font eventually; noting it's now
-   confirmed correct-in-spirit.
+7. **RESOLVED (with substitution) — Feature Deck is a serif display face**,
+   per the guide's own type specimen and the "Live a Little" example — not
+   a script/cursive face. The original placeholder (a borrowed OFL "Geist"
+   file, sans-serif) didn't visually match it and has been replaced:
+   Fraunces (also a serif display face, see §3) is now self-hosted via
+   `next/font/google` for the Header role, and Figtree fills the Preheader/
+   Body role previously held by the same Geist placeholder. See §3's
+   "RESOLVED — typeface substitution" note for the full reasoning and the
+   one-file swap path back to licensed faces.
 
 8. **More accent colors are coming** ("Additional colors will be used for
    specific flavor cues... added to these standards as selected") — not

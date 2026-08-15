@@ -89,7 +89,7 @@ export function CartDrawer() {
         <div className="flex items-center justify-between border-b border-tf-white/10 px-fluid-md py-fluid-sm">
           <EyesHatIcon tone="negative" width={32} title="Tom Foolery" />
 
-          <p className="font-featureDeck text-xl">Your Cart</p>
+          <p className="font-display text-xl">Your Cart</p>
 
           <button
             ref={closeButtonRef}
@@ -106,7 +106,7 @@ export function CartDrawer() {
 
         <div className="flex-1 overflow-y-auto px-fluid-md py-fluid-md">
           {lines.length === 0 ? (
-            <p className="font-sofia text-tf-white/60">Your cart is empty.</p>
+            <p className="font-sans text-tf-white/60">Your cart is empty.</p>
           ) : (
             <ul className="flex flex-col gap-fluid-md">
               {lines.map((line) => (
@@ -124,9 +124,9 @@ export function CartDrawer() {
                   </div>
 
                   <div className="flex flex-1 flex-col gap-1">
-                    <p className="font-featureDeck text-base leading-tight">{line.product.title}</p>
-                    <p className="font-sofia text-sm text-tf-white/60">{line.variantTitle}</p>
-                    <p className="font-sofia text-sm">{formatMoney(line.price)}</p>
+                    <p className="font-display text-base leading-tight">{line.product.title}</p>
+                    <p className="font-sans text-sm text-tf-white/60">{line.variantTitle}</p>
+                    <p className="font-sans text-sm">{formatMoney(line.price)}</p>
 
                     <div className="mt-1 flex items-center gap-fluid-sm">
                       <div className="flex items-center gap-2 rounded-full border border-tf-white/20">
@@ -135,11 +135,11 @@ export function CartDrawer() {
                           disabled={isPending}
                           aria-label={`Decrease quantity of ${line.product.title}`}
                           onClick={() => updateItem(line.id, line.quantity - 1)}
-                          className="px-2 py-1 font-sofia disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-turmeric"
+                          className="px-2 py-1 font-sans disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-turmeric"
                         >
                           −
                         </button>
-                        <span className="min-w-[1.5ch] text-center font-sofia text-sm">
+                        <span className="min-w-[1.5ch] text-center font-sans text-sm">
                           {line.quantity}
                         </span>
                         <button
@@ -147,7 +147,7 @@ export function CartDrawer() {
                           disabled={isPending}
                           aria-label={`Increase quantity of ${line.product.title}`}
                           onClick={() => updateItem(line.id, line.quantity + 1)}
-                          className="px-2 py-1 font-sofia disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-turmeric"
+                          className="px-2 py-1 font-sans disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-turmeric"
                         >
                           +
                         </button>
@@ -157,7 +157,7 @@ export function CartDrawer() {
                         type="button"
                         disabled={isPending}
                         onClick={() => removeItem(line.id)}
-                        className="font-sofia text-sm text-tf-white/60 underline-offset-2 hover:text-tf-cinnamon hover:underline disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-turmeric"
+                        className="font-sans text-sm text-tf-white/60 underline-offset-2 hover:text-tf-cinnamon hover:underline disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-turmeric"
                       >
                         Remove
                       </button>
@@ -170,7 +170,7 @@ export function CartDrawer() {
         </div>
 
         <div className="border-t border-tf-white/10 px-fluid-md py-fluid-md">
-          <div className="mb-fluid-sm flex items-center justify-between font-sofia">
+          <div className="mb-fluid-sm flex items-center justify-between font-sans">
             <span className="text-tf-white/70">Subtotal</span>
             <span className="font-black">
               {formatMoney(cart?.subtotal ?? { amount: "0", currencyCode: "USD" })}

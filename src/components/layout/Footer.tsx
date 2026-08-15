@@ -30,7 +30,7 @@ export function Footer() {
             <a
               key={link.label}
               href={link.href}
-              className="font-sofia text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-white/80 transition-colors hover:text-tf-turmeric"
+              className="font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-white/80 transition-colors hover:text-tf-turmeric"
             >
               {link.label}
             </a>
@@ -42,7 +42,7 @@ export function Footer() {
             <a
               key={social.label}
               href={social.href}
-              className="font-sofia text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-white/60 transition-colors hover:text-tf-white"
+              className="font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-white/60 transition-colors hover:text-tf-white"
             >
               {social.label}
             </a>
@@ -50,7 +50,7 @@ export function Footer() {
         </div>
 
         {/* /70 not /40 — WCAG AA (/40 measures 3.39:1, fails at this size) */}
-        <p className="font-sofia text-[length:var(--fs-preheader)] text-tf-white/70">
+        <p className="font-sans text-[length:var(--fs-preheader)] text-tf-white/70">
           © {new Date().getFullYear()} Tom Foolery Chocolate. Live a little.
         </p>
       </div>

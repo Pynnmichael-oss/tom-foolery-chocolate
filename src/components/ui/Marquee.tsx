@@ -26,7 +26,7 @@ export function Marquee({ className = "", duration }: MarqueeProps) {
         {[0, 1].map((i) => (
           <span
             key={i}
-            className="px-fluid-md font-sofia text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em]"
+            className="px-fluid-md font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em]"
           >
             {MARQUEE_TEXT}
           </span>

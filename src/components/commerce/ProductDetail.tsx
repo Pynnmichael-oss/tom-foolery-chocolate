@@ -102,12 +102,12 @@ export function ProductDetail({ product }: { product: Product }) {
           <Headline as="h1" size="md">
             {product.title}
           </Headline>
-          <p className="font-sofia text-lg text-fg/80">{formatMoney(price)}</p>
+          <p className="font-sans text-lg text-fg/80">{formatMoney(price)}</p>
           <BodyText className="text-fg/80">{product.description}</BodyText>
 
           {optionGroups.map((group) => (
             <fieldset key={group.name} className="flex flex-col gap-fluid-xs">
-              <legend className="font-sofia text-sm font-black uppercase tracking-[0.075em] text-fg/70">
+              <legend className="font-sans text-sm font-black uppercase tracking-[0.075em] text-fg/70">
                 {group.name}
               </legend>
               <div className="flex flex-wrap gap-fluid-xs">
@@ -121,7 +121,7 @@ export function ProductDetail({ product }: { product: Product }) {
                       type="button"
                       onClick={() => selectOption(group.name, value)}
                       aria-pressed={isSelected}
-                      className={`rounded-full border-2 px-fluid-sm py-1 font-sofia text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-cinnamon ${
+                      className={`rounded-full border-2 px-fluid-sm py-1 font-sans text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-cinnamon ${
                         isSelected
                           ? "border-tf-cinnamon-strong bg-tf-cinnamon-strong text-tf-white"
                           : "border-tf-black/20 text-fg hover:border-tf-cinnamon"
@@ -144,10 +144,10 @@ export function ProductDetail({ product }: { product: Product }) {
       {/* Sticky mobile add-to-cart bar */}
       <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-fluid-sm border-t border-tf-black/10 bg-bg px-fluid-md py-fluid-sm shadow-[0_-4px_16px_rgba(0,0,0,0.08)] md:hidden">
         <div className="flex min-w-0 flex-col">
-          <span className="truncate font-featureDeck text-base leading-tight text-fg">
+          <span className="truncate font-display text-base leading-tight text-fg">
             {product.title}
           </span>
-          <span className="font-sofia text-sm text-fg/70">{formatMoney(price)}</span>
+          <span className="font-sans text-sm text-fg/70">{formatMoney(price)}</span>
         </div>
         <AddToCartButton product={product} variant={selectedVariant} className="shrink-0" />
       </div>

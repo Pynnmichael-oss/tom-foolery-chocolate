@@ -29,15 +29,15 @@ export function ProductCard({ product, className = "" }: ProductCardProps) {
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-tf-juniper text-tf-black">
-            <span className="font-sofia text-sm uppercase tracking-widest">No image</span>
+            <span className="font-sans text-sm uppercase tracking-widest">No image</span>
           </div>
         )}
       </div>
 
-      <h2 className="mt-fluid-sm font-featureDeck text-lg leading-tight text-fg sm:text-xl">
+      <h2 className="mt-fluid-sm font-display text-lg leading-tight text-fg sm:text-xl">
         {product.title}
       </h2>
-      <p className="font-sofia text-fg/70">{price}</p>
+      <p className="font-sans text-fg/70">{price}</p>
     </Link>
   );
 }

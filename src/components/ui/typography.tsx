@@ -32,7 +32,7 @@ export const Preheader = forwardRef<HTMLParagraphElement, PreheaderProps>(
     return (
       <p
         ref={ref}
-        className={`font-sofia font-black uppercase tracking-[0.075em] ${className}`}
+        className={`font-sans font-black uppercase tracking-[0.075em] ${className}`}
         // Brand guide: line height = type size + 3pt (≈4px @ 1pt=1.3333px).
         // calc(1em + Npx) reproduces that additive rule exactly at any size.
         style={{ fontSize: PREHEADER_SIZE[size], lineHeight: "calc(1em + 4px)" }}
@@ -44,7 +44,7 @@ export const Preheader = forwardRef<HTMLParagraphElement, PreheaderProps>(
 );
 
 /* ------------------------------------------------------------------ */
-/* Headline — Feature Deck, fluid clamp sizes, title case               */
+/* Headline — Fraunces (display), fluid clamp sizes, title case         */
 /* ------------------------------------------------------------------ */
 
 export type HeadlineSize = "sm" | "md" | "lg" | "xl";
@@ -84,7 +84,9 @@ export const Headline = forwardRef<HTMLHeadingElement, HeadlineProps>(
     return (
       <Tag
         ref={ref}
-        className={`font-featureDeck ${className}`}
+        // font-semibold (600): Fraunces at its default 400 reads thin and
+        // spindly at display sizes — 600 is where it reads premium instead.
+        className={`font-display font-semibold ${className}`}
         // Brand guide: line height = type size + 12pt (≈16px). Always
         // looser than 1:1 — do not tighten this below 1em for display type.
         style={{ fontSize: HEADLINE_SIZE[size], lineHeight: "calc(1em + 16px)" }}
@@ -131,7 +133,7 @@ export const BodyText = forwardRef<HTMLParagraphElement, BodyTextProps>(
     return (
       <p
         ref={ref}
-        className={`font-sofia font-normal ${className}`}
+        className={`font-sans font-normal ${className}`}
         // Brand guide: line height = type size + 8pt (≈10.67px).
         style={{ fontSize: BODY_SIZE[size], lineHeight: "calc(1em + 10.67px)" }}
       >

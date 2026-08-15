@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { featureDeck, sofia } from "@/lib/fonts";
+import { fraunces, figtree } from "@/lib/fonts";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
 import { Nav } from "@/components/layout/Nav";
 import { CartProvider } from "@/components/commerce/CartProvider";
@@ -34,13 +34,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${featureDeck.variable} ${sofia.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${figtree.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-bg font-sofia text-fg">
+      <body className="min-h-full bg-bg font-sans text-fg">
         <OrganizationJsonLd />
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded-full focus:bg-tf-cinnamon-strong focus:px-fluid-md focus:py-fluid-sm focus:font-sofia focus:font-black focus:uppercase focus:tracking-[0.075em] focus:text-tf-white focus:outline-none focus:ring-2 focus:ring-tf-white"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded-full focus:bg-tf-cinnamon-strong focus:px-fluid-md focus:py-fluid-sm focus:font-sans focus:font-black focus:uppercase focus:tracking-[0.075em] focus:text-tf-white focus:outline-none focus:ring-2 focus:ring-tf-white"
         >
           Skip to content
         </a>
