@@ -9,6 +9,12 @@
   --tf-juniper: #9dd4cb;
   --tf-cinnamon: #de5c42;
   --tf-rose: #efadb2;
+  /* WCAG AA fix: white text on --tf-cinnamon is only 3.67:1 (needs 4.5:1
+     at button/pill text sizes). Used only for filled cinnamon backgrounds
+     carrying white text (primary Button, selected variant pills) — every
+     other cinnamon usage (underlines, focus rings, hover text) stays the
+     guide's exact #de5c42. */
+  --tf-cinnamon-strong: #bd4e38;
 
   /* Semantic aliases */
   --bg: var(--tf-white);

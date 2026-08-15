@@ -52,7 +52,7 @@ export function ProductDetail({ product }: { product: Product }) {
   const price = selectedVariant?.price ?? product.priceRange.min;
 
   return (
-    <main className="px-fluid-md py-fluid-xl">
+    <main id="main-content" className="px-fluid-md py-fluid-xl">
       <div className="mx-auto grid max-w-6xl gap-fluid-xl md:grid-cols-2 md:gap-fluid-2xl">
         {/* Gallery */}
         <div className="flex flex-col gap-fluid-sm">
@@ -67,7 +67,8 @@ export function ProductDetail({ product }: { product: Product }) {
                 priority
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-fg/40">
+              // /70 not /40 — WCAG AA (/40 measures 2.24:1, fails)
+              <div className="flex h-full w-full items-center justify-center text-fg/70">
                 No image available
               </div>
             )}
@@ -122,7 +123,7 @@ export function ProductDetail({ product }: { product: Product }) {
                       aria-pressed={isSelected}
                       className={`rounded-full border-2 px-fluid-sm py-1 font-sofia text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-cinnamon ${
                         isSelected
-                          ? "border-tf-cinnamon bg-tf-cinnamon text-tf-white"
+                          ? "border-tf-cinnamon-strong bg-tf-cinnamon-strong text-tf-white"
                           : "border-tf-black/20 text-fg hover:border-tf-cinnamon"
                       }`}
                     >

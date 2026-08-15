@@ -22,6 +22,7 @@ const config: Config = {
         "tf-turmeric": "var(--tf-turmeric)",
         "tf-juniper": "var(--tf-juniper)",
         "tf-cinnamon": "var(--tf-cinnamon)",
+        "tf-cinnamon-strong": "var(--tf-cinnamon-strong)",
         "tf-rose": "var(--tf-rose)",
         bg: "var(--bg)",
         fg: "var(--fg)",

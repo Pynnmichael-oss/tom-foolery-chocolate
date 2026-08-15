@@ -34,9 +34,9 @@ export function ProductCard({ product, className = "" }: ProductCardProps) {
         )}
       </div>
 
-      <p className="mt-fluid-sm font-featureDeck text-lg leading-tight text-fg sm:text-xl">
+      <h2 className="mt-fluid-sm font-featureDeck text-lg leading-tight text-fg sm:text-xl">
         {product.title}
-      </p>
+      </h2>
       <p className="font-sofia text-fg/70">{price}</p>
     </Link>
   );

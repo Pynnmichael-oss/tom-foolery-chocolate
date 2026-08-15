@@ -57,7 +57,8 @@ export function Footer() {
           ))}
         </div>
 
-        <p className="font-sofia text-[length:var(--fs-preheader)] text-tf-white/40">
+        {/* /70 not /40 — WCAG AA (/40 measures 3.39:1, fails at this size) */}
+        <p className="font-sofia text-[length:var(--fs-preheader)] text-tf-white/70">
           © {new Date().getFullYear()} Tom Foolery Chocolate. Live a little.
         </p>
       </div>
