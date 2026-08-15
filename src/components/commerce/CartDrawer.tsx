@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { buttonClasses } from "@/components/ui/buttonClasses";
-import { Logo } from "@/components/ui/logos";
+import { EyesHatIcon } from "@/components/ui/logos";
 import { useCart } from "./CartProvider";
 import { formatMoney } from "@/lib/shopify/format";
 
@@ -87,7 +87,7 @@ export function CartDrawer() {
         }`}
       >
         <div className="flex items-center justify-between border-b border-tf-white/10 px-fluid-md py-fluid-sm">
-          <Logo variant="icon" tone="negative" width={32} height={38} alt="Tom Foolery" />
+          <EyesHatIcon tone="negative" width={32} title="Tom Foolery" />
 
           <p className="font-featureDeck text-xl">Your Cart</p>
 

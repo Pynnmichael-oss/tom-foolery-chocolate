@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Preheader, Headline, BodyText } from "@/components/ui/typography";
 import { buttonClasses } from "@/components/ui/buttonClasses";
-import { Logo } from "@/components/ui/logos";
+import { EyesHatIcon } from "@/components/ui/logos";
 
 export const metadata: Metadata = {
   title: "Page Not Found",
@@ -16,7 +16,7 @@ export default function NotFound() {
       id="main-content"
       className="flex min-h-dvh w-full flex-col items-center justify-center gap-fluid-md bg-tf-black px-fluid-md py-fluid-2xl text-center"
     >
-      <Logo variant="icon" tone="negative" width={72} height={86} alt="" priority />
+      <EyesHatIcon tone="negative" width={72} />
 
       <Preheader className="text-tf-white/90">A Little Lost</Preheader>
 

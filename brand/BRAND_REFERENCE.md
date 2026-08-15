@@ -319,23 +319,34 @@ code fix.
    never had to consider. Documented here so it doesn't look like an
    arbitrary invention later.
 
-6. **PARTIALLY RESOLVED — logo assets.** `src/components/ui/logos.tsx` now
-   renders real artwork pulled directly from this PDF (rasterized at
-   600dpi, alpha-masked to transparent PNGs, recolored to the resolved
-   brand black / white) for three variants: Horizontal Signature
-   (positive), Stacked Signature (negative), and the Icon ("OO" eyes+hat,
-   both tones) — wired into Nav, Hero, Footer, and CartDrawer respectively,
-   replacing the old generic circle-and-drip placeholder everywhere. The
-   component enforces the guide's stated minimum size per variant with a
-   dev-mode console warning (doesn't block production).
+6. **PARTIALLY RESOLVED — logo assets are real vectors now; fonts still
+   pending.** `src/components/ui/logos.tsx` renders five real marks —
+   PrimaryLogo, SecondaryLogo, HorizontalSignature, StackedSignature,
+   EyesHatIcon — as inline SVG (`fill="currentColor"`, themed via
+   `tone="positive"|"negative"` + Tailwind's `text-tf-black`/`text-tf-white`,
+   one shape per mark, no separate pos/neg files). Wired into Nav, Hero,
+   Footer, and CartDrawer, replacing the earlier raster PNGs (which
+   themselves replaced the original generic circle-and-drip placeholder).
+   Cleaned source SVGs live in `public/brand/`. The component enforces the
+   guide's stated minimum size per mark with a dev-mode console warning.
 
-   Still open: Primary, Secondary, Badge, Hat-alone, Sign Off, and "Tom Wuz
-   Here" aren't extracted (not currently used anywhere in the app), and
-   these are PDF-page rasters, not the real vector source files — the
-   guide references a linked "Tom Foolery Brand Assets" folder (📂
-   click-through in the PDF, likely Drive/Dropbox) that should have actual
-   SVG/AI/EPS files. Swap in real vectors from there when available, for
-   crisper scaling and exact-fidelity edges — see the audit below for
+   **Provenance, honestly**: `pdftocairo -svg` doesn't honor pixel crop
+   options (`-x/-y/-W/-H` are raster-only in this poppler build), so
+   isolating a specific logo's path group straight from the page wasn't
+   available. The practical path was: crop + alpha-mask the same clean
+   600dpi rasters from the earlier pass, normalize to solid black-on-white,
+   then trace with `vtracer` (spline mode) and clean with `svgo`. These are
+   **not** the actual licensed vector source files — the guide references
+   a linked "Tom Foolery Brand Assets" folder (📂 click-through in the PDF,
+   likely Drive/Dropbox) that should have the real SVG/AI/EPS. Swap those
+   in when available; `logos.tsx`'s component API doesn't need to change.
+   `public/logos/icon-{positive,negative}.png` still exist deliberately
+   (not leftovers) — see `public/logos/README.md` — for the OG image and
+   Organization JSON-LD, where a raster is more reliable than satori
+   nesting an SVG or a structured-data consumer parsing one.
+
+   Still not extracted at all: Badge, Hat-alone, Sign Off, "Tom Wuz Here"
+   (not used anywhere in the current app) — see the audit below for
    exactly what was pulled and from where.
 
 7. **Feature Deck is a serif display face**, per the guide's own type
@@ -364,16 +375,17 @@ were flagged and resolved with the project owner before touching code.
   `src/components/sections/Hero.tsx:70-86`,
   `src/components/layout/Nav.tsx:25-40`,
   `src/components/layout/Footer.tsx:19-34`,
-  `src/components/commerce/CartDrawer.tsx:89-104`. **Fixed**: added
-  `src/components/ui/logos.tsx` with real artwork pulled from the PDF
-  (Horizontal Signature, Stacked Signature, Icon — see
-  [Gap 6](#gaps--conflicts)) and per-variant minimum-size enforcement;
-  wired into all four locations. `Nav.tsx`'s logo wrapper minimum was
-  updated from `min-w-[90px]` (the small-scale variant's minimum — we
-  aren't using that asset) to `min-w-[144px]`, correctly matching the
-  regular Horizontal Signature minimum for the asset actually in use.
-  Real vector files from the brand asset folder should still replace
-  these PDF-page rasters when available.
+  `src/components/commerce/CartDrawer.tsx:89-104`. **Fixed in two passes**:
+  first with raster PNGs pulled from the PDF, then upgraded to real inline
+  SVG vectors (`src/components/ui/logos.tsx`, sources in `public/brand/`)
+  — five marks (Primary, Secondary, Horizontal Signature, Stacked
+  Signature, Icon), per-mark minimum-size enforcement, wired into all four
+  locations. `Nav.tsx`'s logo wrapper minimum was updated from
+  `min-w-[90px]` (the small-scale variant's minimum — we aren't using that
+  asset) to `min-w-[144px]`, correctly matching the regular Horizontal
+  Signature minimum for the asset actually in use. Still not the actual
+  licensed vector files — see [Gap 6](#gaps--conflicts) for provenance and
+  what should replace them.
 - **`Headline` line-height was tighter than 1:1** (`leading-[0.95]`),
   contradicting the guide's Header rule (always looser than 1:1) —
   `src/components/ui/typography.tsx:85` and the duplicate hand-rolled

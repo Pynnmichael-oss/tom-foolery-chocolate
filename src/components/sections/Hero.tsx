@@ -2,11 +2,11 @@
 
 import { useRef } from "react";
 import { PinnedSection } from "@/components/motion/PinnedSection";
-import { Logo } from "@/components/ui/logos";
+import { EyesHatIcon } from "@/components/ui/logos";
 import { gsap } from "@/components/motion/gsap";
 
 export function Hero() {
-  const logoRef = useRef<HTMLImageElement>(null);
+  const logoRef = useRef<SVGSVGElement>(null);
   const preheaderRef = useRef<HTMLParagraphElement>(null);
   const headlineRef = useRef<HTMLHeadingElement>(null);
   const accentRef = useRef<HTMLSpanElement>(null);
@@ -67,17 +67,15 @@ export function Hero() {
           .to(cueRef.current, { opacity: 0, duration: 0.3 }, "+=0.3");
       }}
     >
-      {/* Icon mark (negative — light ink for the dark hero bg). */}
-      <Logo
+      {/* Icon mark (negative — light ink for the dark hero bg). Sized
+       * purely via className so it stays responsive across breakpoints;
+       * see logos.tsx for why that means no dev-mode min-size check here
+       * (64-80px is comfortably above the 27px minimum regardless). */}
+      <EyesHatIcon
         ref={logoRef}
-        variant="icon"
         tone="negative"
-        width={80}
-        height={96}
-        sizeBy="height"
-        priority
-        alt="Tom Foolery mark"
-        className="mb-fluid-lg h-16 sm:h-20"
+        title="Tom Foolery"
+        className="mb-fluid-lg h-16 w-auto sm:h-20"
       />
 
       <p

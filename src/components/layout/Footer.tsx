@@ -1,5 +1,5 @@
 import { StripeDivider } from "@/components/ui/StripeDivider";
-import { Logo } from "@/components/ui/logos";
+import { StackedSignature } from "@/components/ui/logos";
 
 const FOOTER_LINKS = [
   { href: "/", label: "Home" },
@@ -16,15 +16,7 @@ export function Footer() {
   return (
     <footer id="shop" className="bg-tf-black text-tf-white">
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-fluid-lg px-fluid-md py-fluid-2xl text-center">
-        {/* Guide minimum for this variant is 108px TALL — see
-         * brand/BRAND_REFERENCE.md §4. */}
-        <Logo
-          variant="stacked-signature"
-          tone="negative"
-          width={161}
-          height={120}
-          alt="Tom Foolery Chocolate"
-        />
+        <StackedSignature tone="negative" height={120} title="Tom Foolery Chocolate" />
       </div>
 
       <StripeDivider />
