@@ -271,6 +271,16 @@ rule** — treat as directional inspiration, not a spec to enforce:
 - Layered typography over photography (Feature Deck headlines, handwritten
   "–Tom" sign-offs, Sofia Pro labels)
 
+**Site photography, in use as of August 2026:** the three homepage
+`StorySection`s now run real photography extracted from this guide's own
+example-application pages (candid lifestyle shots, a macro product
+flat-lay) rather than placeholder color blocks — see
+[`PHOTO_INVENTORY.md`](./PHOTO_INVENTORY.md) for the full extraction
+inventory, source pages, and six additional backup photos not yet placed.
+These are the guide's own photography, not commissioned assets — swap in
+final photography under the same filenames in `public/photos/` whenever it
+arrives, no code changes needed.
+
 ---
 
 ## 7. Gaps & Conflicts
@@ -311,6 +321,10 @@ code fix.
 4. **No photography section exists yet.** §6 above is inferred from
    example applications, not a stated rule. Fine to use as inspiration; not
    something to enforce as a hard requirement until the guide adds one.
+   **Update:** the site now uses real photos pulled from those same example
+   pages (see §6 and `PHOTO_INVENTORY.md`) — this doesn't resolve the gap
+   (still no *written* photography rule), it just means the current site
+   imagery happens to already match the inferred style by construction.
 
 5. **Print leading doesn't map 1:1 onto fluid/responsive type.** The
    `calc(1em + Npx)` translation in §3 is exact at any single font size,
