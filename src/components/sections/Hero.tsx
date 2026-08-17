@@ -3,9 +3,30 @@
 import { useRef } from "react";
 import { PinnedSection } from "@/components/motion/PinnedSection";
 import { EyesHatIcon } from "@/components/ui/logos";
+import { BrandVideo } from "@/components/media/BrandVideo";
 import { gsap } from "@/components/motion/gsap";
 
-export function Hero() {
+/** Generated brand-black frame with a faint stripe texture (same motif as
+ * StripeDivider) — stands in as `poster` for `backgroundVideo` until a real
+ * encoded clip's own poster is passed via `backgroundVideoPoster`. */
+const PLACEHOLDER_POSTER = "/video/hero-placeholder-poster.jpg";
+
+export interface HeroProps {
+  /** Base filename (no extension) under `public/video/` for a background
+   * brand clip (e.g. a Higgsfield-generated loop) — optional. Omit to keep
+   * the plain `bg-tf-black` hero exactly as before; nothing here changes
+   * until a real clip lands. Renders behind all existing content via
+   * `BrandVideo` with `priority` (loads immediately, no scroll-in gate —
+   * it's above the fold by definition) plus a brand-black overlay for text
+   * legibility over whatever the clip shows. */
+  backgroundVideo?: string;
+  /** Poster override for `backgroundVideo` — defaults to a generated
+   * brand-black/stripe placeholder so the hero renders correctly even
+   * before the real clip's own first-frame poster exists. */
+  backgroundVideoPoster?: string;
+}
+
+export function Hero({ backgroundVideo, backgroundVideoPoster }: HeroProps = {}) {
   const logoRef = useRef<SVGSVGElement>(null);
   const preheaderRef = useRef<HTMLParagraphElement>(null);
   const headlineRef = useRef<HTMLHeadingElement>(null);
@@ -67,6 +88,26 @@ export function Hero() {
           .to(cueRef.current, { opacity: 0, duration: 0.3 }, "+=0.3");
       }}
     >
+      {backgroundVideo && (
+        // Negative z-index, not just DOM order: the icon/preheader/headline
+        // below are plain in-flow (non-positioned) elements, and those
+        // paint *after* z-index:auto positioned siblings regardless of
+        // source order — without -z-10 here this layer would cover the
+        // text instead of sitting behind it.
+        <div aria-hidden="true" className="absolute inset-0 -z-10">
+          <BrandVideo
+            src={backgroundVideo}
+            poster={backgroundVideoPoster ?? PLACEHOLDER_POSTER}
+            priority
+            className="h-full w-full"
+          />
+          {/* Brand-black wash so preheader/headline text stays legible over
+           * whatever the clip shows — same --tf-black the hero already
+           * used as a solid bg, just partially transparent now. */}
+          <div className="absolute inset-0 bg-tf-black/35" />
+        </div>
+      )}
+
       {/* Icon mark (negative — light ink for the dark hero bg). Sized
        * purely via className so it stays responsive across breakpoints;
        * see logos.tsx for why that means no dev-mode min-size check here

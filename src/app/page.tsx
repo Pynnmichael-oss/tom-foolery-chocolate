@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <main id="main-content">
-      <Hero />
+      <Hero backgroundVideo="hero-orbit" backgroundVideoPoster="/video/hero-orbit-poster.jpg" />
 
       <Marquee className="bg-tf-black py-fluid-sm" />
 

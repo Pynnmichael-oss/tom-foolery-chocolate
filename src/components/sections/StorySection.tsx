@@ -18,6 +18,12 @@ export interface StorySectionProps {
    * one maskable line per entry, scrubbed in line-by-line. */
   headline: string | string[];
   body: string;
+  /** A `next/image` or `BrandVideo` element, typically wrapped by the
+   * caller in an aspect-ratio'd container (e.g. `aspect-[4/5]
+   * overflow-hidden rounded-2xl`) — see `src/app/page.tsx` for the pattern.
+   * BrandVideo slots in identically to an image: same wrapper convention,
+   * same fade/scale reveal below, since the reveal animates this slot's
+   * wrapping `<div>`, not anything image/video-specific inside it. */
   media?: ReactNode;
   layout?: StorySectionLayout;
   className?: string;
@@ -36,6 +42,7 @@ export function StorySection({
   const headlineRef = useRef<HTMLHeadingElement>(null);
   const headlineLineRefs = useRef<Array<HTMLSpanElement | null>>([]);
   const bodyRef = useRef<HTMLParagraphElement>(null);
+  const mediaRef = useRef<HTMLDivElement>(null);
 
   const bgVar = `var(${TOKEN_VAR[bgColor]})`;
   const fgVar = `var(${TOKEN_VAR[TOKEN_CONTRAST[bgColor]]})`;
@@ -58,7 +65,11 @@ export function StorySection({
 
         if (reducedMotion) {
           // Instant — final state only, no motion at all.
-          tl.set([preheaderRef.current, bodyRef.current], { opacity: 1, y: 0 });
+          tl.set([preheaderRef.current, bodyRef.current, mediaRef.current], {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+          });
           tl.set(headlineTarget, { yPercent: 0, opacity: 1 });
           return;
         }
@@ -85,6 +96,12 @@ export function StorySection({
             { opacity: 0, y: 20 },
             { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
             "-=0.35"
+          )
+          .fromTo(
+            mediaRef.current,
+            { opacity: 0, scale: 0.96 },
+            { opacity: 1, scale: 1, duration: 0.7, ease: "power2.out" },
+            "-=0.5"
           );
       }}
     >
@@ -118,7 +135,7 @@ export function StorySection({
         </div>
 
         {media && (
-          <div className={`w-full ${isCentered ? "" : "md:flex-1"}`}>
+          <div ref={mediaRef} className={`w-full ${isCentered ? "" : "md:flex-1"}`}>
             {media}
           </div>
         )}

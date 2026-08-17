@@ -66,6 +66,27 @@ Pages can't run it. Vercel is the natural fit for a Next.js app.
    ship with mock data first.
 4. Deploy. Every push to `main` redeploys automatically.
 
+## Video assets
+
+`BrandVideo` (`src/components/media/BrandVideo.tsx`) is the performance-safe
+wrapper for brand clips (Higgsfield-generated or otherwise) — lazy-loads
+only once scrolled near viewport, pauses when scrolled away, and falls back
+to a plain poster image (no `<video>` element at all) under
+`prefers-reduced-motion` or a data-saver connection. It's wired into:
+
+- `Hero`'s optional `backgroundVideo` prop (see it live on `/` — the
+  current clip is a Higgsfield orbit render of the raspberry-filled bar
+  photo, `public/video/hero-orbit.*`)
+- `StorySection`'s `media` slot (accepts `BrandVideo` anywhere it accepts
+  `next/image`)
+- `ProductCard`'s optional `hoverVideo` prop (crossfades in on hover, pointer
+  devices only — touch always just sees the static photo)
+
+To add a new clip: drop the raw export at the repo root as
+`<name>-source.mp4` (gitignored) and run `scripts/encode-video.sh
+<name>-source.mp4 <name>` — see `public/video/README.md` for the full
+naming convention and wiring examples.
+
 ## Project structure
 
 ```
@@ -74,12 +95,17 @@ src/
 ├── components/
 │   ├── commerce/           — cart, product grid/card/detail, add-to-cart
 │   ├── layout/              — Nav, Footer
-│   ├── motion/               — PinnedSection, shared gsap setup
-│   ├── providers/             — Lenis smooth-scroll wiring
-│   ├── sections/               — Hero, StorySection
-│   └── ui/                       — typography, Button, Marquee, StripeDivider
+│   ├── media/                — BrandVideo (lazy, reduced-motion-aware clips)
+│   ├── motion/                 — PinnedSection, shared gsap setup
+│   ├── providers/                — Lenis smooth-scroll wiring
+│   ├── sections/                   — Hero, StorySection
+│   └── ui/                           — typography, Button, Marquee, StripeDivider
 └── lib/
-    ├── shopify/                — client, queries, mock-data, types, actions
-    ├── fonts.ts                 — next/font/local setup
-    └── theme.ts                  — brand color token helpers
+    ├── shopify/                        — client, queries, mock-data, types, actions
+    ├── hooks/                            — useMediaPreferences, useHoverCapableDevice
+    ├── fonts.ts                           — next/font/google setup (Fraunces/Figtree)
+    └── theme.ts                            — brand color token helpers
+
+scripts/
+└── encode-video.sh          — raw clip → public/video/ webm+mp4+poster trio
 ```

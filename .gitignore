@@ -45,3 +45,9 @@ next-env.d.ts
 # brand/BRAND_REFERENCE.md (the derived, durable source of truth) IS
 # committed; only the raw PDF it was distilled from is excluded here.
 brand/TomFoolery_Brand_Standards_August2026.pdf
+
+# video sources — raw clips (e.g. Higgsfield downloads) dropped at the repo
+# root before running scripts/encode-video.sh on them. Only the encoded
+# output in public/video/ is committed; see public/video/README.md.
+/*-source.mp4
+/*-source.mov
