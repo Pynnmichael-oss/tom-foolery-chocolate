@@ -5,7 +5,15 @@
  * match the normalized types in types.ts exactly, so nothing downstream
  * needs to know mock data is in play.
  */
-import type { Cart, CartLine, CartLineInput, Money, Product, ProductVariant } from "./types";
+import type {
+  Cart,
+  CartLine,
+  CartLineInput,
+  FeaturedProduct,
+  Money,
+  Product,
+  ProductVariant,
+} from "./types";
 
 function placeholderImage(label: string, bg: string, fg = "FFFFFF"): {
   url: string;
@@ -162,6 +170,31 @@ export function getMockProducts(): Product[] {
 
 export function getMockProduct(handle: string): Product | null {
   return MOCK_PRODUCTS.find((p) => p.handle === handle) ?? null;
+}
+
+// ---------------------------------------------------------------------
+// Featured products (homepage rail) — trimmed FeaturedProduct shape, see
+// types.ts. Projected from MOCK_PRODUCTS (not a separate data set) so the
+// handles always resolve on /shop/[handle] — exactly how a real "Featured"
+// collection in Shopify admin would just curate a subset of real products.
+// ---------------------------------------------------------------------
+
+const FEATURED_HANDLES = ["midnight-jester", "hazelnut-hijinks", "rosewater-rascal"];
+
+export function getMockFeaturedProducts(): FeaturedProduct[] {
+  return FEATURED_HANDLES.map((handle) => {
+    const product = MOCK_PRODUCTS.find((p) => p.handle === handle);
+    if (!product) {
+      throw new Error(`getMockFeaturedProducts: "${handle}" not found in MOCK_PRODUCTS`);
+    }
+    return {
+      id: product.id,
+      handle: product.handle,
+      title: product.title,
+      image: product.images[0],
+      price: product.priceRange.min,
+    };
+  });
 }
 
 // ---------------------------------------------------------------------

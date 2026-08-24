@@ -42,6 +42,21 @@ export interface Product {
   variants: ProductVariant[];
 }
 
+/**
+ * Trimmed product shape for collection-grid contexts (e.g. the homepage
+ * "Featured" rail) — mirrors what a Storefront API collection query
+ * actually returns when you only ask for a card's worth of fields
+ * (`featuredImage` singular, `priceRange.minVariantPrice` only) rather
+ * than the full gallery + variant list the PDP-oriented `Product` needs.
+ */
+export interface FeaturedProduct {
+  id: string;
+  handle: string;
+  title: string;
+  image: ProductImage;
+  price: Money;
+}
+
 export interface CartLine {
   id: string;
   quantity: number;

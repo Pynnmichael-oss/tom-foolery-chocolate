@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { Hero } from "@/components/sections/Hero";
 import { Marquee } from "@/components/ui/Marquee";
+import { FeaturedProducts } from "@/components/sections/FeaturedProducts";
+import { ScrollPrompt } from "@/components/sections/ScrollPrompt";
 import { StorySection } from "@/components/sections/StorySection";
 import { StripeDivider } from "@/components/ui/StripeDivider";
 import { Footer } from "@/components/layout/Footer";
@@ -22,6 +24,10 @@ export default function Home() {
       <Hero backgroundVideo="hero-orbit" backgroundVideoPoster="/video/hero-orbit-poster.jpg" />
 
       <Marquee className="bg-tf-black py-fluid-sm" />
+
+      <FeaturedProducts />
+
+      <ScrollPrompt />
 
       <div id="story">
         <StorySection

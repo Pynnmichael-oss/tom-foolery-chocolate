@@ -1,6 +1,14 @@
 import { isShopifyConfigured, shopifyFetch, ShopifyApiError } from "./client";
 import * as mock from "./mock-data";
-import type { Cart, CartLine, CartLineInput, Money, Product, ProductVariant } from "./types";
+import type {
+  Cart,
+  CartLine,
+  CartLineInput,
+  FeaturedProduct,
+  Money,
+  Product,
+  ProductVariant,
+} from "./types";
 
 /* ------------------------------------------------------------------ */
 /* GraphQL documents                                                    */
@@ -83,6 +91,28 @@ const PRODUCT_BY_HANDLE_QUERY = `#graphql
   }
 `;
 
+// TODO(storefront): create a collection with this handle in Shopify admin
+// (or point it at whichever one should feed the homepage rail) — the
+// query/normalizer below are already written and wired into
+// getFeaturedProducts(), so nothing else needs to change once it exists.
+const FEATURED_COLLECTION_HANDLE = "featured";
+
+const FEATURED_PRODUCTS_QUERY = `#graphql
+  query FeaturedProducts($handle: String!, $first: Int!) {
+    collection(handle: $handle) {
+      products(first: $first) {
+        nodes {
+          id
+          handle
+          title
+          featuredImage { url altText width height }
+          priceRange { minVariantPrice { amount currencyCode } }
+        }
+      }
+    }
+  }
+`;
+
 const CART_QUERY = `#graphql
   ${CART_FRAGMENT}
   query CartByID($cartId: ID!) {
@@ -161,6 +191,14 @@ interface RawProduct {
   variants: { nodes: RawVariant[] };
 }
 
+interface RawFeaturedProduct {
+  id: string;
+  handle: string;
+  title: string;
+  featuredImage: RawImage | null;
+  priceRange: { minVariantPrice: Money };
+}
+
 interface RawCartLine {
   id: string;
   quantity: number;
@@ -223,6 +261,22 @@ function normalizeProduct(product: RawProduct): Product {
       max: product.priceRange.maxVariantPrice,
     },
     variants: product.variants.nodes.map(normalizeVariant),
+  };
+}
+
+function normalizeFeaturedProduct(product: RawFeaturedProduct): FeaturedProduct {
+  return {
+    id: product.id,
+    handle: product.handle,
+    title: product.title,
+    // Storefront allows a null featuredImage (e.g. a product with no
+    // media yet) — fall back to an empty, alt-less image rather than
+    // throwing, same tolerance normalizeProduct's images.nodes.map gets
+    // for free from an empty array.
+    image: product.featuredImage
+      ? normalizeImage(product.featuredImage)
+      : { url: "", altText: null },
+    price: product.priceRange.minVariantPrice,
   };
 }
 
@@ -296,6 +350,34 @@ export async function getProduct(handle: string): Promise<Product | null> {
   } catch (error) {
     console.error(`[shopify] getProduct(${handle}) failed, falling back to mock data:`, error);
     return mock.getMockProduct(handle);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Featured products (homepage rail)                                    */
+/* ------------------------------------------------------------------ */
+
+export async function getFeaturedProducts(first = 3): Promise<FeaturedProduct[]> {
+  if (!isShopifyConfigured()) return mock.getMockFeaturedProducts();
+
+  try {
+    const data = await shopifyFetch<{
+      collection: { products: { nodes: RawFeaturedProduct[] } } | null;
+    }>({
+      query: FEATURED_PRODUCTS_QUERY,
+      variables: { handle: FEATURED_COLLECTION_HANDLE, first },
+      revalidate: 3600,
+      tags: ["products", `collection:${FEATURED_COLLECTION_HANDLE}`],
+    });
+    const nodes = data.collection?.products.nodes ?? [];
+    // Collection doesn't exist yet (or is empty) — mock fallback keeps the
+    // homepage rail populated instead of silently rendering nothing.
+    return nodes.length > 0
+      ? nodes.map(normalizeFeaturedProduct)
+      : mock.getMockFeaturedProducts();
+  } catch (error) {
+    console.error("[shopify] getFeaturedProducts failed, falling back to mock data:", error);
+    return mock.getMockFeaturedProducts();
   }
 }
 
