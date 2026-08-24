@@ -5,6 +5,8 @@ import { Marquee } from "@/components/ui/Marquee";
 import { FeaturedProducts } from "@/components/sections/FeaturedProducts";
 import { ScrollPrompt } from "@/components/sections/ScrollPrompt";
 import { StorySection } from "@/components/sections/StorySection";
+import { BrandCompass } from "@/components/sections/BrandCompass";
+import { TomPeek } from "@/components/sections/TomPeek";
 import { StripeDivider } from "@/components/ui/StripeDivider";
 import { Footer } from "@/components/layout/Footer";
 
@@ -87,9 +89,15 @@ export default function Home() {
             </div>
           }
         />
+
+        <BrandCompass />
       </div>
 
       <StripeDivider />
+
+      <div className="mx-auto flex max-w-6xl justify-end px-fluid-md">
+        <TomPeek className="mb-fluid-md" />
+      </div>
 
       <Footer />
     </main>
