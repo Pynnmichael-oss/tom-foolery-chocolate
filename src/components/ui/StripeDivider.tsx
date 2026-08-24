@@ -40,6 +40,20 @@ export function StripeDivider({
             start: "top 85%",
             end: "top 40%",
             scrub: true,
+            // Cleared on leave — see PinnedSection.tsx's setWillChange for
+            // why this doesn't just stay on permanently.
+            onEnter: () => {
+              if (barRef.current) barRef.current.style.willChange = "transform";
+            },
+            onEnterBack: () => {
+              if (barRef.current) barRef.current.style.willChange = "transform";
+            },
+            onLeave: () => {
+              if (barRef.current) barRef.current.style.willChange = "auto";
+            },
+            onLeaveBack: () => {
+              if (barRef.current) barRef.current.style.willChange = "auto";
+            },
           },
         });
 

@@ -3,6 +3,26 @@
 import { useRef } from "react";
 import { gsap, useGSAP, breakpoints } from "./gsap";
 
+/**
+ * `will-change` on every element the timeline actually animates — pulled
+ * straight from the timeline's own tweens (`getChildren` + `targets()`,
+ * both public GSAP APIs) rather than requiring each caller to hand back
+ * refs, so Hero/StorySection/BrandCompass all get this for free. Set on
+ * `onEnter`/`onEnterBack` (right before the heaviest part of a scrub
+ * starts pushing pixels every frame), cleared on `onLeave`/`onLeaveBack`
+ * — leaving it on permanently is the well-known footgun (forces the
+ * browser to keep the layer promoted/composited indefinitely), so this
+ * only asks for it while the section is actually in its active range.
+ */
+function setWillChange(timeline: gsap.core.Timeline, value: string) {
+  const tweens = timeline.getChildren(true, true, false) as gsap.core.Tween[];
+  for (const tween of tweens) {
+    for (const target of tween.targets<Element>()) {
+      if (target instanceof HTMLElement) target.style.willChange = value;
+    }
+  }
+}
+
 export interface PinnedSectionTimelineContext {
   /** True when the user prefers reduced motion — the timeline this run
    * builds has no ScrollTrigger/pin attached and should just play once. */
@@ -63,6 +83,10 @@ export function PinnedSection({
             scrub,
             pin,
             anticipatePin: 1,
+            onEnter: () => setWillChange(timeline, "transform, opacity"),
+            onEnterBack: () => setWillChange(timeline, "transform, opacity"),
+            onLeave: () => setWillChange(timeline, "auto"),
+            onLeaveBack: () => setWillChange(timeline, "auto"),
           },
         });
 
