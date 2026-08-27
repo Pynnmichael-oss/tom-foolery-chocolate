@@ -6,8 +6,8 @@
  * token in client.ts is a server-only env var, so all cart mutations must
  * run here, not in the browser.
  */
-import { addLines, createCart, getCart, removeLine, updateLine } from "./queries";
-import type { Cart } from "./types";
+import { addLines, createCart, createCustomer, getCart, removeLine, updateLine } from "./queries";
+import type { Cart, SubscribeResult } from "./types";
 
 export async function getCartAction(cartId: string): Promise<Cart | null> {
   return getCart(cartId);
@@ -40,4 +40,14 @@ export async function updateCartLineAction(
 
 export async function removeCartLineAction(cartId: string, lineId: string): Promise<Cart> {
   return removeLine(cartId, lineId);
+}
+
+/** Used by EmailSignupPopup — the only client this action has, so the
+ * storefront token stays server-side same as every cart mutation above. */
+export async function subscribeCustomerAction(email: string): Promise<SubscribeResult> {
+  const trimmed = email.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+    return { success: false, error: "Enter a valid email address." };
+  }
+  return createCustomer(trimmed);
 }

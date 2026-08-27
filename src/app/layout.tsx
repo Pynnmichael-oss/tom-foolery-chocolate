@@ -5,6 +5,7 @@ import { SmoothScroll } from "@/components/providers/SmoothScroll";
 import { Nav } from "@/components/layout/Nav";
 import { CartProvider } from "@/components/commerce/CartProvider";
 import { CartDrawer } from "@/components/commerce/CartDrawer";
+import { EmailSignupPopup } from "@/components/commerce/EmailSignupPopup";
 import { OrganizationJsonLd } from "@/components/seo/OrganizationJsonLd";
 import { POWER_STATEMENTS, SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <CartDrawer />
           </CartProvider>
         </SmoothScroll>
+        <EmailSignupPopup />
       </body>
     </html>
   );

@@ -13,6 +13,7 @@ import type {
   Money,
   Product,
   ProductVariant,
+  SubscribeResult,
 } from "./types";
 
 function placeholderImage(label: string, bg: string, fg = "FFFFFF"): {
@@ -305,4 +306,15 @@ export function removeMockLine(cartId: string, lineId: string): Cart {
   const updated = recomputeTotals({ ...cart, lines: cart.lines.filter((l) => l.id !== lineId) });
   mockCarts.set(cartId, updated);
   return updated;
+}
+
+/* ------------------------------------------------------------------ */
+/* Customer signup (EmailSignupPopup)                                   */
+/* ------------------------------------------------------------------ */
+
+export function subscribeMockCustomer(email: string): SubscribeResult {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { success: false, error: "Enter a valid email address." };
+  }
+  return { success: true };
 }

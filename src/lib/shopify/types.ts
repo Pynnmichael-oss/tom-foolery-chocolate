@@ -83,3 +83,10 @@ export interface CartLineInput {
   merchandiseId: string;
   quantity: number;
 }
+
+/** Result of a `customerCreate` email-signup attempt (EmailSignupPopup). */
+export interface SubscribeResult {
+  success: boolean;
+  /** User-facing message — set only when `success` is false. */
+  error?: string;
+}
