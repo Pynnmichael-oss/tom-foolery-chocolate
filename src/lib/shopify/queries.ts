@@ -490,6 +490,7 @@ export async function createCustomer(email: string): Promise<SubscribeResult> {
       query: CUSTOMER_CREATE_MUTATION,
       variables: { input: { email, acceptsMarketing: true } },
       cache: "no-store",
+      server: true, // privileged mutation — uses SHOPIFY_STOREFRONT_PRIVATE_TOKEN
     });
 
     const { customer, customerUserErrors } = data.customerCreate;
