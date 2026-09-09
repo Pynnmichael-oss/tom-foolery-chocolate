@@ -7,6 +7,7 @@ import { Preheader, Headline, BodyText } from "@/components/ui/typography";
 import { TextureBackground } from "@/components/ui/TextureBackground";
 import { CharacterMark } from "@/components/ui/CharacterMark";
 import { useMediaPreferences } from "@/lib/hooks/useMediaPreferences";
+import { TOKEN_VAR, TOKEN_CONTRAST } from "@/lib/theme";
 import type { TfColorToken } from "@/lib/theme";
 
 interface Tenet {
@@ -63,28 +64,43 @@ const TENETS: Tenet[] = [
  * first paint means a reduced-motion visitor can see the pinned tree
  * briefly before the fallback swaps in.
  *
- * Each panel's swatch now runs through `TextureBackground` (the brand
- * guide's vintage-print/fabric-weave texture treatment, brand/BRAND_REFERENCE.md
- * §5) instead of a flat color fill, plus a small placeholder `CharacterMark`
- * per tenet — same eyes+hat silhouette `TomPeek`/`StripeCurtainReveal` use.
+ * `textured` (default `true`) switches the panel swatch between two
+ * renderings:
+ *  - `true`: `TextureBackground` (the brand guide's vintage-print/
+ *    fabric-weave texture treatment, brand/BRAND_REFERENCE.md §5) plus a
+ *    small placeholder `CharacterMark` per tenet — built for `/story`.
+ *  - `false`: the original flat-color fill this component shipped with
+ *    (bare `TOKEN_VAR`/`TOKEN_CONTRAST` background, no character mark).
+ *
+ * Defaults to `true` (the `/story` look) so `src/app/story/page.tsx`'s
+ * own `<BrandCompass />` call needs no prop at all; the homepage's
+ * instance (`src/app/page.tsx`) passes `textured={false}` explicitly to
+ * keep its pre-existing flat-color look — the texture treatment was
+ * built for the Story page and bled into the homepage (both render this
+ * same shared component) before this split.
  */
-export function BrandCompass() {
+export function BrandCompass({ textured = true }: { textured?: boolean } = {}) {
   const { prefersReducedMotion } = useMediaPreferences();
 
   if (prefersReducedMotion) {
     return (
       <div className="flex flex-col">
         {TENETS.map((tenet) => (
-          <CompassPanel key={tenet.name} tenet={tenet} className="min-h-[70vh] py-fluid-2xl" />
+          <CompassPanel
+            key={tenet.name}
+            tenet={tenet}
+            textured={textured}
+            className="min-h-[70vh] py-fluid-2xl"
+          />
         ))}
       </div>
     );
   }
 
-  return <BrandCompassScrub />;
+  return <BrandCompassScrub textured={textured} />;
 }
 
-function BrandCompassScrub() {
+function BrandCompassScrub({ textured }: { textured: boolean }) {
   const panelRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   return (
@@ -114,6 +130,7 @@ function BrandCompassScrub() {
         <CompassPanel
           key={tenet.name}
           tenet={tenet}
+          textured={textured}
           ref={(el) => {
             panelRefs.current[i] = el;
           }}
@@ -124,27 +141,56 @@ function BrandCompassScrub() {
   );
 }
 
-const CompassPanel = forwardRef<HTMLDivElement, { tenet: Tenet; className?: string }>(
-  function CompassPanel({ tenet, className = "" }, ref) {
+/** The tenet's own preheader/headline/body — identical markup on both
+ * the textured and flat-color paths, factored out once so those two
+ * branches can't quietly drift apart. */
+function TenetContent({ tenet }: { tenet: Tenet }) {
+  return (
+    <>
+      <Preheader>{tenet.tag}</Preheader>
+      <Headline size="lg" className="max-w-3xl">
+        {tenet.name}
+      </Headline>
+      <BodyText size="lg" className="max-w-xl">
+        {tenet.body}
+      </BodyText>
+    </>
+  );
+}
+
+const CompassPanel = forwardRef<
+  HTMLDivElement,
+  { tenet: Tenet; textured: boolean; className?: string }
+>(function CompassPanel({ tenet, textured, className = "" }, ref) {
+  if (!textured) {
+    // Original flat-color rendering, unchanged from before the /story
+    // texture treatment — see this component's own top-level comment.
+    const bgVar = `var(${TOKEN_VAR[tenet.accent]})`;
+    const fgVar = `var(${TOKEN_VAR[TOKEN_CONTRAST[tenet.accent]]})`;
+
     return (
-      <TextureBackground
+      <div
         ref={ref}
-        color={tenet.accent}
-        className={`flex flex-col items-center justify-center gap-fluid-md px-fluid-md text-center ${className}`}
+        className={`flex flex-col items-center justify-center gap-fluid-md bg-bg px-fluid-md text-center text-fg ${className}`}
+        style={{ "--bg": bgVar, "--fg": fgVar } as React.CSSProperties}
       >
-        {/* TODO(brand-assets): placeholder eyes+hat mark, same shape
-         * TomPeek/StripeCurtainReveal use — swap for this tenet's real
-         * character illustration once pulled from the Illustrations asset
-         * folder (brand/BRAND_REFERENCE.md §5, Gap 6). */}
-        <CharacterMark className="h-10 w-auto opacity-70" />
-        <Preheader>{tenet.tag}</Preheader>
-        <Headline size="lg" className="max-w-3xl">
-          {tenet.name}
-        </Headline>
-        <BodyText size="lg" className="max-w-xl">
-          {tenet.body}
-        </BodyText>
-      </TextureBackground>
+        <TenetContent tenet={tenet} />
+      </div>
     );
   }
-);
+
+  return (
+    <TextureBackground
+      ref={ref}
+      color={tenet.accent}
+      className={`flex flex-col items-center justify-center gap-fluid-md px-fluid-md text-center ${className}`}
+    >
+      {/* TODO(brand-assets): placeholder eyes+hat mark, same shape
+       * TomPeek/StripeCurtainReveal use — swap for this tenet's real
+       * character illustration once pulled from the Illustrations asset
+       * folder (brand/BRAND_REFERENCE.md §5, Gap 6). */}
+      <CharacterMark className="h-10 w-auto opacity-70" />
+      <TenetContent tenet={tenet} />
+    </TextureBackground>
+  );
+});

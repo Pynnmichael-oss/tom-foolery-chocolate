@@ -90,7 +90,11 @@ export default function Home() {
           }
         />
 
-        <BrandCompass />
+        {/* textured={false}: keep this instance's original flat-color
+         * panels — the vintage-print texture wash + character marks were
+         * built for /story; BrandCompass's own top-level comment has the
+         * full story on why this flag exists. */}
+        <BrandCompass textured={false} />
       </div>
 
       <StripeDivider />
