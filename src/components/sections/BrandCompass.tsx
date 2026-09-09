@@ -4,8 +4,9 @@ import { forwardRef, useRef } from "react";
 import { PinnedSection } from "@/components/motion/PinnedSection";
 import { gsap } from "@/components/motion/gsap";
 import { Preheader, Headline, BodyText } from "@/components/ui/typography";
+import { TextureBackground } from "@/components/ui/TextureBackground";
+import { CharacterMark } from "@/components/ui/CharacterMark";
 import { useMediaPreferences } from "@/lib/hooks/useMediaPreferences";
-import { TOKEN_VAR, TOKEN_CONTRAST } from "@/lib/theme";
 import type { TfColorToken } from "@/lib/theme";
 
 interface Tenet {
@@ -61,6 +62,11 @@ const TENETS: Tenet[] = [
  * caveat as `BrandVideo`/`ScrollPrompt`: the hook's `false` default on
  * first paint means a reduced-motion visitor can see the pinned tree
  * briefly before the fallback swaps in.
+ *
+ * Each panel's swatch now runs through `TextureBackground` (the brand
+ * guide's vintage-print/fabric-weave texture treatment, brand/BRAND_REFERENCE.md
+ * §5) instead of a flat color fill, plus a small placeholder `CharacterMark`
+ * per tenet — same eyes+hat silhouette `TomPeek`/`StripeCurtainReveal` use.
  */
 export function BrandCompass() {
   const { prefersReducedMotion } = useMediaPreferences();
@@ -120,15 +126,17 @@ function BrandCompassScrub() {
 
 const CompassPanel = forwardRef<HTMLDivElement, { tenet: Tenet; className?: string }>(
   function CompassPanel({ tenet, className = "" }, ref) {
-    const bgVar = `var(${TOKEN_VAR[tenet.accent]})`;
-    const fgVar = `var(${TOKEN_VAR[TOKEN_CONTRAST[tenet.accent]]})`;
-
     return (
-      <div
+      <TextureBackground
         ref={ref}
-        className={`flex flex-col items-center justify-center gap-fluid-md bg-bg px-fluid-md text-center text-fg ${className}`}
-        style={{ "--bg": bgVar, "--fg": fgVar } as React.CSSProperties}
+        color={tenet.accent}
+        className={`flex flex-col items-center justify-center gap-fluid-md px-fluid-md text-center ${className}`}
       >
+        {/* TODO(brand-assets): placeholder eyes+hat mark, same shape
+         * TomPeek/StripeCurtainReveal use — swap for this tenet's real
+         * character illustration once pulled from the Illustrations asset
+         * folder (brand/BRAND_REFERENCE.md §5, Gap 6). */}
+        <CharacterMark className="h-10 w-auto opacity-70" />
         <Preheader>{tenet.tag}</Preheader>
         <Headline size="lg" className="max-w-3xl">
           {tenet.name}
@@ -136,7 +144,7 @@ const CompassPanel = forwardRef<HTMLDivElement, { tenet: Tenet; className?: stri
         <BodyText size="lg" className="max-w-xl">
           {tenet.body}
         </BodyText>
-      </div>
+      </TextureBackground>
     );
   }
 );

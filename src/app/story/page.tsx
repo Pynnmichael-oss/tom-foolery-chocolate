@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { StoryHero } from "@/components/sections/StoryHero";
+import { StripeCurtainReveal } from "@/components/sections/StripeCurtainReveal";
 import { HeritageBeat } from "@/components/sections/HeritageBeat";
 import { LiveALittleStatement } from "@/components/sections/LiveALittleStatement";
 import { BrandCompass } from "@/components/sections/BrandCompass";
+import { ClosingPhotoGrid } from "@/components/sections/ClosingPhotoGrid";
 import { StoryClosingCta } from "@/components/sections/StoryClosingCta";
 import { POWER_STATEMENTS } from "@/lib/site";
 
@@ -34,20 +36,25 @@ const STORY_HERO_LINES = [
 ];
 
 /**
- * Standalone Story page — Tom's monologue, a grounded heritage beat, the
- * pinned "Live a Little" statement, the brand compass, and a closing CTA.
+ * Standalone Story page — Tom's monologue, a stripe-curtain transition, a
+ * grounded heritage beat, the pinned "Live a Little" statement, the brand
+ * compass, and a photo grid bridging into the closing CTA.
  * `ScrollTrigger.refresh()` on font-load/window-load is already wired up
- * globally by `SmoothScroll` (see that file's own comment) — nothing on
- * this page loads images or other layout-shifting assets that would need
- * an additional refresh beyond that.
+ * globally by `SmoothScroll` (see that file's own comment); every photo
+ * on this page renders inside an explicit-dimension (`ScrapbookPhoto`) or
+ * `fill`-in-`aspect-square` (`ClosingPhotoGrid`) wrapper, so nothing here
+ * shifts layout on load and no additional refresh call is needed beyond
+ * that global one.
  */
 export default function StoryPage() {
   return (
     <main id="main-content">
       <StoryHero preheader="Tom's Take" lines={STORY_HERO_LINES} signOff="—Tom" />
+      <StripeCurtainReveal />
       <HeritageBeat />
       <LiveALittleStatement />
       <BrandCompass />
+      <ClosingPhotoGrid />
       <StoryClosingCta />
     </main>
   );

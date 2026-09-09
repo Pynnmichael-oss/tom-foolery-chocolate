@@ -22,29 +22,35 @@ blocks on the homepage (`src/app/page.tsx`), one per brand section:
 | `philosophy-live-a-little.jpg` | 2033×1146 | p.48, img 40 | Philosophy story (white bg, text-right) | Woman in sunglasses laughing, chocolate bar raised — pure "Live a Little" energy. Wide negative space on the left keeps the crop breathable against white. |
 | `craft-hazelnut-bar-flatlay.jpg` | 1241×2200 | p.11, img 9 | Craft story (turmeric bg, centered) | Overhead flat-lay, broken hazelnut chocolate bar on a turmeric-yellow surface — literal color match to the section background, ties directly to "hand-finished" craft copy. |
 
-## Kept as backups (not currently wired in)
+## Also used on `/story` (`src/app/story/page.tsx`)
 
-Genuinely usable, but there were only three `media` slots on the homepage
-today. Good candidates for a future PDP background, About page, or content
-refresh — pull any of these into a `StorySection`, hero variant, or PDP
-`media` slot the same way as the three above.
+Five more of the backups below got pulled in for the Story page's
+scrapbook photo cluster (`HeritageBeat`) and closing photo grid
+(`ClosingPhotoGrid`) — same files, new placements, no re-processing:
+
+| File | Placement | Notes |
+|---|---|---|
+| `craft-hazelnut-bar-flatlay.jpg` | `HeritageBeat` scrapbook cluster | Reused from the homepage — still just the guide's own product photography, not real heritage/founder photos; see the `TODO(client-assets)` in `HeritageBeat.tsx`. |
+| `heritage-friends-sharing-chocolate.jpg` | `HeritageBeat` scrapbook cluster | Same reuse/caveat as above. |
+| `truffles-turmeric-background.jpg` | `HeritageBeat` scrapbook cluster | Newly wired — previously a backup only. |
+| `raspberry-stacked-bars.jpg` | `ClosingPhotoGrid` | Newly wired. |
+| `kid-chocolate-face-coral.jpg` | `ClosingPhotoGrid` | Newly wired. |
+| `woman-eating-chocolate-pink.jpg` | `ClosingPhotoGrid` | Newly wired. |
+| `citrus-filled-bar-green.jpg` | `ClosingPhotoGrid` | Newly wired. |
+
+## Kept as backups (not currently wired in)
 
 | File | Resolution | PDF origin | Subject | Suggested use |
 |---|---|---|---|---|
-| `raspberry-stacked-bars.jpg` | 2200×1235 | p.5, img 1 | Stacked dark chocolate bars, raspberry filling bleeding down the stack, pink bg | Full-bleed banner or PDP hero background — very wide, plenty of negative space. |
-| `kid-chocolate-face-coral.jpg` | 2200×1240 | p.20, img 12 | Kid grinning with chocolate smeared on face, coral/orange bg | Playful accent block; negative space on the left fits an overlaid quote or power statement. |
-| `woman-eating-chocolate-pink.jpg` | 546×727 | p.51 grid, img 44 | Woman biting into a chocolate square, pink bg, gold jewelry | Smaller crop from the social-grid page — usable at moderate size (card, PDP thumbnail rail), too soft to stretch full-bleed above ~700px wide. |
-| `truffles-turmeric-background.jpg` | 545×727 | p.51 grid, img 46 | Five bonbons arranged vertically on turmeric-orange bg | Same social-grid resolution ceiling as above — good for a smaller Craft-section accent or PDP thumbnail, not a full-bleed hero. |
-| `citrus-filled-bar-green.jpg` | 546×727 | p.51 grid, img 50 | Chocolate bar broken open, citrus-marmalade filling, green bg | Same resolution ceiling — pairs well with the juniper token if a smaller accent is ever needed there. |
-| `girl-sunglasses-chocolate-face.jpg` | 546×727 | p.51 grid, img 51 | Toddler in pink sunglasses, chocolate-smeared face, striped bg | Same resolution ceiling — playful, on-voice, best at card/thumbnail size rather than full-bleed. |
+| `girl-sunglasses-chocolate-face.jpg` | 546×727 | p.51 grid, img 51 | Toddler in pink sunglasses, chocolate-smeared face, striped bg | Playful, on-voice — best at card/thumbnail size rather than full-bleed. Good candidate for a future PDP or content refresh. |
 
-**On resolution**: the six backups above are plenty sharp for anything up
-to roughly card or half-width-column size. Don't stretch the four
-546×727-sourced files (`woman-eating-chocolate-pink`,
-`truffles-turmeric-background`, `citrus-filled-bar-green`,
-`girl-sunglasses-chocolate-face`) across a full-bleed section — they'll
-visibly soften past ~700–800px rendered width. The three wired-in photos
-and `raspberry-stacked-bars` / `kid-chocolate-face-coral` all have headroom
+**On resolution**: don't stretch the 546×727-sourced files
+(`woman-eating-chocolate-pink`, `truffles-turmeric-background`,
+`citrus-filled-bar-green`, `girl-sunglasses-chocolate-face`) across a
+full-bleed section — they'll visibly soften past ~700–800px rendered
+width (both `/story` placements above keep these at grid/thumbnail size,
+within that ceiling). The three original homepage photos and
+`raspberry-stacked-bars` / `kid-chocolate-face-coral` all have headroom
 for full-bleed or large hero use.
 
 ## Discarded (reviewed, not kept)

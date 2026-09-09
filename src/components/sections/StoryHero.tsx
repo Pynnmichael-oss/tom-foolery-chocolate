@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { gsap, useGSAP, breakpoints } from "@/components/motion/gsap";
 import { Preheader } from "@/components/ui/typography";
+import { TextureBackground } from "@/components/ui/TextureBackground";
 
 export interface StoryHeroProps {
   preheader: string;
@@ -76,10 +77,16 @@ export function StoryHero({ preheader, lines, signOff }: StoryHeroProps) {
   return (
     <section
       ref={sectionRef}
-      className="px-fluid-md py-fluid-3xl"
+      className="relative overflow-hidden px-fluid-md py-fluid-3xl"
       aria-label="Tom's Story"
     >
-      <div className="mx-auto flex max-w-4xl flex-col gap-fluid-2xl">
+      {/* Vintage texture-wash backdrop — brand guide Graphic Elements >
+       * Textures (brand/BRAND_REFERENCE.md §5). Decorative fill layer
+       * only (no children) — content below renders in its own stacking
+       * context on top. */}
+      <TextureBackground color="turmeric" className="absolute inset-0" />
+
+      <div className="relative z-10 mx-auto flex max-w-4xl flex-col gap-fluid-2xl">
         <Preheader>{preheader}</Preheader>
 
         <div className="flex flex-col gap-fluid-xl">

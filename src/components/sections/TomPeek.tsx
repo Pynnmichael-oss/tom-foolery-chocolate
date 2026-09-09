@@ -1,9 +1,10 @@
 "use client";
 
-import { forwardRef, useRef } from "react";
-import type { Ref, SVGProps } from "react";
+import { useRef } from "react";
+import type { Ref } from "react";
 import { gsap, useGSAP } from "@/components/motion/gsap";
 import { useMediaPreferences } from "@/lib/hooks/useMediaPreferences";
+import { CharacterMark } from "@/components/ui/CharacterMark";
 
 const STRIPE_COUNT = 5;
 const STRIPE_WIDTH = 16; // px — matches StripeDivider's own default stripeWidth
@@ -24,7 +25,7 @@ const GAP_INDEX = 2; // the middle stripe — the one that shifts to reveal Tom
  * Story-spine background one section up keeps the black/white stripes
  * actually visible.
  *
- * TODO(brand-assets): swap PeekIcon's hand-drawn placeholder eyes+hat for
+ * TODO(brand-assets): swap `CharacterMark`'s hand-drawn placeholder for
  * the real "Tom in stripes" illustration once it's pulled from the brand
  * asset folder (see BRAND_REFERENCE.md Gap 6) — same spot, same size.
  *
@@ -44,8 +45,10 @@ export function TomPeek({ className = "" }: { className?: string }) {
         style={{ width: STRIPE_COUNT * STRIPE_WIDTH, height: STRIPE_HEIGHT }}
       >
         <StripeRow />
-        <PeekIcon
-          className="absolute opacity-100"
+        <CharacterMark
+          width={STRIPE_WIDTH}
+          height={28}
+          className="absolute text-tf-black opacity-100"
           style={{ left: GAP_INDEX * STRIPE_WIDTH, top: -4 }}
         />
       </div>
@@ -90,7 +93,13 @@ function TomPeekAnimated({ className }: { className?: string }) {
       style={{ width: STRIPE_COUNT * STRIPE_WIDTH, height: STRIPE_HEIGHT }}
     >
       <StripeRow shiftRef={stripeRef} />
-      <PeekIcon className="absolute" style={{ left: GAP_INDEX * STRIPE_WIDTH, top: -4 }} ref={peekRef} />
+      <CharacterMark
+        ref={peekRef}
+        width={STRIPE_WIDTH}
+        height={28}
+        className="absolute text-tf-black"
+        style={{ left: GAP_INDEX * STRIPE_WIDTH, top: -4 }}
+      />
     </div>
   );
 }
@@ -115,26 +124,3 @@ function StripeRow({ shiftRef }: { shiftRef?: Ref<HTMLSpanElement> }) {
     </div>
   );
 }
-
-/** Placeholder "OO" eyes + triangular hat — see the TODO above. */
-const PeekIcon = forwardRef<SVGSVGElement, SVGProps<SVGSVGElement> & { className?: string }>(
-  function PeekIcon({ className = "", style, ...rest }, ref) {
-    return (
-      <svg
-        ref={ref}
-        aria-hidden="true"
-        width={STRIPE_WIDTH}
-        height={28}
-        viewBox="0 0 16 28"
-        fill="none"
-        className={`text-tf-black ${className}`}
-        style={style}
-        {...rest}
-      >
-        <path d="M2 12 L8 2 L14 12 Z" fill="currentColor" />
-        <circle cx="5.5" cy="19" r="2.5" fill="currentColor" />
-        <circle cx="10.5" cy="19" r="2.5" fill="currentColor" />
-      </svg>
-    );
-  }
-);
