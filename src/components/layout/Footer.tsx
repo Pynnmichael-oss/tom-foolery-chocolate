@@ -3,7 +3,7 @@ import { StackedSignature } from "@/components/ui/logos";
 
 const FOOTER_LINKS = [
   { href: "/", label: "Home" },
-  { href: "#story", label: "Story" },
+  { href: "/story", label: "Story" },
   { href: "/faq", label: "FAQ" },
   { href: "/wholesale", label: "Wholesale" },
   { href: "/find-us", label: "Where to Find Us" },

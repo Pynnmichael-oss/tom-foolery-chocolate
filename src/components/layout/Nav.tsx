@@ -27,12 +27,12 @@ export function Nav() {
         </Link>
 
         <nav aria-label="Primary" className="hidden items-center gap-fluid-lg sm:flex">
-          <a
-            href="#story"
+          <Link
+            href="/story"
             className="font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-black transition-colors hover:text-tf-cinnamon"
           >
             Story
-          </a>
+          </Link>
           <Link
             href="/shop"
             className="font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-black transition-colors hover:text-tf-cinnamon"
