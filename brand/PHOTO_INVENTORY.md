@@ -24,19 +24,37 @@ blocks on the homepage (`src/app/page.tsx`), one per brand section:
 
 ## Also used on `/story` (`src/app/story/page.tsx`)
 
-Five more of the backups below got pulled in for the Story page's
+Four more of the backups below got pulled in for the Story page's
 scrapbook photo cluster (`HeritageBeat`) and closing photo grid
 (`ClosingPhotoGrid`) — same files, new placements, no re-processing:
 
 | File | Placement | Notes |
 |---|---|---|
-| `craft-hazelnut-bar-flatlay.jpg` | `HeritageBeat` scrapbook cluster | Reused from the homepage — still just the guide's own product photography, not real heritage/founder photos; see the `TODO(client-assets)` in `HeritageBeat.tsx`. |
-| `heritage-friends-sharing-chocolate.jpg` | `HeritageBeat` scrapbook cluster | Same reuse/caveat as above. |
+| `craft-hazelnut-bar-flatlay.jpg` | `HeritageBeat` scrapbook cluster | Reused from the homepage — still just the guide's own product photography, not real heritage/founder photos. |
 | `truffles-turmeric-background.jpg` | `HeritageBeat` scrapbook cluster | Newly wired — previously a backup only. |
 | `raspberry-stacked-bars.jpg` | `ClosingPhotoGrid` | Newly wired. |
 | `kid-chocolate-face-coral.jpg` | `ClosingPhotoGrid` | Newly wired. |
 | `woman-eating-chocolate-pink.jpg` | `ClosingPhotoGrid` | Newly wired. |
 | `citrus-filled-bar-green.jpg` | `ClosingPhotoGrid` | Newly wired. |
+
+`heritage-friends-sharing-chocolate.jpg` (the "two friends laughing"
+photo above) **no longer appears on `/story`** as of 2026-09-10 — it was
+`HeritageBeat`'s scrapbook-cluster placeholder standing in for a real
+heritage/founder photo; see the next section for what replaced it. It's
+still wired into the homepage's `StorySection` (table above) and
+unaffected there — that placement was never a heritage-photo placeholder,
+just this same product/lifestyle photography used for its own sake.
+
+## Live-site-sourced (not from the brand guide PDF)
+
+Two more `/story` images, pulled directly from the live production site
+rather than this document's PDF-extraction pipeline — different
+provenance, so tracked separately from everything above:
+
+| File | Placement | Source | Notes |
+|---|---|---|---|
+| `heritage-founding-family.jpg` | `HeritageBeat`, replacing `heritage-friends-sharing-chocolate.jpg` | `https://tomfoolerychocolate.com/cdn/shop/files/Screenshot_2026-08-02_211853.png?v=1786909732` (live homepage, fetched 2026-09-10) | Real black-and-white photo — five people with a cake inscribed "God Bless You, Bertha, Tommy and Mr. George." Already running under the homepage's "three generations" line, so almost certainly the actual source photo, not placeholder photography. Converted PNG→JPEG (fully opaque alpha). See the `TODO(garrett)` on `HERITAGE_PHOTO` in `HeritageBeat.tsx` — who's pictured/the occasion still needs confirming before it's asserted in copy. |
+| `malort-caramels-product.jpg` | `BrandCompass`'s "A Touch of Rebellion" tenet panel | Live Shopify Storefront API, `Malort Caramels` product `featuredImage` (`https://cdn.shopify.com/s/files/1/0992/9660/8574/files/Untitleddesign_6.png?v=1786911107`, fetched 2026-09-10) | Real live product, genuinely on-brand for that tenet (see the comment in `BrandCompass.tsx`), but the source image itself is a low-res (500×250) quick render, not photographed packaging — cropped tight to the candy here. Worth a real product shot once one exists. |
 
 ## Kept as backups (not currently wired in)
 

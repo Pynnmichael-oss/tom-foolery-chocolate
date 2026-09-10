@@ -14,7 +14,17 @@ interface GridPhoto {
 
 /** Real product/lifestyle photography (brand/PHOTO_INVENTORY.md) — the
  * four backup photos not otherwise wired into the site, per that file's
- * "kept as backups" table. */
+ * "kept as backups" table.
+ *
+ * No captions/flavor names on these: checked the live Shopify catalog
+ * (2026-09-10) and none of its 4 real products — Coffee & Cookies,
+ * Cornflake Crunch, Waffle Cone Crunch, Malort Caramels — is what's
+ * actually pictured here (raspberry filling, citrus-marmalade filling,
+ * etc. don't match any current SKU). This is the brand guide's own
+ * generic lifestyle photography, not shots of real, named products, so a
+ * caption would be a made-up flavor name. Revisit once/if these get
+ * swapped for photos of real current products (see brand/PHOTO_INVENTORY.md's
+ * provenance note) — captions would add real conversion value then. */
 const PHOTOS: GridPhoto[] = [
   {
     src: "/photos/raspberry-stacked-bars.jpg",
