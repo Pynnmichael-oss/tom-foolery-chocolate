@@ -57,29 +57,47 @@ export const TextureBackground = forwardRef<HTMLDivElement, TextureBackgroundPro
     return (
       <div
         ref={ref}
-        className={`relative ${className}`}
+        className={`[contain:layout] ${className}`}
         style={{ backgroundColor: bgVar, color: fgVar, ...style }}
       >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(45deg, var(--tf-black) 0, var(--tf-black) 1px, transparent 1px, transparent 7px)",
-            opacity: 0.06,
-            mixBlendMode: "multiply",
-          }}
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage: NOISE_URL,
-            backgroundSize: "180px 180px",
-            opacity: 0.15,
-            mixBlendMode: "multiply",
-          }}
-        />
+        {/* `[contain:layout]` above makes the root a containing block for
+         * absolutely-positioned descendants (CSS Containment spec) without
+         * touching `position` at all — the root's own `position` stays
+         * fully caller-controlled (a hardcoded `relative` here previously
+         * collided with callers passing `absolute inset-0` for placement:
+         * Tailwind v4 emits `.relative` after `.absolute` in the utilities
+         * layer, so `relative` silently won that fight regardless of class
+         * order).
+         *
+         * The overlay wrapper below anchors to that containing block via
+         * `absolute inset-0`, not `height:100%` — verified empirically
+         * (min-height-only parent: `height:100%` child resolves to 0px,
+         * `position:absolute;inset:0` child fills correctly) because one
+         * caller (`BrandCompass`'s reduced-motion fallback) sizes the root
+         * with only `min-h-[...]`, no explicit `height`, and percentage
+         * heights don't resolve against a min-height-only ancestor. */}
+        <div className="absolute inset-0">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(45deg, var(--tf-black) 0, var(--tf-black) 1px, transparent 1px, transparent 7px)",
+              opacity: 0.06,
+              mixBlendMode: "multiply",
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              backgroundImage: NOISE_URL,
+              backgroundSize: "180px 180px",
+              opacity: 0.15,
+              mixBlendMode: "multiply",
+            }}
+          />
+        </div>
         {children && <div className="relative z-10">{children}</div>}
       </div>
     );
