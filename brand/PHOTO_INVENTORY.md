@@ -47,14 +47,25 @@ just this same product/lifestyle photography used for its own sake.
 
 ## Live-site-sourced (not from the brand guide PDF)
 
-Two more `/story` images, pulled directly from the live production site
-rather than this document's PDF-extraction pipeline — different
-provenance, so tracked separately from everything above:
+One `/story` image, pulled directly from the live production site rather
+than this document's PDF-extraction pipeline — different provenance, so
+tracked separately from everything above:
 
 | File | Placement | Source | Notes |
 |---|---|---|---|
 | `heritage-founding-family.jpg` | `HeritageBeat`, replacing `heritage-friends-sharing-chocolate.jpg` | `https://tomfoolerychocolate.com/cdn/shop/files/Screenshot_2026-08-02_211853.png?v=1786909732` (live homepage, fetched 2026-09-10) | Real black-and-white photo — five people with a cake inscribed "God Bless You, Bertha, Tommy and Mr. George." Already running under the homepage's "three generations" line, so almost certainly the actual source photo, not placeholder photography. Converted PNG→JPEG (fully opaque alpha). See the `TODO(garrett)` on `HERITAGE_PHOTO` in `HeritageBeat.tsx` — who's pictured/the occasion still needs confirming before it's asserted in copy. |
-| `malort-caramels-product.jpg` | `BrandCompass`'s "A Touch of Rebellion" tenet panel | Live Shopify Storefront API, `Malort Caramels` product `featuredImage` (`https://cdn.shopify.com/s/files/1/0992/9660/8574/files/Untitleddesign_6.png?v=1786911107`, fetched 2026-09-10) | Real live product, genuinely on-brand for that tenet (see the comment in `BrandCompass.tsx`), but the source image itself is a low-res (500×250) quick render, not photographed packaging — cropped tight to the candy here. Worth a real product shot once one exists. |
+
+`malort-caramels-product.jpg` (Live Shopify Storefront API, `Malort
+Caramels` product `featuredImage`,
+`https://cdn.shopify.com/s/files/1/0992/9660/8574/files/Untitleddesign_6.png?v=1786911107`,
+fetched 2026-09-10) briefly ran on `BrandCompass`'s "A Touch of Rebellion"
+tenet panel as of 2026-09-10, but got pulled again the next day — at
+that panel's small display size, the low-res (500×250, a quick render
+rather than photographed packaging) candy shape read as an unclear blue
+blob rather than an intentional mark, so `CompassPanel` went type-only
+site-wide instead (see the `TODO(brand-assets)` in `BrandCompass.tsx`).
+File's still in `public/photos/` in case a clearer treatment or a real
+product shot make it worth another try.
 
 ## Kept as backups (not currently wired in)
 
