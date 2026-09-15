@@ -6,6 +6,7 @@ import { PrimaryLogo } from "@/components/ui/logos";
 import { gsap, useGSAP } from "@/components/motion/gsap";
 import { useMediaPreferences } from "@/lib/hooks/useMediaPreferences";
 import { subscribeCustomerAction } from "@/lib/shopify/actions";
+import { useCart } from "./CartProvider";
 
 const DISMISS_KEY = "tf_signup_dismissed";
 const DISMISS_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -50,7 +51,8 @@ function markDismissed() {
  * scale and animates opacity only.
  */
 export function EmailSignupPopup() {
-  const [open, setOpen] = useState(false);
+  const [delayElapsed, setDelayElapsed] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "success">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -59,22 +61,34 @@ export function EmailSignupPopup() {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const { prefersReducedMotion } = useMediaPreferences();
+  const { isDrawerOpen } = useCart();
+
+  // Derived, not its own state: don't pop this up on top of an
+  // already-open cart drawer (both are fixed, full-viewport, focus-trapped
+  // dialogs — stacking them is genuinely broken, not just visually noisy,
+  // since their ESC handlers and Tab traps would fight each other). Once
+  // the delay's elapsed, this waits for the drawer to close before
+  // actually showing, rather than skipping the popup for the session.
+  const open = delayElapsed && !isDrawerOpen && !dismissed;
 
   // Schedule the one-time appearance.
   useEffect(() => {
     if (isSuppressed()) return;
-
-    const timer = setTimeout(() => {
-      try {
-        sessionStorage.setItem(SESSION_KEY, "1");
-      } catch {
-        // Ignore — worst case it can reopen later this session.
-      }
-      setOpen(true);
-    }, OPEN_DELAY_MS);
-
+    const timer = setTimeout(() => setDelayElapsed(true), OPEN_DELAY_MS);
     return () => clearTimeout(timer);
   }, []);
+
+  // Side effect only (recording "shown" for the 7-day suppression window)
+  // the first time this actually becomes visible — `open` above already
+  // derives the visibility itself, nothing to set here.
+  useEffect(() => {
+    if (!open) return;
+    try {
+      sessionStorage.setItem(SESSION_KEY, "1");
+    } catch {
+      // Ignore — worst case it can reopen later this session.
+    }
+  }, [open]);
 
   // Move focus into the modal on open, restore it on close.
   useEffect(() => {
@@ -142,7 +156,7 @@ export function EmailSignupPopup() {
 
   function dismiss() {
     markDismissed();
-    setOpen(false);
+    setDismissed(true);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

@@ -57,7 +57,17 @@ export function AddToCartButton({
       : "Add to Cart";
 
   return (
-    <div className={`flex flex-col gap-fluid-xs ${className}`}>
+    // `inline-flex`, not `flex`: this wrapper replaces what used to be the
+    // `<button>` itself as call sites' sizing target (ProductDetail passes
+    // `w-full sm:w-auto`, expecting shrink-to-fit at `sm:` and up). A
+    // `<button>` is inline-level by default, so that worked before this
+    // wrapper existed; a block-level `flex` container fills its parent's
+    // width even with `width:auto` (block boxes don't shrink-to-fit) —
+    // confirmed by measurement, this silently stretched the PDP's desktop
+    // Add to Cart button to the full details-column width. `inline-flex`
+    // restores the original shrink-to-fit behavior while keeping the
+    // internal button+error column layout unchanged.
+    <div className={`inline-flex flex-col gap-fluid-xs ${className}`}>
       <Button
         type="button"
         variant="primary"

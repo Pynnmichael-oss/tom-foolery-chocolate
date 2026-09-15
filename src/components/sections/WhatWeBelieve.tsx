@@ -114,7 +114,21 @@ export function WhatWeBelieve() {
               className="flex flex-col gap-fluid-sm rounded-2xl p-fluid-lg"
             >
               {card.subhead && <Preheader size="sm">{card.subhead}</Preheader>}
-              <Headline as="h3" size="sm">
+              {/* `size="sm"`'s clamp is viewport-width-driven, but this
+               * heading's available width is column-width-driven — at the
+               * `md:grid-cols-3` breakpoint the column is much narrower
+               * relative to the viewport than at any other breakpoint (the
+               * 3-up grid first appears at the same width a 1-up mobile
+               * layout was just using the full viewport for), so the
+               * clamp's naturally-larger mid-viewport size overflowed the
+               * card by as much as 57px (measured at 768px). Forced down
+               * with an `!important` arbitrary-value override (font-size
+               * only — no bundled line-height, unlike a named `text-2xl`
+               * scale utility, so the brand's Header line-height rule
+               * above stays intact) for the entire range this can't
+               * safely track via vw alone; verified overflow-free from
+               * 768px through 1920px. */}
+              <Headline as="h3" size="sm" className="md:text-[1.5rem]!">
                 {card.header}
               </Headline>
               <BodyText>{card.body}</BodyText>

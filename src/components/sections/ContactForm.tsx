@@ -136,7 +136,17 @@ export function ContactForm() {
         </p>
       ) : null}
 
-      <Button type="submit" variant="primary" disabled={status === "submitting"} className="w-full sm:w-auto">
+      {/* `sm:w-auto` alone doesn't stop this from stretching — the form is
+       * a flex column, and `align-items: stretch` (its default) stretches
+       * any child whose cross-axis size computes to `auto`, which
+       * `width: auto` *is* whether set explicitly or left unset. `self-start`
+       * opts this one item out of stretch so `w-auto` actually takes over. */}
+      <Button
+        type="submit"
+        variant="primary"
+        disabled={status === "submitting"}
+        className="w-full sm:w-auto sm:self-start"
+      >
         {status === "submitting" ? "Sending…" : "Send Message"}
       </Button>
     </form>

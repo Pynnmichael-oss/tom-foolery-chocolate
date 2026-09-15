@@ -50,9 +50,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Nav />
             {children}
             <CartDrawer />
+            {/* Inside CartProvider (not a sibling of it) so it can check
+             * isDrawerOpen and avoid popping up on top of an already-open
+             * cart drawer — see EmailSignupPopup's own comment. Safe to
+             * nest here: SmoothScroll renders a bare fragment (native-mode
+             * Lenis, no scroll-container wrapper div), so this doesn't
+             * change how its fixed-position overlay behaves. */}
+            <EmailSignupPopup />
           </CartProvider>
         </SmoothScroll>
-        <EmailSignupPopup />
       </body>
     </html>
   );
