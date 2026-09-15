@@ -90,3 +90,12 @@ export interface SubscribeResult {
   /** User-facing message — set only when `success` is false. */
   error?: string;
 }
+
+/**
+ * Result of a cart mutation Server Action (add/update/remove line). Every
+ * action in `shopify/actions.ts` catches its own failures and returns this
+ * instead of throwing — a thrown Server Action error reaches the client as
+ * an opaque, digest-only "Minified React error #441" and blanks the whole
+ * page, so callers (CartProvider) always get a value to branch on instead.
+ */
+export type CartResult = { success: true; cart: Cart } | { success: false; error: string };

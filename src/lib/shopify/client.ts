@@ -28,7 +28,14 @@ export function isShopifyConfigured(): boolean {
 export class ShopifyApiError extends Error {
   constructor(
     message: string,
-    public readonly cause?: unknown
+    public readonly cause?: unknown,
+    /** Safe to show a customer verbatim — set only when `message` already
+     * is customer-facing copy (Shopify's own `userErrors[].message`, e.g.
+     * "Variant can only be purchased with a selling plan."). Left unset
+     * for anything else (bad token, network failure, malformed response),
+     * so callers can fall back to a generic message instead of leaking
+     * internals. */
+    public readonly userMessage?: string
   ) {
     super(message);
     this.name = "ShopifyApiError";

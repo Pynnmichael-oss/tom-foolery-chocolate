@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { buttonClasses } from "@/components/ui/buttonClasses";
@@ -20,6 +20,23 @@ export function CartDrawer() {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  // Line-level mutations (quantity +/-, remove) never throw — see
+  // shopify/actions.ts — but can still fail (e.g. Shopify reports a line
+  // as out of stock mid-session); surfaced here as a small banner rather
+  // than silently leaving the drawer showing stale-looking quantities.
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleUpdate(lineId: string, quantity: number) {
+    setError(null);
+    const result = await updateItem(lineId, quantity);
+    if (!result.success) setError(result.error);
+  }
+
+  async function handleRemove(lineId: string) {
+    setError(null);
+    const result = await removeItem(lineId);
+    if (!result.success) setError(result.error);
+  }
 
   // Move focus into the drawer on open, restore it on close.
   useEffect(() => {
@@ -105,6 +122,11 @@ export function CartDrawer() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-fluid-md py-fluid-md">
+          {error ? (
+            <p role="alert" className="mb-fluid-sm font-sans text-sm text-tf-cinnamon">
+              {error}
+            </p>
+          ) : null}
           {lines.length === 0 ? (
             <p className="font-sans text-tf-white/60">Your cart is empty.</p>
           ) : (
@@ -134,7 +156,7 @@ export function CartDrawer() {
                           type="button"
                           disabled={isPending}
                           aria-label={`Decrease quantity of ${line.product.title}`}
-                          onClick={() => updateItem(line.id, line.quantity - 1)}
+                          onClick={() => handleUpdate(line.id, line.quantity - 1)}
                           className="px-2 py-1 font-sans disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-turmeric"
                         >
                           −
@@ -146,7 +168,7 @@ export function CartDrawer() {
                           type="button"
                           disabled={isPending}
                           aria-label={`Increase quantity of ${line.product.title}`}
-                          onClick={() => updateItem(line.id, line.quantity + 1)}
+                          onClick={() => handleUpdate(line.id, line.quantity + 1)}
                           className="px-2 py-1 font-sans disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-turmeric"
                         >
                           +
@@ -156,7 +178,7 @@ export function CartDrawer() {
                       <button
                         type="button"
                         disabled={isPending}
-                        onClick={() => removeItem(line.id)}
+                        onClick={() => handleRemove(line.id)}
                         className="font-sans text-sm text-tf-white/60 underline-offset-2 hover:text-tf-cinnamon hover:underline disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-turmeric"
                       >
                         Remove

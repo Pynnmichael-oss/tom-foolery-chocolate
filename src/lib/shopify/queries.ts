@@ -319,8 +319,15 @@ function normalizeCart(cart: RawCart): Cart {
 
 function assertNoUserErrors(errors: UserError[] | undefined, operation: string): void {
   if (errors && errors.length > 0) {
+    // Shopify's own userErrors copy (e.g. "Variant can only be purchased
+    // with a selling plan.") is written to be shown to a customer as-is —
+    // passed through as `userMessage` so the Server Action layer
+    // (shopify/actions.ts) can surface it directly instead of genericizing it.
+    const messages = errors.map((e) => e.message).join(" ");
     throw new ShopifyApiError(
-      `Shopify ${operation} returned user errors: ${errors.map((e) => e.message).join("; ")}`
+      `Shopify ${operation} returned user errors: ${messages}`,
+      undefined,
+      messages
     );
   }
 }

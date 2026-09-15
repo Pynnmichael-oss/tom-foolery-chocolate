@@ -15,7 +15,7 @@ import {
   removeCartLineAction,
   updateCartLineAction,
 } from "@/lib/shopify/actions";
-import type { Cart, CartLine, Product, ProductVariant } from "@/lib/shopify/types";
+import type { Cart, CartLine, CartResult, Product, ProductVariant } from "@/lib/shopify/types";
 
 const CART_COOKIE = "tf_cart_id";
 const CART_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
@@ -146,10 +146,19 @@ interface CartContextValue {
     variant: ProductVariant,
     product: Pick<Product, "title" | "handle" | "images">,
     quantity?: number
-  ) => void;
-  updateItem: (lineId: string, quantity: number) => void;
-  removeItem: (lineId: string) => void;
+  ) => Promise<CartResult>;
+  updateItem: (lineId: string, quantity: number) => Promise<CartResult>;
+  removeItem: (lineId: string) => Promise<CartResult>;
 }
+
+/** Guard-clause fallback for `updateItem`/`removeItem` called with no cart
+ * loaded yet — practically unreachable through the UI (those controls only
+ * render for an existing line), kept just so the return type stays a real
+ * `CartResult` everywhere rather than `void`/`undefined` in an edge case. */
+const CART_OUT_OF_SYNC: CartResult = {
+  success: false,
+  error: "Your cart is out of sync — refresh and try again.",
+};
 
 const CartContext = createContext<CartContextValue | null>(null);
 
@@ -176,38 +185,67 @@ export function CartProvider({ children }: { children: ReactNode }) {
     variant: ProductVariant,
     product: Pick<Product, "title" | "handle" | "images">,
     quantity = 1
-  ) {
+  ): Promise<CartResult> {
+    let settle!: (result: CartResult) => void;
+    const promise = new Promise<CartResult>((resolve) => {
+      settle = resolve;
+    });
+
     startTransition(async () => {
       applyOptimistic({ type: "add", variant, product, quantity });
-      const updated = await addToCartAction(cart?.id || readCartIdCookie(), variant.id, quantity);
-      writeCartIdCookie(updated.id);
-      setCart(updated);
-      setDrawerOpen(true);
+      const result = await addToCartAction(cart?.id || readCartIdCookie(), variant.id, quantity);
+      if (result.success) {
+        writeCartIdCookie(result.cart.id);
+        setCart(result.cart);
+        setDrawerOpen(true);
+      }
+      // On failure, deliberately not calling setCart: the optimistic line
+      // added above reverts on its own once this transition settles,
+      // since useOptimistic always falls back to the last real `cart`
+      // state — no separate rollback action needed.
+      settle(result);
     });
+
+    return promise;
   }
 
-  function updateItem(lineId: string, quantity: number) {
-    if (quantity <= 0) {
-      removeItem(lineId);
-      return;
-    }
-    if (!cart) return;
+  function updateItem(lineId: string, quantity: number): Promise<CartResult> {
+    if (quantity <= 0) return removeItem(lineId);
+    if (!cart) return Promise.resolve(CART_OUT_OF_SYNC);
+
     const cartId = cart.id;
+    let settle!: (result: CartResult) => void;
+    const promise = new Promise<CartResult>((resolve) => {
+      settle = resolve;
+    });
+
     startTransition(async () => {
       applyOptimistic({ type: "update", lineId, quantity });
-      const updated = await updateCartLineAction(cartId, lineId, quantity);
-      setCart(updated);
+      const result = await updateCartLineAction(cartId, lineId, quantity);
+      if (result.success) setCart(result.cart);
+      settle(result);
     });
+
+    return promise;
   }
 
-  function removeItem(lineId: string) {
-    if (!cart) return;
+  function removeItem(lineId: string): Promise<CartResult> {
+    if (!cart) return Promise.resolve(CART_OUT_OF_SYNC);
+
     const cartId = cart.id;
+    let settle!: (result: CartResult) => void;
+    const promise = new Promise<CartResult>((resolve) => {
+      settle = resolve;
+    });
+
     startTransition(async () => {
       applyOptimistic({ type: "remove", lineId });
-      const updated = await removeCartLineAction(cartId, lineId);
-      setCart(updated);
+      const result = await removeCartLineAction(cartId, lineId);
+      if (result.success) setCart(result.cart);
+      settle(result);
     });
+
+    return promise;
   }
 
   const value: CartContextValue = {
