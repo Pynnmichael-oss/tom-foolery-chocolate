@@ -8,6 +8,7 @@ const FOOTER_LINKS = [
   { href: "/wholesale", label: "Wholesale" },
   { href: "/find-us", label: "Where to Find Us" },
   { href: "/gifting", label: "Corporate Gifting" },
+  { href: "/contact", label: "Contact" },
 ];
 
 const SOCIALS = [
