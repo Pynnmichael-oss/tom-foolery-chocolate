@@ -13,14 +13,19 @@ than the site needs once `next/image` generates its responsive `srcset`.
 
 ## Wired into the site
 
-These three are placed in the `media` slot of the three `StorySection`
-blocks on the homepage (`src/app/page.tsx`), one per brand section:
+Homepage `StorySection`/section placements (`src/app/page.tsx`):
 
 | File | Resolution | PDF origin | Placement | Notes |
 |---|---|---|---|---|
-| `heritage-friends-sharing-chocolate.jpg` | 1956×2200 | p.7, img 2 | Heritage story (juniper bg, text-left) | Two friends, eyes closed, laughing over a bite of chocolate — genuine candid warmth, reads as "started between friends." |
-| `philosophy-live-a-little.jpg` | 2033×1146 | p.48, img 40 | Philosophy story (white bg, text-right) | Woman in sunglasses laughing, chocolate bar raised — pure "Live a Little" energy. Wide negative space on the left keeps the crop breathable against white. |
-| `craft-hazelnut-bar-flatlay.jpg` | 1241×2200 | p.11, img 9 | Craft story (turmeric bg, centered) | Overhead flat-lay, broken hazelnut chocolate bar on a turmeric-yellow surface — literal color match to the section background, ties directly to "hand-finished" craft copy. |
+| `heritage-founding-family.jpg` | 847×703 | live site, not PDF | Heritage story (juniper bg, text-left) | Swapped in 2026-09-15 for `heritage-friends-sharing-chocolate.jpg` below — same real black-and-white photo as `/story`'s `HeritageBeat`; see its own table entry lower down for provenance. Wrapper uses `aspect-[847/703]` (the photo's native ratio) instead of the old slot's 4:5, so nothing crops. |
+| `philosophy-live-a-little.jpg` | 2033×1146 | p.48, img 40 | No longer wired (was the Philosophy `StorySection`, merged into `WhatWeBelieve` 2026-09-14) | Woman in sunglasses laughing, chocolate bar raised — pure "Live a Little" energy. Kept as a backup, not currently placed anywhere. |
+| `craft-hazelnut-bar-flatlay.jpg` | 1241×2200 | p.11, img 9 | `/story`'s `HeritageBeat` scrapbook cluster only now (was also the homepage Craft `StorySection`, merged into `WhatWeBelieve` 2026-09-14) | Overhead flat-lay, broken hazelnut chocolate bar on a turmeric-yellow surface. |
+
+`heritage-friends-sharing-chocolate.jpg` (1956×2200, p.7 img 2 — two friends,
+eyes closed, laughing over a bite of chocolate) **no longer appears anywhere
+on the site** as of 2026-09-15, replaced in its one remaining placement
+(homepage Heritage) by `heritage-founding-family.jpg` above. Kept as a
+backup.
 
 ## Also used on `/story` (`src/app/story/page.tsx`)
 
@@ -38,12 +43,12 @@ scrapbook photo cluster (`HeritageBeat`) and closing photo grid
 | `citrus-filled-bar-green.jpg` | `ClosingPhotoGrid` | Newly wired. |
 
 `heritage-friends-sharing-chocolate.jpg` (the "two friends laughing"
-photo above) **no longer appears on `/story`** as of 2026-09-10 — it was
-`HeritageBeat`'s scrapbook-cluster placeholder standing in for a real
-heritage/founder photo; see the next section for what replaced it. It's
-still wired into the homepage's `StorySection` (table above) and
-unaffected there — that placement was never a heritage-photo placeholder,
-just this same product/lifestyle photography used for its own sake.
+photo) **no longer appears anywhere on the site** as of 2026-09-15 — it
+was `HeritageBeat`'s scrapbook-cluster placeholder standing in for a real
+heritage/founder photo (replaced 2026-09-10, see the next section), and
+its one remaining placement, the homepage Heritage `StorySection`, was
+itself swapped to the same real photo on 2026-09-15 (see "Wired into the
+site" above).
 
 ## Live-site-sourced (not from the brand guide PDF)
 
@@ -53,7 +58,7 @@ tracked separately from everything above:
 
 | File | Placement | Source | Notes |
 |---|---|---|---|
-| `heritage-founding-family.jpg` | `HeritageBeat`, replacing `heritage-friends-sharing-chocolate.jpg` | `https://tomfoolerychocolate.com/cdn/shop/files/Screenshot_2026-08-02_211853.png?v=1786909732` (live homepage, fetched 2026-09-10) | Real black-and-white photo — five people with a cake inscribed "God Bless You, Bertha, Tommy and Mr. George." Already running under the homepage's "three generations" line, so almost certainly the actual source photo, not placeholder photography. Converted PNG→JPEG (fully opaque alpha). See the `TODO(garrett)` on `HERITAGE_PHOTO` in `HeritageBeat.tsx` — who's pictured/the occasion still needs confirming before it's asserted in copy. |
+| `heritage-founding-family.jpg` | `HeritageBeat` on `/story`, and (as of 2026-09-15) the homepage Heritage `StorySection` | `https://tomfoolerychocolate.com/cdn/shop/files/Screenshot_2026-08-02_211853.png?v=1786909732` (live homepage, fetched 2026-09-10) | Real black-and-white photo — five people with a cake inscribed "God Bless You, Bertha, Tommy and Mr. George." Already ran under the live production homepage's "three generations" line, so almost certainly the actual source photo, not placeholder photography — now also backing this codebase's own "3 Generations of Chocolate Legacy" homepage copy. Converted PNG→JPEG (fully opaque alpha). See the `TODO(garrett)` on `HERITAGE_PHOTO` in `HeritageBeat.tsx` — who's pictured/the occasion still needs confirming before it's asserted in copy. |
 
 `malort-caramels-product.jpg` (Live Shopify Storefront API, `Malort
 Caramels` product `featuredImage`,

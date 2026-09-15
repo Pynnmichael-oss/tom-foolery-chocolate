@@ -41,12 +41,24 @@ export default function Home() {
           body="Before there was Tom Foolery, there was Tom Meldrum, my grandfather and the proprietor of the Sugar Bowl in Massillon, Ohio. Over 60 years later we are still crafting chocolate by hand, using only real chocolate and the best ingredients for an experience guaranteed to bring a smile to your face. So grab a bar or a bon bon, take a bite, and live a little."
           layout="text-left"
           media={
-            <div className="aspect-[4/5] overflow-hidden rounded-2xl">
+            // Same real black-and-white heritage photo as `/story`'s
+            // `HeritageBeat` (`heritage-founding-family.jpg`) — it already
+            // ran under this exact "three generations" claim on the live
+            // production homepage (see that component's own provenance
+            // comment), so it belongs here more than the generic stock
+            // "friends laughing" placeholder it replaces. Wrapper matches
+            // this section's existing aspect-ratio/overflow-hidden/
+            // rounded-2xl convention (same as every other StorySection
+            // media slot); the ratio is set to the photo's own native
+            // 847:703 rather than the previous 4:5 so nothing crops —
+            // forcing a portrait crop here would risk cutting people out
+            // of a real historical photo.
+            <div className="aspect-[847/703] overflow-hidden rounded-2xl">
               <Image
-                src="/photos/heritage-friends-sharing-chocolate.jpg"
-                alt="Two friends laughing together over a piece of chocolate"
-                width={1956}
-                height={2200}
+                src="/photos/heritage-founding-family.jpg"
+                alt="Black-and-white photo of five people holding a cake decorated with a floral wreath and the handwritten message “God Bless You, Bertha, Tommy and Mr. George,” in front of a football-themed mural"
+                width={847}
+                height={703}
                 sizes={STORY_IMAGE_SIZES}
                 className="h-full w-full object-cover"
               />
