@@ -36,22 +36,29 @@ const STORY_HERO_LINES = [
 ];
 
 /**
- * Standalone Story page — Tom's monologue, a stripe-curtain transition, a
- * grounded heritage beat, the pinned "Live a Little" statement, the brand
- * compass, and a photo grid bridging into the closing CTA.
+ * Standalone Story page — Tom's monologue, a grounded heritage beat, a
+ * stripe-curtain transition, the pinned "Live a Little" statement, the
+ * brand compass, and a photo grid bridging into the closing CTA.
  * `ScrollTrigger.refresh()` on font-load/window-load is already wired up
  * globally by `SmoothScroll` (see that file's own comment); every photo
  * on this page renders inside an explicit-dimension (`ScrapbookPhoto`) or
  * `fill`-in-`aspect-square` (`ClosingPhotoGrid`) wrapper, so nothing here
  * shifts layout on load and no additional refresh call is needed beyond
  * that global one.
+ *
+ * `HeritageBeat` moved directly after `StoryHero` (2026-09-15, was after
+ * `StripeCurtainReveal`) so the real heritage photo lands sooner in the
+ * scroll — skipping the curtain's own +=80% pinned scroll distance before
+ * it. `StripeCurtainReveal`'s doc comment still describes its original
+ * "seam between StoryHero and HeritageBeat" placement; it now transitions
+ * into `LiveALittleStatement` instead, same mechanics.
  */
 export default function StoryPage() {
   return (
     <main id="main-content">
       <StoryHero preheader="Tom's Take" lines={STORY_HERO_LINES} signOff="—Tom" />
-      <StripeCurtainReveal />
       <HeritageBeat />
+      <StripeCurtainReveal />
       <LiveALittleStatement />
       <BrandCompass />
       <ClosingPhotoGrid />

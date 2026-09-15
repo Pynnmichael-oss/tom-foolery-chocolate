@@ -8,12 +8,15 @@ const STRIPE_WIDTH = 28; // px
 
 /**
  * Stripe-pattern curtain that wipes open on scroll to reveal a Tom
- * character mark peeking through, at the seam between `StoryHero` and
- * `HeritageBeat` — the brand guide's "Character in Stripes" motif
- * (brand/BRAND_REFERENCE.md §5) turned into a scroll transition instead
- * of a static graphic. Strictly black-and-white stripes, per the guide's
- * own rule ("stripes must only ever be black and white — never...any
- * brand accent color").
+ * character mark peeking through — the brand guide's "Character in
+ * Stripes" motif (brand/BRAND_REFERENCE.md §5) turned into a scroll
+ * transition instead of a static graphic. Strictly black-and-white
+ * stripes, per the guide's own rule ("stripes must only ever be black
+ * and white — never...any brand accent color"). Sits between
+ * `HeritageBeat` and `LiveALittleStatement` on `/story` as of 2026-09-15
+ * (moved from between `StoryHero` and `HeritageBeat` so the heritage
+ * photo lands higher in the scroll — see `story/page.tsx`'s own
+ * comment) — a generic transition device, not tied to either neighbor.
  *
  * The mark itself needs no separate reveal animation: it sits centered
  * *behind* the two stripe halves (lower in DOM/paint order, no z-index
