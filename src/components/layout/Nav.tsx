@@ -39,6 +39,12 @@ export function Nav() {
           >
             Shop
           </Link>
+          <Link
+            href="/contact"
+            className="font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-black transition-colors hover:text-tf-cinnamon"
+          >
+            Contact
+          </Link>
         </nav>
 
         <Button
