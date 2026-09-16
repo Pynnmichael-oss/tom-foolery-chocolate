@@ -37,7 +37,8 @@ const TORN_EDGE_CLIP_PATH = tornEdgeClipPath();
  * brand/PHOTO_INVENTORY.md) presented as a tilted, torn-edge print:
  * slight rotation, a soft drop shadow, and a jagged top/bottom edge via
  * `clip-path` (procedural zigzag polygon — no image mask asset needed).
- * Used in `HeritageBeat`'s photo cluster.
+ * Used in `ProductPhotoAccent`'s photo cluster (moved there from
+ * `HeritageBeat` 2026-09-16).
  *
  * TODO(client-assets): these are the brand guide's own extracted product
  * photography (brand/PHOTO_INVENTORY.md), not real heritage/founder/

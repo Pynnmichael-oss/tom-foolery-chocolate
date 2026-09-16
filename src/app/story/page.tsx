@@ -5,6 +5,7 @@ import { HeritageBeat } from "@/components/sections/HeritageBeat";
 import { LiveALittleStatement } from "@/components/sections/LiveALittleStatement";
 import { BrandCompass } from "@/components/sections/BrandCompass";
 import { ClosingPhotoGrid } from "@/components/sections/ClosingPhotoGrid";
+import { ProductPhotoAccent } from "@/components/sections/ProductPhotoAccent";
 import { StoryClosingCta } from "@/components/sections/StoryClosingCta";
 import { POWER_STATEMENTS } from "@/lib/site";
 
@@ -52,6 +53,12 @@ const STORY_HERO_LINES = [
  * it. `StripeCurtainReveal`'s doc comment still describes its original
  * "seam between StoryHero and HeritageBeat" placement; it now transitions
  * into `LiveALittleStatement` instead, same mechanics.
+ *
+ * `ProductPhotoAccent` (2026-09-16) is the torn-edge product-photo duo
+ * that used to live inside `HeritageBeat`, between the family photo and
+ * the "three generations" tagline — moved here, right before
+ * `StoryClosingCta`'s shop CTA, since real bar/bonbon shots fit that
+ * context better than mid-heritage-story.
  */
 export default function StoryPage() {
   return (
@@ -62,6 +69,7 @@ export default function StoryPage() {
       <LiveALittleStatement />
       <BrandCompass />
       <ClosingPhotoGrid />
+      <ProductPhotoAccent />
       <StoryClosingCta />
     </main>
   );

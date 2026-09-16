@@ -4,29 +4,6 @@ import { useRef } from "react";
 import Image from "next/image";
 import { gsap, useGSAP, breakpoints } from "@/components/motion/gsap";
 import { Preheader, BodyText } from "@/components/ui/typography";
-import { ScrapbookPhoto } from "@/components/ui/ScrapbookPhoto";
-
-/** Real product photography (brand/PHOTO_INVENTORY.md) — decorative
- * texture accents flanking the real heritage photo below, not standing in
- * for anything. Down from three to two now that the middle slot (formerly
- * a placeholder "friends laughing" shot standing in for heritage/founder
- * photography) is the real thing — see `HERITAGE_PHOTO`. */
-const SCRAPBOOK_PHOTOS = [
-  {
-    src: "/photos/craft-hazelnut-bar-flatlay.jpg",
-    alt: "Overhead view of a hazelnut chocolate bar broken into pieces",
-    width: 1241,
-    height: 2200,
-    rotation: -3,
-  },
-  {
-    src: "/photos/truffles-turmeric-background.jpg",
-    alt: "Five bonbons arranged vertically on a turmeric-orange background",
-    width: 545,
-    height: 727,
-    rotation: -2.5,
-  },
-] as const;
 
 /**
  * Real heritage photo — pulled from the live production homepage
@@ -97,16 +74,17 @@ export function HeritageBeat() {
     <section ref={sectionRef} className="bg-tf-black/5 px-fluid-md py-fluid-3xl text-center">
       <div className="mx-auto flex max-w-3xl flex-col items-center gap-fluid-2xl">
         {/* The real heritage photo — see `HERITAGE_PHOTO` above for
-         * provenance. Deliberately the opposite of `ScrapbookPhoto`'s
-         * treatment: no tilt, no torn edge, a plain white mat and a soft
-         * shadow instead of the cluster's deeper one below — this is the
-         * one photo on the page that should read as a kept, genuine print
-         * rather than playful cutout. Sized larger than the product-shot
-         * duo underneath it, too, so it reads as the section's anchor,
-         * not a third scrapbook item. Bumped from `max-w-sm` (2026-09-15,
-         * alongside moving this section earlier in the page) to make it
-         * read as more of a lead visual now that it's the first thing
-         * after `StoryHero`, not just a quiet mid-page beat. */}
+         * provenance. Deliberately plain: no tilt, no torn edge, a plain
+         * white mat and a soft shadow — this is the one photo on the page
+         * that should read as a kept, genuine print rather than a playful
+         * cutout. Bumped from `max-w-sm` (2026-09-15, alongside moving
+         * this section earlier in the page) to make it read as more of a
+         * lead visual now that it's the first thing after `StoryHero`,
+         * not just a quiet mid-page beat. The torn-edge product-photo duo
+         * that used to sit here (between this photo and the tagline
+         * below) moved to `ProductPhotoAccent`, near `StoryClosingCta`'s
+         * shop CTA (2026-09-16) — real bar/bonbon shots made more sense
+         * there than as an aside mid-heritage-story. */}
         <div className="mx-auto w-full max-w-xl bg-tf-white p-4 shadow-[0_10px_24px_-10px_rgba(37,56,42,0.35)]">
           <Image
             src={HERITAGE_PHOTO.src}
@@ -116,30 +94,6 @@ export function HeritageBeat() {
             sizes="(min-width: 640px) 576px, 85vw"
             className="h-auto w-full"
           />
-        </div>
-
-        {/*
-         * TODO(client-assets): these two are the brand guide's own
-         * extracted product photography (brand/PHOTO_INVENTORY.md) — real
-         * bar/bonbon shots, kept here purely as decorative texture
-         * flanking the heritage photo above, not standing in for anything
-         * that needs real client photography. `ScrapbookPhoto` doesn't
-         * need to change, just the src/alt/dimensions in
-         * `SCRAPBOOK_PHOTOS` above.
-         */}
-        <div className="grid w-full max-w-xs grid-cols-2 gap-fluid-lg sm:max-w-sm">
-          {SCRAPBOOK_PHOTOS.map((photo) => (
-            <ScrapbookPhoto
-              key={photo.src}
-              src={photo.src}
-              alt={photo.alt}
-              width={photo.width}
-              height={photo.height}
-              rotation={photo.rotation}
-              sizes="(min-width: 640px) 180px, 40vw"
-              className="mx-auto w-full max-w-[180px]"
-            />
-          ))}
         </div>
 
         <div className="flex flex-col items-center gap-fluid-sm">
