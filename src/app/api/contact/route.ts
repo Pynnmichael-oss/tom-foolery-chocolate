@@ -16,7 +16,13 @@ const MAX_MESSAGE_LENGTH = 5000;
 // .env.example) — swap CONTACT_FROM_EMAIL once tomfoolerychocolate.com
 // (or a subdomain) is verified in Resend so it can actually reach Garrett.
 const DEFAULT_FROM = "Tom Foolery Website <onboarding@resend.dev>";
-const DEFAULT_TO = "garrett@tomfoolerychocolate.com";
+// TODO(garrett): this is TEMPORARY — pointed at Michael's inbox for testing
+// while onboarding@resend.dev (no verified domain yet) can only deliver to
+// the Resend account's own verified email, not garrett@tomfoolerychocolate.com.
+// Switch this back to "garrett@tomfoolerychocolate.com" once
+// tomfoolerychocolate.com (or a subdomain) is verified in Resend — see the
+// setup notes in .env.example.
+const DEFAULT_TO = "pynnmichael@outlook.com";
 
 interface ContactPayload {
   name?: unknown;
