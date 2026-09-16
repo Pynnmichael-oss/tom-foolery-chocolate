@@ -5,7 +5,6 @@ import { HeritageBeat } from "@/components/sections/HeritageBeat";
 import { LiveALittleStatement } from "@/components/sections/LiveALittleStatement";
 import { BrandCompass } from "@/components/sections/BrandCompass";
 import { ClosingPhotoGrid } from "@/components/sections/ClosingPhotoGrid";
-import { ProductPhotoAccent } from "@/components/sections/ProductPhotoAccent";
 import { StoryClosingCta } from "@/components/sections/StoryClosingCta";
 import { POWER_STATEMENTS } from "@/lib/site";
 
@@ -42,10 +41,10 @@ const STORY_HERO_LINES = [
  * brand compass, and a photo grid bridging into the closing CTA.
  * `ScrollTrigger.refresh()` on font-load/window-load is already wired up
  * globally by `SmoothScroll` (see that file's own comment); every photo
- * on this page renders inside an explicit-dimension (`ScrapbookPhoto`) or
- * `fill`-in-`aspect-square` (`ClosingPhotoGrid`) wrapper, so nothing here
- * shifts layout on load and no additional refresh call is needed beyond
- * that global one.
+ * on this page renders inside an explicit-dimension or `fill`-in-
+ * `aspect-square` (`ClosingPhotoGrid`) wrapper, so nothing here shifts
+ * layout on load and no additional refresh call is needed beyond that
+ * global one.
  *
  * `HeritageBeat` moved directly after `StoryHero` (2026-09-15, was after
  * `StripeCurtainReveal`) so the real heritage photo lands sooner in the
@@ -54,11 +53,14 @@ const STORY_HERO_LINES = [
  * "seam between StoryHero and HeritageBeat" placement; it now transitions
  * into `LiveALittleStatement` instead, same mechanics.
  *
- * `ProductPhotoAccent` (2026-09-16) is the torn-edge product-photo duo
- * that used to live inside `HeritageBeat`, between the family photo and
- * the "three generations" tagline — moved here, right before
- * `StoryClosingCta`'s shop CTA, since real bar/bonbon shots fit that
- * context better than mid-heritage-story.
+ * The torn-edge product-photo duo (bar + bonbons) that briefly lived
+ * inside `HeritageBeat`, then in its own `ProductPhotoAccent` section
+ * before this CTA, is gone as of 2026-09-16 — it was always the brand
+ * guide's generic product photography standing in for real heritage
+ * photography before `HeritageBeat`'s actual family photo was sourced,
+ * so once that photo landed it stopped earning its place anywhere on
+ * this page. `ScrapbookPhoto` (the shared torn-edge-clip-path component
+ * that rendered it) was deleted too — nothing else used it.
  */
 export default function StoryPage() {
   return (
@@ -69,7 +71,6 @@ export default function StoryPage() {
       <LiveALittleStatement />
       <BrandCompass />
       <ClosingPhotoGrid />
-      <ProductPhotoAccent />
       <StoryClosingCta />
     </main>
   );

@@ -80,11 +80,14 @@ export function HeritageBeat() {
          * cutout. Bumped from `max-w-sm` (2026-09-15, alongside moving
          * this section earlier in the page) to make it read as more of a
          * lead visual now that it's the first thing after `StoryHero`,
-         * not just a quiet mid-page beat. The torn-edge product-photo duo
-         * that used to sit here (between this photo and the tagline
-         * below) moved to `ProductPhotoAccent`, near `StoryClosingCta`'s
-         * shop CTA (2026-09-16) — real bar/bonbon shots made more sense
-         * there than as an aside mid-heritage-story. */}
+         * not just a quiet mid-page beat. A torn-edge product-photo duo
+         * used to sit between this photo and the tagline below — dropped
+         * entirely as of 2026-09-16 (briefly relocated to its own section
+         * first, then removed for good): it was generic brand-guide
+         * product photography standing in for real heritage photography,
+         * and stopped earning its place once this actual family photo
+         * was sourced. `gap-fluid-2xl` on the parent below now spaces
+         * just these two children, no separate adjustment needed. */}
         <div className="mx-auto w-full max-w-xl bg-tf-white p-4 shadow-[0_10px_24px_-10px_rgba(37,56,42,0.35)]">
           <Image
             src={HERITAGE_PHOTO.src}

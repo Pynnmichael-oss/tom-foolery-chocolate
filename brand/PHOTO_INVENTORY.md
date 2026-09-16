@@ -19,7 +19,7 @@ Homepage `StorySection`/section placements (`src/app/page.tsx`):
 |---|---|---|---|---|
 | `heritage-founding-family.jpg` | 847×703 | live site, not PDF | Heritage story (juniper bg, text-left) | Swapped in 2026-09-15 for `heritage-friends-sharing-chocolate.jpg` below — same real black-and-white photo as `/story`'s `HeritageBeat`; see its own table entry lower down for provenance. Wrapper uses `aspect-[847/703]` (the photo's native ratio) instead of the old slot's 4:5, so nothing crops. |
 | `philosophy-live-a-little.jpg` | 2033×1146 | p.48, img 40 | No longer wired (was the Philosophy `StorySection`, merged into `WhatWeBelieve` 2026-09-14) | Woman in sunglasses laughing, chocolate bar raised — pure "Live a Little" energy. Kept as a backup, not currently placed anywhere. |
-| `craft-hazelnut-bar-flatlay.jpg` | 1241×2200 | p.11, img 9 | `/story`'s `HeritageBeat` scrapbook cluster only now (was also the homepage Craft `StorySection`, merged into `WhatWeBelieve` 2026-09-14) | Overhead flat-lay, broken hazelnut chocolate bar on a turmeric-yellow surface. |
+| `craft-hazelnut-bar-flatlay.jpg` | 1241×2200 | p.11, img 9 | No longer wired anywhere (was also the homepage Craft `StorySection`, merged into `WhatWeBelieve` 2026-09-14; was `/story`'s `HeritageBeat` scrapbook cluster, removed for good 2026-09-16 — see below) | Overhead flat-lay, broken hazelnut chocolate bar on a turmeric-yellow surface. Kept as a backup. |
 
 `heritage-friends-sharing-chocolate.jpg` (1956×2200, p.7 img 2 — two friends,
 eyes closed, laughing over a bite of chocolate) **no longer appears anywhere
@@ -29,14 +29,12 @@ backup.
 
 ## Also used on `/story` (`src/app/story/page.tsx`)
 
-Four more of the backups below got pulled in for the Story page's
-scrapbook photo cluster (`HeritageBeat`) and closing photo grid
-(`ClosingPhotoGrid`) — same files, new placements, no re-processing:
+More of the backups below got pulled in for the Story page's closing
+photo grid (`ClosingPhotoGrid`) — same files, new placements, no
+re-processing:
 
 | File | Placement | Notes |
 |---|---|---|
-| `craft-hazelnut-bar-flatlay.jpg` | `HeritageBeat` scrapbook cluster | Reused from the homepage — still just the guide's own product photography, not real heritage/founder photos. |
-| `truffles-turmeric-background.jpg` | `HeritageBeat` scrapbook cluster | Newly wired — previously a backup only. |
 | `raspberry-stacked-bars.jpg` | `ClosingPhotoGrid` | Newly wired. |
 | `kid-chocolate-face-coral.jpg` | `ClosingPhotoGrid` | Newly wired. |
 | `woman-eating-chocolate-pink.jpg` | `ClosingPhotoGrid` | Newly wired. |
@@ -49,6 +47,18 @@ heritage/founder photo (replaced 2026-09-10, see the next section), and
 its one remaining placement, the homepage Heritage `StorySection`, was
 itself swapped to the same real photo on 2026-09-15 (see "Wired into the
 site" above).
+
+`craft-hazelnut-bar-flatlay.jpg` and `truffles-turmeric-background.jpg`
+(the torn-edge "scrapbook" duo — bar + bonbons) **no longer appear
+anywhere on the site** as of 2026-09-16 either, for the same reason:
+they were `HeritageBeat`'s placeholder standing in for real heritage
+photography, and stopped earning their place once the real family photo
+(`heritage-founding-family.jpg`) was sourced. Briefly relocated to their
+own section near `StoryClosingCta`'s shop CTA (2026-09-16) before being
+removed outright the same day. The `ScrapbookPhoto` component that
+rendered them (torn/zigzag-edge `clip-path` treatment) was deleted too —
+nothing else used it. Both files kept as backups; see "Kept as backups"
+below.
 
 ## Live-site-sourced (not from the brand guide PDF)
 
@@ -77,6 +87,8 @@ product shot make it worth another try.
 | File | Resolution | PDF origin | Subject | Suggested use |
 |---|---|---|---|---|
 | `girl-sunglasses-chocolate-face.jpg` | 546×727 | p.51 grid, img 51 | Toddler in pink sunglasses, chocolate-smeared face, striped bg | Playful, on-voice — best at card/thumbnail size rather than full-bleed. Good candidate for a future PDP or content refresh. |
+| `craft-hazelnut-bar-flatlay.jpg` | 1241×2200 | p.11, img 9 | Overhead flat-lay, broken hazelnut chocolate bar on a turmeric-yellow surface | Unwired as of 2026-09-16 (see "Also used on /story" above) — has headroom for full-bleed or large use if it earns a spot again. |
+| `truffles-turmeric-background.jpg` | 545×727 | not tracked — never had a PDF-origin entry in this doc | Five bonbons arranged vertically on a turmeric-orange background | Unwired as of 2026-09-16 (see "Also used on /story" above) — keep at grid/thumbnail size per the resolution note below. |
 
 **On resolution**: don't stretch the 546×727-sourced files
 (`woman-eating-chocolate-pink`, `truffles-turmeric-background`,
