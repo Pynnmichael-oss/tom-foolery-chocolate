@@ -40,6 +40,12 @@ export function Nav() {
             Shop
           </Link>
           <Link
+            href="/gifting"
+            className="font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-black transition-colors hover:text-tf-cinnamon"
+          >
+            Gifting
+          </Link>
+          <Link
             href="/contact"
             className="font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-black transition-colors hover:text-tf-cinnamon"
           >
