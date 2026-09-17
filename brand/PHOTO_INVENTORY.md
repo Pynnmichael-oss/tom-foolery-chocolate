@@ -13,13 +13,16 @@ than the site needs once `next/image` generates its responsive `srcset`.
 
 ## Wired into the site
 
-Homepage `StorySection`/section placements (`src/app/page.tsx`):
+Started as homepage `StorySection`/section placements (`src/app/page.tsx`)
+— two of the three have since moved on to other pages, tracked here
+since this table is these files' "current primary placement," not
+strictly homepage-only anymore:
 
 | File | Resolution | PDF origin | Placement | Notes |
 |---|---|---|---|---|
 | `heritage-founding-family.jpg` | 847×703 | live site, not PDF | Heritage story (juniper bg, text-left) | Swapped in 2026-09-15 for `heritage-friends-sharing-chocolate.jpg` below — same real black-and-white photo as `/story`'s `HeritageBeat`; see its own table entry lower down for provenance. Wrapper uses `aspect-[847/703]` (the photo's native ratio) instead of the old slot's 4:5, so nothing crops. |
-| `philosophy-live-a-little.jpg` | 2033×1146 | p.48, img 40 | No longer wired (was the Philosophy `StorySection`, merged into `WhatWeBelieve` 2026-09-14) | Woman in sunglasses laughing, chocolate bar raised — pure "Live a Little" energy. Kept as a backup, not currently placed anywhere. |
-| `craft-hazelnut-bar-flatlay.jpg` | 1241×2200 | p.11, img 9 | No longer wired anywhere (was also the homepage Craft `StorySection`, merged into `WhatWeBelieve` 2026-09-14; was `/story`'s `HeritageBeat` scrapbook cluster, removed for good 2026-09-16 — see below) | Overhead flat-lay, broken hazelnut chocolate bar on a turmeric-yellow surface. Kept as a backup. |
+| `philosophy-live-a-little.jpg` | 2033×1146 | p.48, img 40 | `/gifting`'s `GiftingHero` (2026-09-17) — was the Philosophy `StorySection` before that, merged into `WhatWeBelieve` 2026-09-14 | Woman in sunglasses laughing, chocolate bar raised — pure "Live a Little" energy. Full-bleed hero use, per the resolution note below. |
+| `craft-hazelnut-bar-flatlay.jpg` | 1241×2200 | p.11, img 9 | `/gifting`'s `GiftingPanels` ("Custom & Branded" panel, 2026-09-17) — was also the homepage Craft `StorySection` (merged into `WhatWeBelieve` 2026-09-14) and `/story`'s `HeritageBeat` scrapbook cluster (removed for good 2026-09-16) | Overhead flat-lay, broken hazelnut chocolate bar on a turmeric-yellow surface. |
 
 `heritage-friends-sharing-chocolate.jpg` (1956×2200, p.7 img 2 — two friends,
 eyes closed, laughing over a bite of chocolate) **no longer appears anywhere
@@ -49,16 +52,47 @@ itself swapped to the same real photo on 2026-09-15 (see "Wired into the
 site" above).
 
 `craft-hazelnut-bar-flatlay.jpg` and `truffles-turmeric-background.jpg`
-(the torn-edge "scrapbook" duo — bar + bonbons) **no longer appear
-anywhere on the site** as of 2026-09-16 either, for the same reason:
-they were `HeritageBeat`'s placeholder standing in for real heritage
-photography, and stopped earning their place once the real family photo
-(`heritage-founding-family.jpg`) was sourced. Briefly relocated to their
-own section near `StoryClosingCta`'s shop CTA (2026-09-16) before being
-removed outright the same day. The `ScrapbookPhoto` component that
-rendered them (torn/zigzag-edge `clip-path` treatment) was deleted too —
-nothing else used it. Both files kept as backups; see "Kept as backups"
-below.
+(the torn-edge "scrapbook" duo — bar + bonbons) were both unwired from
+`/story` as of 2026-09-16 — they were `HeritageBeat`'s placeholder
+standing in for real heritage photography, and stopped earning their
+place there once the real family photo (`heritage-founding-family.jpg`)
+was sourced. Briefly relocated to their own section near
+`StoryClosingCta`'s shop CTA (2026-09-16) before being removed outright
+from `/story` the same day. The `ScrapbookPhoto` component that rendered
+them (torn/zigzag-edge `clip-path` treatment) was deleted too — nothing
+else used it. Both re-wired the next day into `/gifting`'s
+`GiftingPanels` instead (2026-09-17, see "Wired into the site" above and
+"Also used on /gifting" below) — unrelated to their old `/story`
+placement, just the most on-brand photography available for that page
+while its own real shoot photos are still pending.
+
+## Also used on `/gifting` (`src/app/gifting/page.tsx`)
+
+Three photos placed 2026-09-17 building out the real Corporate Gifting
+page (previously a `ComingSoonPage` placeholder). The brief pointed at a
+Google Drive folder of real shoot photos for this page
+(`Product Photos > JPG`/`PNG`, linked from the task) — Drive access
+itself works fine, but as of 2026-09-17 both subfolders are genuinely
+empty (folder structure only, confirmed via two separate searches, one
+paginated to exhaustion, plus a permissions check to rule out an
+access problem rather than an empty-folder one). These three are the
+most on-brand photography available in the meantime, not new
+photography:
+
+| File | Placement | Notes |
+|---|---|---|
+| `philosophy-live-a-little.jpg` | `GiftingHero` | See "Wired into the site" above — full-bleed hero background. |
+| `craft-hazelnut-bar-flatlay.jpg` | `GiftingPanels`, "Custom & Branded" panel | See "Wired into the site" above. |
+| `truffles-turmeric-background.jpg` | `GiftingPanels`, "Weddings & Events" panel | Re-wired here from its old `/story` scrapbook-cluster placement (see above) — panel-card size, well within the resolution ceiling below. |
+
+`citrus-filled-bar-green.jpg` (already wired into `/story`'s
+`ClosingPhotoGrid`, see above) is now also used here, `GiftingPanels`'s
+"Ready to Ship" panel — the first file used on two pages at once.
+Deliberate, not a mistake: it's placeholder photography on both pages
+either way, and the two pages aren't viewed side by side.
+`TODO(garrett)` comments on `GiftingHero.tsx`/`GiftingPanels.tsx` mark
+exactly where to swap in the real shoot photos once they land in that
+Drive folder.
 
 ## Live-site-sourced (not from the brand guide PDF)
 
@@ -87,8 +121,11 @@ product shot make it worth another try.
 | File | Resolution | PDF origin | Subject | Suggested use |
 |---|---|---|---|---|
 | `girl-sunglasses-chocolate-face.jpg` | 546×727 | p.51 grid, img 51 | Toddler in pink sunglasses, chocolate-smeared face, striped bg | Playful, on-voice — best at card/thumbnail size rather than full-bleed. Good candidate for a future PDP or content refresh. |
-| `craft-hazelnut-bar-flatlay.jpg` | 1241×2200 | p.11, img 9 | Overhead flat-lay, broken hazelnut chocolate bar on a turmeric-yellow surface | Unwired as of 2026-09-16 (see "Also used on /story" above) — has headroom for full-bleed or large use if it earns a spot again. |
-| `truffles-turmeric-background.jpg` | 545×727 | not tracked — never had a PDF-origin entry in this doc | Five bonbons arranged vertically on a turmeric-orange background | Unwired as of 2026-09-16 (see "Also used on /story" above) — keep at grid/thumbnail size per the resolution note below. |
+
+`craft-hazelnut-bar-flatlay.jpg` and `truffles-turmeric-background.jpg`
+were briefly unwired (2026-09-16, listed here) before being re-wired
+into `/gifting` the next day — see "Also used on /gifting" above; no
+longer backups as of 2026-09-17.
 
 **On resolution**: don't stretch the 546×727-sourced files
 (`woman-eating-chocolate-pink`, `truffles-turmeric-background`,
