@@ -93,7 +93,7 @@ export function ProductCard({ product, className = "", hoverVideo }: ProductCard
             alt={image.altText ?? product.title}
             width={image.width ?? 800}
             height={image.height ?? 800}
-            className="h-full w-full object-cover transition-transform duration-500 ease-out motion-safe:group-hover:scale-[1.06] motion-safe:group-hover:-rotate-1"
+            className="h-full w-full object-contain transition-transform duration-500 ease-out motion-safe:group-hover:scale-[1.06] motion-safe:group-hover:-rotate-1"
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 45vw, 90vw"
           />
         ) : (

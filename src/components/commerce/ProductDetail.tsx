@@ -63,7 +63,7 @@ export function ProductDetail({ product }: { product: Product }) {
                 alt={activeImage.altText ?? product.title}
                 width={activeImage.width ?? 1000}
                 height={activeImage.height ?? 1000}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain"
                 priority
               />
             ) : (
