@@ -262,9 +262,14 @@ export function GiftingForm() {
           <span className={LABEL_CLASS}>Products You&rsquo;re Interested In</span>
           <div className="flex flex-wrap gap-fluid-md">
             {PRODUCT_OPTIONS.map((product) => (
+              // min-h-11 (44px) + px/-mx to match: WCAG 2.5.5's minimum
+              // touch-target size, on a checkbox that's visually only
+              // 16px. The label already toggles the input on click/tap
+              // anywhere inside it (native behavior) — this just grows
+              // that hit area without growing the visible checkbox.
               <label
                 key={product}
-                className="flex items-center gap-fluid-xs font-sans text-tf-black"
+                className="-mx-fluid-xs flex min-h-11 items-center gap-fluid-xs px-fluid-xs font-sans text-tf-black"
               >
                 <input
                   type="checkbox"
@@ -291,7 +296,10 @@ export function GiftingForm() {
             min={TODAY_ISO}
             value={form.timeline}
             onChange={(e) => update("timeline", e.target.value)}
-            title="When do you need the gifts in your recipients' hands by?"
+            // No `title` here on purpose — a native title tooltip only
+            // shows on mouse hover, not to keyboard or touch users. The
+            // `<p>` above already carries the same copy, always visible,
+            // which covers everyone instead of gating it behind hover.
             className={`${FIELD_CLASS} sm:max-w-xs`}
           />
         </div>
