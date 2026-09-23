@@ -5,6 +5,7 @@ import Image from "next/image";
 import { gsap, useGSAP, breakpoints } from "@/components/motion/gsap";
 import { buttonClasses } from "@/components/ui/buttonClasses";
 import { BodyText } from "@/components/ui/typography";
+import { useScrollToGiftingForm } from "@/lib/hooks/useScrollToGiftingForm";
 
 /**
  * TODO(garrett): placeholder panel photos — same situation as
@@ -74,6 +75,7 @@ const PANELS = [
 export function GiftingPanels() {
   const sectionRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const scrollToForm = useScrollToGiftingForm();
 
   useGSAP(
     () => {
@@ -132,7 +134,11 @@ export function GiftingPanels() {
               {panel.title}
             </h2>
             <BodyText className="flex-1 text-fg/80">{panel.copy}</BodyText>
-            <a href="#gifting-form" className={buttonClasses("secondary", "self-start")}>
+            <a
+              href="#gifting-form"
+              onClick={scrollToForm}
+              className={buttonClasses("secondary", "self-start")}
+            >
               Learn More
             </a>
           </div>

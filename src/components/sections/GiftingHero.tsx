@@ -6,6 +6,7 @@ import { Preheader, Headline, BodyText } from "@/components/ui/typography";
 import { buttonClasses } from "@/components/ui/buttonClasses";
 import { gsap, useGSAP } from "@/components/motion/gsap";
 import { useMediaPreferences } from "@/lib/hooks/useMediaPreferences";
+import { useScrollToGiftingForm } from "@/lib/hooks/useScrollToGiftingForm";
 
 /**
  * TODO(garrett): placeholder hero photo, AND it's under-resolution for a
@@ -56,6 +57,7 @@ const HERO_IMAGE = {
 export function GiftingHero() {
   const contentRef = useRef<HTMLDivElement>(null);
   const { prefersReducedMotion } = useMediaPreferences();
+  const scrollToForm = useScrollToGiftingForm();
 
   useGSAP(
     () => {
@@ -128,7 +130,11 @@ export function GiftingHero() {
         <BodyText size="lg" className="text-tf-white/90">
           Stand out from the crowd with a unique, personalized gift for any occasion.
         </BodyText>
-        <a href="#gifting-form" className={buttonClasses("primary", "mt-fluid-sm")}>
+        <a
+          href="#gifting-form"
+          onClick={scrollToForm}
+          className={buttonClasses("primary", "mt-fluid-sm")}
+        >
           Learn More
         </a>
       </div>

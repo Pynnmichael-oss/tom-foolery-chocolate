@@ -27,12 +27,15 @@ export const metadata: Metadata = {
  * to live here (footer's "Corporate Gifting" link already pointed at
  * `/gifting`, so nothing there needed to change). Every CTA on the page
  * (hero button, each of the three panel buttons) points at the same
- * `#gifting-form` anchor via a plain `href="#..."` — no JS scroll
- * hijacking: `globals.css` sets `scroll-behavior: auto` deliberately
- * (Lenis drives smooth scroll for wheel/touch elsewhere; see that file's
- * own comment) so a native anchor jump is the intentionally-consistent
- * behavior here, not an oversight. `scroll-mt-24` on the target section
- * keeps the jump from landing underneath the sticky nav.
+ * `#gifting-form` anchor via `href="#gifting-form"` — a real link, so it
+ * still works with JS disabled or before hydration — plus an `onClick`
+ * (`useScrollToGiftingForm`) that smooth-scrolls there and focuses the
+ * form's first field, so keyboard/screen-reader users land ready to type,
+ * not just visually at the section. `globals.css` still sets
+ * `scroll-behavior: auto` (Lenis drives smooth scroll for wheel/touch
+ * elsewhere; see that file's own comment) — the CTA's smooth scroll is
+ * native `scrollIntoView`, independent of both. `scroll-mt-24` on the
+ * target section keeps the jump from landing underneath the sticky nav.
  */
 export default function GiftingPage() {
   return (
