@@ -17,6 +17,18 @@ import { BodyText } from "@/components/ui/typography";
  * it's explicitly placeholder photography either way), just the most
  * on-brand option available until the real shoot photos land. Swap each
  * `src` below once they do.
+ *
+ * Resolution audit (2026-09-22, alongside the hero's own): the flatlay
+ * (1241×2200) has plenty of headroom for this grid. The other two
+ * (`truffles-turmeric-background.jpg`, `citrus-filled-bar-green.jpg`) are
+ * only 545–546px wide — comfortable for the 3-column desktop grid
+ * (~150–300px rendered columns even at 2–3x DPR), but right at the edge
+ * of what a 2–3x-DPR phone asks for at mobile's single-column ~90vw width.
+ * Same story as the hero: no higher-res original exists in the repo to
+ * swap in, and it's not severe enough to justify upscaling two placeholder
+ * photos that are getting replaced anyway — noted here so it isn't
+ * mistaken for an oversight if it comes up again before the real shoot
+ * photos land.
  */
 const PANELS = [
   {

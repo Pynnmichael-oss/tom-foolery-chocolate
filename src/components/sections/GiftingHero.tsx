@@ -8,18 +8,36 @@ import { gsap, useGSAP } from "@/components/motion/gsap";
 import { useMediaPreferences } from "@/lib/hooks/useMediaPreferences";
 
 /**
- * TODO(garrett): placeholder hero photo. The brief pointed at a Google
- * Drive folder of real shoot photos
- * (https://drive.google.com/drive/folders/1av5nGRzxRKBbiwM6AcGLiK8z66LrkLYc) —
- * access to it works fine (confirmed via the Drive connector: readable,
- * "commenter" link-sharing is on), but as of 2026-09-17 the `Product
- * Photos > JPG` and `Product Photos > PNG` subfolders it links to are
- * both genuinely empty — folder structure only, no image files uploaded
- * yet. Using `philosophy-live-a-little.jpg` instead — real on-brand
- * photography already in this repo (brand/PHOTO_INVENTORY.md), a
- * landscape crop with real headroom for a full-bleed hero, not a random
- * external stock photo — until the real shoot photos land in that Drive
- * folder. Swap the `src` below once they do; no other change needed here.
+ * TODO(garrett): placeholder hero photo, AND it's under-resolution for a
+ * full-bleed hero — two separate problems, same fix (real shoot photos).
+ *
+ * 1. Placeholder: the brief pointed at a Google Drive folder of real shoot
+ *    photos
+ *    (https://drive.google.com/drive/folders/1av5nGRzxRKBbiwM6AcGLiK8z66LrkLYc) —
+ *    access to it works fine (confirmed via the Drive connector: readable,
+ *    "commenter" link-sharing is on), but as of 2026-09-17 the `Product
+ *    Photos > JPG` and `Product Photos > PNG` subfolders it links to are
+ *    both genuinely empty — folder structure only, no image files uploaded
+ *    yet. Using `philosophy-live-a-little.jpg` instead — real on-brand
+ *    photography already in this repo (brand/PHOTO_INVENTORY.md), not a
+ *    random external stock photo — until the real shoot photos land.
+ *
+ * 2. Resolution ceiling (2026-09-22 investigation, prompted by a "hero
+ *    looks blurry" report): this file is only 2033×1146 — under the
+ *    ~2400px-wide floor a full-bleed `100vw` hero needs, and well under
+ *    what any 2x/3x-DPR screen requests at that width. Checked
+ *    `public/images/gifting/` for a higher-res original per the brief —
+ *    doesn't exist. Re-extracted the source image directly from
+ *    `brand/TomFoolery_Brand_Standards_August2026.pdf` (page 48, image 40,
+ *    per PHOTO_INVENTORY.md's citation) to check for a larger embed than
+ *    what's in `public/photos/` — byte-identical, 2033×1146. That
+ *    resolution is the PDF's own ceiling for this photo, not an
+ *    extra-downscale artifact of this repo's pipeline (PHOTO_INVENTORY's
+ *    "capped at 2200px" note didn't even apply here — this file was
+ *    already under that cap). No higher-res source exists anywhere in the
+ *    repo to swap in. Not upscaling it — `quality`/`sizes` below squeeze
+ *    what's fetchable out of the existing pixels, but real photography
+ *    (Drive folder above) is the only actual fix.
  */
 const HERO_IMAGE = {
   src: "/photos/philosophy-live-a-little.jpg",
@@ -65,12 +83,38 @@ export function GiftingHero() {
           alt=""
           fill
           priority
+          quality={85}
           sizes="100vw"
-          className="object-cover"
+          // Default (50% 50%) crops the subject (woman + chocolate bar,
+          // both sitting right-of-center in frame — see the source file)
+          // almost entirely out of the tall, narrow window `object-cover`
+          // has to work with on mobile, leaving only empty backdrop.
+          // Biased right + slightly high keeps her face and the bar in
+          // frame from the narrowest mobile crop up through desktop.
+          className="object-cover object-[78%_22%]"
         />
-        {/* Same brand-black wash Hero.tsx uses over its own background
-         * media — keeps white text legible over whatever the photo shows. */}
-        <div className="absolute inset-0 bg-tf-black/50" />
+        {/* Radial scrim, not a flat wash over the whole photo (that was
+         * the old `bg-tf-black/50` here) — content is vertically centered
+         * (`items-center` above) at every breakpoint, so a scrim centered
+         * the same way guarantees contrast exactly where the text sits
+         * while leaving the photo's corners visible and vivid. On mobile
+         * the text column runs nearly edge-to-edge (`max-w-2xl` doesn't
+         * kick in below that width, so there's little photo left "outside
+         * the text" anyway); it only pulls back into a true accent on
+         * wider screens, where `max-w-2xl` is a much smaller fraction of
+         * the full-bleed section. Values tuned against actual measured
+         * text bounding boxes and sampled backdrop pixels (both the
+         * darker mauve center and the pale pink/cream margins behind the
+         * preheader) to clear WCAG AA's 4.5:1 for white text at every
+         * corner of the content block, at every tested breakpoint
+         * (375–1440px) — see this file's git history for the math. */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 75% 70% at 50% 50%, rgba(37,56,42,0.82) 0%, rgba(37,56,42,0.72) 55%, rgba(37,56,42,0.48) 85%, rgba(37,56,42,0.18) 100%)",
+          }}
+        />
       </div>
 
       <div
