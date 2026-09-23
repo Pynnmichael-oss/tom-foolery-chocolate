@@ -109,7 +109,12 @@ export function GiftingHero() {
          * darker mauve center and the pale pink/cream margins behind the
          * preheader) to clear WCAG AA's 4.5:1 for white text at every
          * corner of the content block, at every tested breakpoint
-         * (375–1440px) — see this file's git history for the math. */}
+         * (375–1440px) — see this file's git history for the math.
+         * rgba(37,56,42,…) is `--tf-black`/`#25382A` in decimal — a CSS
+         * gradient can't reference a custom property inside `rgba()`
+         * without the newer `rgb(from var(...) ...)` relative-color
+         * syntax, so this is the same brand black spelled out by hand,
+         * not an off-palette color. */}
         <div
           className="absolute inset-0"
           style={{
