@@ -54,7 +54,7 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
     // layout at creation time. Two things can shift that layout afterward
     // and leave pinned sections' trigger points drifted from where they
     // visually start/end: web fonts swapping in (changes text-flow
-    // height, especially Fraunces at Hero/BrandCompass's display sizes)
+    // height, especially Newsreader at Hero/BrandCompass's display sizes)
     // and any asset still in flight at mount. Every image and video
     // poster in this app already renders inside an aspect-ratio'd or
     // `fill` wrapper — no layout shift on load by construction — so fonts

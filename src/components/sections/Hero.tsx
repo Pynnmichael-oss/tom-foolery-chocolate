@@ -131,12 +131,6 @@ export function Hero({ backgroundVideo, backgroundVideoPoster }: HeroProps = {})
         className="relative font-display font-semibold text-[length:var(--fs-header)] text-tf-white"
         style={{
           lineHeight: "calc(1em + 16px)",
-          // A touch of Fraunces' WONK axis (0–1) — just at the hero, where
-          // the size can carry it. 0.5 reads as playful idiosyncrasy, not a
-          // full wonky/handwritten swing; opsz keeps auto-tracking font-size
-          // via the browser's default optical-sizing behavior, unaffected
-          // by this since only "WONK" is set here.
-          fontVariationSettings: '"WONK" 0.5',
         }}
       >
         Live a Little

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { fraunces, figtree } from "@/lib/fonts";
+import { newsreader, poppins } from "@/lib/fonts";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
 import { Nav } from "@/components/layout/Nav";
 import { CartProvider } from "@/components/commerce/CartProvider";
@@ -35,7 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${figtree.variable} h-full antialiased`}
+      className={`${newsreader.variable} ${poppins.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-bg font-sans text-fg">
         <OrganizationJsonLd />

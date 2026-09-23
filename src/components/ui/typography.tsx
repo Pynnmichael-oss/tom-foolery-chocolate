@@ -44,7 +44,7 @@ export const Preheader = forwardRef<HTMLParagraphElement, PreheaderProps>(
 );
 
 /* ------------------------------------------------------------------ */
-/* Headline — Fraunces (display), fluid clamp sizes, title case         */
+/* Headline — Newsreader (display), fluid clamp sizes, title case       */
 /* ------------------------------------------------------------------ */
 
 export type HeadlineSize = "sm" | "md" | "lg" | "xl";
@@ -84,7 +84,7 @@ export const Headline = forwardRef<HTMLHeadingElement, HeadlineProps>(
     return (
       <Tag
         ref={ref}
-        // font-semibold (600): Fraunces at its default 400 reads thin and
+        // font-semibold (600): Newsreader at its default 400 reads thin and
         // spindly at display sizes — 600 is where it reads premium instead.
         className={`font-display font-semibold ${className}`}
         // Brand guide: line height = type size + 12pt (≈16px). Always
