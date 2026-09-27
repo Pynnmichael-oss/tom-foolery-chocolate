@@ -5,11 +5,14 @@ import type { FormEvent } from "react";
 import { PrimaryLogo } from "@/components/ui/logos";
 import { gsap, useGSAP } from "@/components/motion/gsap";
 import { useMediaPreferences } from "@/lib/hooks/useMediaPreferences";
-import { subscribeCustomerAction } from "@/lib/shopify/actions";
 import { useCart } from "./CartProvider";
 
 const DISMISS_KEY = "tf_signup_dismissed";
-const DISMISS_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const DISMISS_MS = 7 * 24 * 60 * 60 * 1000; // 7 days — dismissed without subscribing
+// A real subscribe suppresses far longer than a dismiss — someone who
+// already signed up has no reason to see this again for the better part
+// of a year, vs. 7 days for "not now."
+const DISMISS_MS_SUBSCRIBED = 365 * 24 * 60 * 60 * 1000; // 365 days
 const SESSION_KEY = "tf_signup_shown";
 const OPEN_DELAY_MS = 1500;
 
@@ -19,9 +22,14 @@ const FOCUSABLE_SELECTOR =
 function isSuppressed(): boolean {
   try {
     if (sessionStorage.getItem(SESSION_KEY)) return true;
-    const dismissedAt = localStorage.getItem(DISMISS_KEY);
-    if (!dismissedAt) return false;
-    return Date.now() - Number(dismissedAt) < DISMISS_MS;
+    const stored = localStorage.getItem(DISMISS_KEY);
+    if (!stored) return false;
+    // Stored as "when the suppression lifts" (an absolute timestamp), not
+    // "when this happened" — the two different durations below (a plain
+    // dismiss vs. a real subscribe) need their own math done once, at
+    // write time, rather than every read needing to know which of two
+    // windows a given dismissal used.
+    return Date.now() < Number(stored);
   } catch {
     // Storage unavailable (private mode, disabled cookies, etc.) — fail
     // open rather than never showing the popup at all.
@@ -29,9 +37,9 @@ function isSuppressed(): boolean {
   }
 }
 
-function markDismissed() {
+function markDismissed(durationMs: number = DISMISS_MS) {
   try {
-    localStorage.setItem(DISMISS_KEY, String(Date.now()));
+    localStorage.setItem(DISMISS_KEY, String(Date.now() + durationMs));
   } catch {
     // Ignore — worst case the popup reappears next load.
   }
@@ -39,11 +47,17 @@ function markDismissed() {
 
 /**
  * Root-layout-mounted email capture popup. Appears once per browser
- * session, 1.5s after first mount, unless the visitor dismissed it (or
- * signed up) within the last 7 days — see `isSuppressed`. Mounted once at
- * `RootLayout` (not per-page), so App Router client-side navigations never
- * retrigger it: the layout tree above `{children}` doesn't remount on
- * route change, only on a hard/full page load.
+ * session, 1.5s after first mount, unless the visitor dismissed it in the
+ * last 7 days or actually subscribed in the last 365 — see `isSuppressed`
+ * and the two `DISMISS_MS*` constants below. Mounted once at `RootLayout`
+ * (not per-page), so App Router client-side navigations never retrigger
+ * it: the layout tree above `{children}` doesn't remount on route change,
+ * only on a hard/full page load.
+ *
+ * Subscribes through `/api/subscribe` (Omnisend) — see that route for the
+ * actual integration. The 10%-off code is never generated or shown here;
+ * it's delivered by an Omnisend Welcome automation (see
+ * docs/INTEGRATIONS.md).
  *
  * Entrance is GSAP (scale 0.96 -> 1 + fade, ~300ms, power2.out), gated by
  * `prefers-reduced-motion` the same way every other motion-aware component
@@ -54,8 +68,15 @@ export function EmailSignupPopup() {
   const [delayElapsed, setDelayElapsed] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [email, setEmail] = useState("");
+  // Honeypot — a real visitor never sees or fills this (see the hidden
+  // `website` input below), so it's plain uncontrolled-adjacent state
+  // read straight off the form at submit time, same as `email`.
+  const [website, setWebsite] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "success">("idle");
   const [error, setError] = useState<string | null>(null);
+  // Only meaningful once status === "success" — which of the two success
+  // copies to show (see /api/subscribe's `existing` response field).
+  const [existingSubscriber, setExistingSubscriber] = useState(false);
 
   const cardRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -166,20 +187,29 @@ export function EmailSignupPopup() {
     setStatus("submitting");
     setError(null);
 
-    // TODO(storefront): if this project ever moves off the shared
-    // Storefront API client in src/lib/shopify/, point this at whatever
-    // replaces it — subscribeCustomerAction (src/lib/shopify/actions.ts)
-    // wraps a real `customerCreate` mutation (src/lib/shopify/queries.ts)
-    // already wired to SHOPIFY_STORE_DOMAIN / SHOPIFY_STOREFRONT_ACCESS_TOKEN,
-    // with a mock fallback when those env vars aren't set.
-    const result = await subscribeCustomerAction(email);
+    try {
+      const response = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, website }),
+      });
+      const data = await response.json().catch(() => null);
 
-    if (result.success) {
+      if (!response.ok) {
+        setStatus("idle");
+        setError(data?.error ?? "Something went wrong. Please try again.");
+        return;
+      }
+
+      setExistingSubscriber(Boolean(data?.existing));
       setStatus("success");
-      markDismissed();
-    } else {
+      // A real subscribe earns the long suppression window — someone who
+      // just signed up shouldn't see this again for months, unlike a
+      // plain dismiss (see DISMISS_MS_SUBSCRIBED above `dismiss()`).
+      markDismissed(DISMISS_MS_SUBSCRIBED);
+    } catch {
       setStatus("idle");
-      setError(result.error ?? "Something went wrong. Please try again.");
+      setError("Something went wrong. Please check your connection and try again.");
     }
   }
 
@@ -224,21 +254,36 @@ export function EmailSignupPopup() {
           <PrimaryLogo tone="positive" width={220} className="mx-auto mb-fluid-md" title="Tom Foolery" />
 
           {status === "success" ? (
-            <div className="flex flex-col gap-fluid-sm py-fluid-sm">
-              <h2
-                id="tf-signup-headline"
-                className="font-display font-semibold text-tf-black"
-                // Brand guide Header rule: line-height = type size + 12pt
-                // (see typography.tsx's Headline, which this mirrors at a
-                // popup-specific ~28-32px size rather than one of its
-                // section-scale presets).
-                style={{ fontSize: "clamp(1.75rem, 1.6rem + 0.5vw, 2rem)", lineHeight: "calc(1em + 16px)" }}
-              >
-                You&rsquo;re In!
-              </h2>
-              <p className="font-sans text-sm italic text-tf-black/60">
-                Keep an eye on your inbox for your 10% off code.
-              </p>
+            // aria-live: this replaces the form in place (no route change,
+            // no focus move) the instant a screen reader user submits, so
+            // without it the success copy would go completely unannounced.
+            <div className="flex flex-col gap-fluid-sm py-fluid-sm" aria-live="polite">
+              {existingSubscriber ? (
+                <h2
+                  id="tf-signup-headline"
+                  className="font-display font-semibold text-tf-black"
+                  style={{ fontSize: "clamp(1.75rem, 1.6rem + 0.5vw, 2rem)", lineHeight: "calc(1em + 16px)" }}
+                >
+                  You&rsquo;re already one of us. Check your inbox for the goods.
+                </h2>
+              ) : (
+                <>
+                  <h2
+                    id="tf-signup-headline"
+                    className="font-display font-semibold text-tf-black"
+                    // Brand guide Header rule: line-height = type size +
+                    // 12pt (see typography.tsx's Headline, which this
+                    // mirrors at a popup-specific ~28-32px size rather
+                    // than one of its section-scale presets).
+                    style={{ fontSize: "clamp(1.75rem, 1.6rem + 0.5vw, 2rem)", lineHeight: "calc(1em + 16px)" }}
+                  >
+                    You&rsquo;re in. Live a little.
+                  </h2>
+                  <p className="font-sans text-sm italic text-tf-black/60">
+                    Check your inbox — something sweet is on its way.
+                  </p>
+                </>
+              )}
             </div>
           ) : (
             <>
@@ -254,6 +299,28 @@ export function EmailSignupPopup() {
               </p>
 
               <form onSubmit={handleSubmit} className="mt-fluid-md flex flex-col gap-fluid-sm text-left" noValidate>
+                {/* Honeypot — invisible and unreachable to a real visitor
+                 * (sr-only + aria-hidden, so it doesn't confuse a screen
+                 * reader either; tabIndex={-1} takes it out of tab order
+                 * entirely), but a naive bot that fills every field it
+                 * finds in the DOM will fill this one too. /api/subscribe
+                 * checks it server-side and silently no-ops instead of
+                 * ever calling Omnisend. */}
+                <label htmlFor="tf-signup-website" className="sr-only" aria-hidden="true">
+                  Leave this field blank
+                </label>
+                <input
+                  id="tf-signup-website"
+                  name="website"
+                  type="text"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  className="sr-only"
+                  aria-hidden="true"
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
+
                 <div>
                   <label htmlFor="tf-signup-email" className="sr-only">
                     Email address
