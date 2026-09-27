@@ -1,8 +1,15 @@
-// Powers EmailSignupPopup.tsx — subscribes a visitor to Omnisend (replacing
-// the old Shopify customerCreate mutation; see that component's own
-// comments for why). The 10%-off code itself is never generated or shown
-// here: it's delivered by an Omnisend Welcome automation filtered on the
-// "website-popup" tag this route applies (see docs/INTEGRATIONS.md).
+// Subscribes a visitor to Omnisend, tagged "website-popup". The 10%-off
+// code itself is never generated or shown here: it's delivered by an
+// Omnisend Welcome automation filtered on that tag (see
+// docs/INTEGRATIONS.md).
+//
+// NOT currently called by anything: the signup popup this was built for
+// (EmailSignupPopup.tsx) was replaced by Omnisend's own hosted popup
+// (loaded via the snippet in src/components/analytics/OmnisendSnippet.tsx —
+// see docs/INTEGRATIONS.md) and deleted. Left in place rather than
+// removed because a future on-site form (e.g. a footer signup field) is
+// still a plausible use for a plain POST-a-JSON-body-get-subscribed
+// endpoint — delete this too if that never materializes.
 
 export const runtime = "nodejs";
 // Never cache/prerender — same as /api/contact and /api/gifting, see
@@ -56,9 +63,10 @@ function normalizeEmail(raw: unknown): string | null {
 
 interface SubscribePayload {
   email?: unknown;
-  /** Honeypot — see EmailSignupPopup.tsx's hidden `website` input. A real
-   * visitor never sees or fills this field; anything in it means a bot
-   * that fills every field it finds. */
+  /** Honeypot — a real visitor never sees or fills this field; anything
+   * in it means a bot that fills every field it finds. No current caller
+   * sends one (see this file's top comment), but the check stays cheap
+   * and harmless to leave in for whatever eventually POSTs here. */
   website?: unknown;
 }
 

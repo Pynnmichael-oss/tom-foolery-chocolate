@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import { newsreader, poppins } from "@/lib/fonts";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
 import { Nav } from "@/components/layout/Nav";
 import { CartProvider } from "@/components/commerce/CartProvider";
 import { CartDrawer } from "@/components/commerce/CartDrawer";
-import { EmailSignupPopup } from "@/components/commerce/EmailSignupPopup";
+import { OmnisendSnippet } from "@/components/analytics/OmnisendSnippet";
+import { OmnisendPageView } from "@/components/analytics/OmnisendPageView";
 import { OrganizationJsonLd } from "@/components/seo/OrganizationJsonLd";
 import { POWER_STATEMENTS, SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -39,6 +41,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full bg-bg font-sans text-fg">
         <OrganizationJsonLd />
+        <OmnisendSnippet />
+        {/* useSearchParams (inside OmnisendPageView) opts its subtree out
+         * of static rendering unless wrapped in Suspense — see that
+         * component's own comment. */}
+        <Suspense fallback={null}>
+          <OmnisendPageView />
+        </Suspense>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded-full focus:bg-tf-cinnamon-strong focus:px-fluid-md focus:py-fluid-sm focus:font-sans focus:font-black focus:uppercase focus:tracking-[0.075em] focus:text-tf-white focus:outline-none focus:ring-2 focus:ring-tf-white"
@@ -50,13 +59,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Nav />
             {children}
             <CartDrawer />
-            {/* Inside CartProvider (not a sibling of it) so it can check
-             * isDrawerOpen and avoid popping up on top of an already-open
-             * cart drawer — see EmailSignupPopup's own comment. Safe to
-             * nest here: SmoothScroll renders a bare fragment (native-mode
-             * Lenis, no scroll-container wrapper div), so this doesn't
-             * change how its fixed-position overlay behaves. */}
-            <EmailSignupPopup />
           </CartProvider>
         </SmoothScroll>
       </body>

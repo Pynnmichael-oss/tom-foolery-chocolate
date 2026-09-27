@@ -8,9 +8,9 @@ type Status = "idle" | "submitting" | "success";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Same input/label treatment EmailSignupPopup already established for
-// this brand (border-tf-black, cinnamon focus ring, cinnamon-strong error
-// copy) — reused here rather than inventing a second form language.
+// This brand's input/label treatment (border-tf-black, cinnamon focus
+// ring, cinnamon-strong error copy) — GiftingForm.tsx reuses this same
+// FIELD_CLASS shape rather than inventing a second form language.
 const FIELD_CLASS =
   "w-full rounded-[4px] border-[1.5px] border-tf-black bg-tf-white px-fluid-sm py-fluid-xs font-sans text-tf-black placeholder:text-tf-black/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-tf-cinnamon";
 

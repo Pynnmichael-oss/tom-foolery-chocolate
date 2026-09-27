@@ -50,9 +50,8 @@ const HERO_IMAGE = {
 /**
  * Corporate Gifting hero — a static full-bleed photo (no pin/scrub; this
  * is a straightforward landing page, not the flagship homepage/story
- * treatment) with a one-time fade-up on mount, same lightweight recipe
- * `EmailSignupPopup` uses for its own entrance (fires immediately, no
- * ScrollTrigger needed since this is always in view at load).
+ * treatment) with a one-time fade-up on mount — fires immediately, no
+ * ScrollTrigger needed since this is always in view at load.
  */
 export function GiftingHero() {
   const contentRef = useRef<HTMLDivElement>(null);
