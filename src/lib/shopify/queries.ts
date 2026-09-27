@@ -8,7 +8,6 @@ import type {
   Money,
   Product,
   ProductVariant,
-  SubscribeResult,
 } from "./types";
 
 /* ------------------------------------------------------------------ */
@@ -157,15 +156,6 @@ const CART_LINES_REMOVE_MUTATION = `#graphql
     cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
       cart { ...CartFields }
       userErrors { field message }
-    }
-  }
-`;
-
-const CUSTOMER_CREATE_MUTATION = `#graphql
-  mutation CustomerCreate($input: CustomerCreateInput!) {
-    customerCreate(input: $input) {
-      customer { id }
-      customerUserErrors { field message code }
     }
   }
 `;
@@ -472,47 +462,4 @@ export async function removeLine(cartId: string, lineId: string): Promise<Cart> 
   });
   assertNoUserErrors(data.cartLinesRemove.userErrors, "removeLine");
   return normalizeCart(data.cartLinesRemove.cart);
-}
-
-/* ------------------------------------------------------------------ */
-/* Customer signup (EmailSignupPopup)                                   */
-/* ------------------------------------------------------------------ */
-
-interface RawCustomerUserError {
-  field: string[] | null;
-  message: string;
-  code: string;
-}
-
-export async function createCustomer(email: string): Promise<SubscribeResult> {
-  if (!isShopifyConfigured()) return mock.subscribeMockCustomer(email);
-
-  try {
-    const data = await shopifyFetch<{
-      customerCreate: {
-        customer: { id: string } | null;
-        customerUserErrors: RawCustomerUserError[];
-      };
-    }>({
-      query: CUSTOMER_CREATE_MUTATION,
-      variables: { input: { email, acceptsMarketing: true } },
-      cache: "no-store",
-      server: true, // privileged mutation — uses SHOPIFY_STOREFRONT_PRIVATE_TOKEN
-    });
-
-    const { customer, customerUserErrors } = data.customerCreate;
-    if (customerUserErrors.length > 0) {
-      // "Email has already been taken" (code TAKEN) just means this visitor
-      // already signed up on a previous visit — treat that as success
-      // rather than surfacing it as an error to retry.
-      if (customerUserErrors.some((e) => e.code === "TAKEN")) {
-        return { success: true };
-      }
-      return { success: false, error: customerUserErrors[0].message };
-    }
-    return { success: Boolean(customer) };
-  } catch (error) {
-    console.error("[shopify] createCustomer failed:", error);
-    return { success: false, error: "Something went wrong. Please try again." };
-  }
 }

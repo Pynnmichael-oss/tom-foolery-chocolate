@@ -19,8 +19,8 @@
  * value to branch on and show a real message from.
  */
 import { ShopifyApiError } from "./client";
-import { addLines, createCart, createCustomer, getCart, removeLine, updateLine } from "./queries";
-import type { Cart, CartResult, SubscribeResult } from "./types";
+import { addLines, createCart, getCart, removeLine, updateLine } from "./queries";
+import type { Cart, CartResult } from "./types";
 
 const GENERIC_CART_ERROR = "We couldn't update your cart. Please try again in a moment.";
 
@@ -80,14 +80,4 @@ export async function removeCartLineAction(cartId: string, lineId: string): Prom
   } catch (error) {
     return { success: false, error: toCartError(error, "removeCartLineAction failed") };
   }
-}
-
-/** Used by EmailSignupPopup — the only client this action has, so the
- * storefront token stays server-side same as every cart mutation above. */
-export async function subscribeCustomerAction(email: string): Promise<SubscribeResult> {
-  const trimmed = email.trim();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-    return { success: false, error: "Enter a valid email address." };
-  }
-  return createCustomer(trimmed);
 }

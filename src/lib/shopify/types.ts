@@ -84,13 +84,6 @@ export interface CartLineInput {
   quantity: number;
 }
 
-/** Result of a `customerCreate` email-signup attempt (EmailSignupPopup). */
-export interface SubscribeResult {
-  success: boolean;
-  /** User-facing message — set only when `success` is false. */
-  error?: string;
-}
-
 /**
  * Result of a cart mutation Server Action (add/update/remove line). Every
  * action in `shopify/actions.ts` catches its own failures and returns this
