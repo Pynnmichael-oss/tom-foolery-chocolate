@@ -5,6 +5,7 @@
  * match the normalized types in types.ts exactly, so nothing downstream
  * needs to know mock data is in play.
  */
+import { applySellingPlanAdjustment } from "./format";
 import type {
   Cart,
   CartLine,
@@ -13,6 +14,8 @@ import type {
   Money,
   Product,
   ProductVariant,
+  SellingPlan,
+  SellingPlanGroup,
 } from "./types";
 
 function placeholderImage(label: string, bg: string, fg = "FFFFFF"): {
@@ -39,7 +42,8 @@ function variant(
   id: string,
   size: string,
   price: number,
-  availableForSale = true
+  availableForSale = true,
+  sellingPlanIds: string[] = []
 ): ProductVariant {
   return {
     id,
@@ -47,6 +51,7 @@ function variant(
     availableForSale,
     price: money(price),
     selectedOptions: [{ name: "Size", value: size }],
+    sellingPlanIds,
   };
 }
 
@@ -68,6 +73,9 @@ function makeProduct(input: {
   /** Text color for the placeholder image — pick black for light bgs. */
   fg?: string;
   variants: ProductVariant[];
+  /** Subscription-only — see types.ts's Product.requiresSellingPlan. */
+  requiresSellingPlan?: boolean;
+  sellingPlanGroups?: SellingPlanGroup[];
 }): Product {
   return {
     id: input.id,
@@ -82,8 +90,51 @@ function makeProduct(input: {
     ],
     priceRange: priceRangeFrom(input.variants),
     variants: input.variants,
+    requiresSellingPlan: input.requiresSellingPlan ?? false,
+    sellingPlanGroups: input.sellingPlanGroups ?? [],
   };
 }
+
+// ---------------------------------------------------------------------
+// Selling plans — exercises the purchase-options UI (ProductDetail.tsx)
+// without needing real Shopify subscription products configured. Two
+// products below use these: one offers a subscription alongside a
+// one-time purchase, the other is subscription-only (requiresSellingPlan)
+// with a single Default Title variant, so it also exercises the "hide
+// the variant selector" case at the same time.
+// ---------------------------------------------------------------------
+
+const SUBSCRIBE_AND_SAVE_GROUP: SellingPlanGroup = {
+  name: "Subscribe & Save",
+  options: [{ name: "Delivery every", values: ["30 days", "60 days"] }],
+  sellingPlans: [
+    {
+      id: "gid://mock/SellingPlan/1",
+      name: "Deliver every 30 days",
+      description: "Cancel or pause anytime.",
+      priceAdjustment: { type: "percentage", percentage: 10 },
+    },
+    {
+      id: "gid://mock/SellingPlan/2",
+      name: "Deliver every 60 days",
+      description: "Cancel or pause anytime.",
+      priceAdjustment: { type: "percentage", percentage: 5 },
+    },
+  ],
+};
+
+const CHOCOLATE_CLUB_GROUP: SellingPlanGroup = {
+  name: "Chocolate Club",
+  options: [{ name: "Frequency", values: ["Monthly"] }],
+  sellingPlans: [
+    {
+      id: "gid://mock/SellingPlan/3",
+      name: "Monthly Chocolate Club",
+      description: "A new flavor every month, picked by Tom himself. Cancel anytime.",
+      priceAdjustment: { type: "fixed_amount", amount: money(2) },
+    },
+  ],
+};
 
 export const MOCK_PRODUCTS: Product[] = [
   makeProduct({
@@ -158,6 +209,51 @@ export const MOCK_PRODUCTS: Product[] = [
       variant("gid://mock/ProductVariant/602", "Gift Box (3 Bars)", 25),
     ],
   }),
+  makeProduct({
+    id: "gid://mock/Product/7",
+    handle: "caramel-conspiracy",
+    title: "Caramel Conspiracy",
+    description:
+      "Milk chocolate wrapped around a salted caramel core that leaks a little on purpose. We deny nothing.",
+    bg: "E8BC5C",
+    fg: "25382A",
+    variants: [
+      variant(
+        "gid://mock/ProductVariant/701",
+        "Single Bar 85g",
+        9,
+        true,
+        SUBSCRIBE_AND_SAVE_GROUP.sellingPlans.map((p) => p.id)
+      ),
+      // Gift Box deliberately has an empty sellingPlanIds — demonstrates a
+      // selling plan group that only targets *some* of a product's
+      // variants (real Shopify behavior): switching to this variant
+      // should drop back to one-time-purchase-only in the UI.
+      variant("gid://mock/ProductVariant/702", "Gift Box (3 Bars)", 24),
+    ],
+    sellingPlanGroups: [SUBSCRIBE_AND_SAVE_GROUP],
+  }),
+  makeProduct({
+    id: "gid://mock/Product/8",
+    handle: "monthly-mischief-club",
+    title: "Monthly Mischief Club",
+    description:
+      "A surprise bar every month, picked by Tom himself. Subscription only — some mischief can't be a one-time thing.",
+    bg: "9DD4CB",
+    fg: "25382A",
+    variants: [
+      {
+        id: "gid://mock/ProductVariant/801",
+        title: "Default Title",
+        availableForSale: true,
+        price: money(19),
+        selectedOptions: [{ name: "Title", value: "Default Title" }],
+        sellingPlanIds: CHOCOLATE_CLUB_GROUP.sellingPlans.map((p) => p.id),
+      },
+    ],
+    requiresSellingPlan: true,
+    sellingPlanGroups: [CHOCOLATE_CLUB_GROUP],
+  }),
 ];
 
 // ---------------------------------------------------------------------
@@ -213,26 +309,41 @@ function findVariant(variantId: string): { variant: ProductVariant; product: Pro
   return null;
 }
 
+function findSellingPlan(product: Product, sellingPlanId: string): SellingPlan | null {
+  for (const group of product.sellingPlanGroups) {
+    const plan = group.sellingPlans.find((p) => p.id === sellingPlanId);
+    if (plan) return plan;
+  }
+  return null;
+}
+
 function lineTotal(price: Money, quantity: number): Money {
   return { amount: (Number(price.amount) * quantity).toFixed(2), currencyCode: price.currencyCode };
 }
 
-function buildLine(merchandiseId: string, quantity: number): CartLine | null {
+function buildLine(merchandiseId: string, quantity: number, sellingPlanId?: string): CartLine | null {
   const found = findVariant(merchandiseId);
   if (!found) return null;
   const { variant, product } = found;
+  // A real Shopify cart line's `price` already reflects any selling
+  // plan discount — mirrored here so the mock cart flow (drawer, totals)
+  // matches what the real Storefront API would actually return, not just
+  // the plain variant price.
+  const plan = sellingPlanId ? findSellingPlan(product, sellingPlanId) : null;
+  const price = plan ? applySellingPlanAdjustment(variant.price, plan.priceAdjustment) : variant.price;
   return {
     id: `mock-line-${++lineCounter}`,
     quantity,
     merchandiseId: variant.id,
     variantTitle: variant.title,
-    price: variant.price,
-    lineTotal: lineTotal(variant.price, quantity),
+    price,
+    lineTotal: lineTotal(price, quantity),
     product: {
       title: product.title,
       handle: product.handle,
       image: product.images[0] ?? null,
     },
+    sellingPlanName: plan?.name ?? null,
   };
 }
 
@@ -250,7 +361,7 @@ export function getMockCart(cartId: string): Cart | null {
 export function createMockCart(lines: CartLineInput[] = []): Cart {
   const id = `mock-cart-${++cartCounter}`;
   const builtLines = lines
-    .map((l) => buildLine(l.merchandiseId, l.quantity))
+    .map((l) => buildLine(l.merchandiseId, l.quantity, l.sellingPlanId))
     .filter((l): l is CartLine => l !== null);
 
   const cart = recomputeTotals({
@@ -269,13 +380,20 @@ export function addMockLines(cartId: string, lines: CartLineInput[]): Cart {
   if (!cart) return createMockCart(lines);
 
   const nextLines = [...cart.lines];
-  for (const { merchandiseId, quantity } of lines) {
-    const existing = nextLines.find((l) => l.merchandiseId === merchandiseId);
+  for (const { merchandiseId, quantity, sellingPlanId } of lines) {
+    const found = findVariant(merchandiseId);
+    const plan = sellingPlanId && found ? findSellingPlan(found.product, sellingPlanId) : null;
+    // Same variant on a different selling plan (or one-time vs. any
+    // plan) is a distinct line — matches CartProvider's optimistic
+    // reducer and real Shopify cart behavior, see that file's comment.
+    const existing = nextLines.find(
+      (l) => l.merchandiseId === merchandiseId && l.sellingPlanName === (plan?.name ?? null)
+    );
     if (existing) {
       existing.quantity += quantity;
       existing.lineTotal = lineTotal(existing.price, existing.quantity);
     } else {
-      const built = buildLine(merchandiseId, quantity);
+      const built = buildLine(merchandiseId, quantity, sellingPlanId);
       if (built) nextLines.push(built);
     }
   }

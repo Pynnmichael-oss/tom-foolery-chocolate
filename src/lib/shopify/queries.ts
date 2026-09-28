@@ -8,6 +8,9 @@ import type {
   Money,
   Product,
   ProductVariant,
+  SellingPlan,
+  SellingPlanGroup,
+  SellingPlanPriceAdjustment,
 } from "./types";
 
 /* ------------------------------------------------------------------ */
@@ -29,6 +32,27 @@ const PRODUCT_FRAGMENT = `#graphql
       minVariantPrice { amount currencyCode }
       maxVariantPrice { amount currencyCode }
     }
+    requiresSellingPlan
+    sellingPlanGroups(first: 5) {
+      nodes {
+        name
+        options { name values }
+        sellingPlans(first: 10) {
+          nodes {
+            id
+            name
+            description
+            priceAdjustments {
+              adjustmentValue {
+                __typename
+                ... on SellingPlanPercentagePriceAdjustment { adjustmentPercentage }
+                ... on SellingPlanFixedAmountPriceAdjustment { adjustmentAmount { amount currencyCode } }
+              }
+            }
+          }
+        }
+      }
+    }
     variants(first: 25) {
       nodes {
         id
@@ -36,6 +60,11 @@ const PRODUCT_FRAGMENT = `#graphql
         availableForSale
         price { amount currencyCode }
         selectedOptions { name value }
+        sellingPlanAllocations(first: 10) {
+          nodes {
+            sellingPlan { id }
+          }
+        }
       }
     }
   }
@@ -69,6 +98,9 @@ const CART_FRAGMENT = `#graphql
               }
             }
           }
+        }
+        sellingPlanAllocation {
+          sellingPlan { name }
         }
       }
     }
@@ -177,6 +209,30 @@ interface RawVariant {
   availableForSale: boolean;
   price: Money;
   selectedOptions: { name: string; value: string }[];
+  sellingPlanAllocations: { nodes: { sellingPlan: { id: string } }[] };
+}
+
+/** Raw shape of `SellingPlanPriceAdjustmentValue` — a GraphQL union, so
+ * only the branch matching `__typename` actually has its own field
+ * populated; TypeScript can't narrow that for us the way GraphQL does; see
+ * `normalizeSellingPlanPriceAdjustment` for the runtime switch. */
+interface RawSellingPlanPriceAdjustmentValue {
+  __typename: string;
+  adjustmentPercentage?: number;
+  adjustmentAmount?: Money;
+}
+
+interface RawSellingPlan {
+  id: string;
+  name: string;
+  description: string | null;
+  priceAdjustments: { adjustmentValue: RawSellingPlanPriceAdjustmentValue }[];
+}
+
+interface RawSellingPlanGroup {
+  name: string;
+  options: { name: string; values: string[] }[];
+  sellingPlans: { nodes: RawSellingPlan[] };
 }
 
 interface RawProduct {
@@ -188,6 +244,8 @@ interface RawProduct {
   availableForSale: boolean;
   images: { nodes: RawImage[] };
   priceRange: { minVariantPrice: Money; maxVariantPrice: Money };
+  requiresSellingPlan: boolean;
+  sellingPlanGroups: { nodes: RawSellingPlanGroup[] };
   variants: { nodes: RawVariant[] };
 }
 
@@ -209,6 +267,7 @@ interface RawCartLine {
     price: Money;
     product: { title: string; handle: string; images: { nodes: RawImage[] } };
   };
+  sellingPlanAllocation: { sellingPlan: { name: string } } | null;
 }
 
 interface RawCart {
@@ -244,6 +303,47 @@ function normalizeVariant(variant: RawVariant): ProductVariant {
     availableForSale: variant.availableForSale,
     price: variant.price,
     selectedOptions: variant.selectedOptions,
+    sellingPlanIds: variant.sellingPlanAllocations.nodes.map((n) => n.sellingPlan.id),
+  };
+}
+
+/** `adjustmentValue` is a GraphQL union — only the branch matching
+ * `__typename` actually has data, everything else on the raw shape is
+ * `undefined` regardless of what TypeScript's optional-field typing
+ * suggests. `null` covers both "this plan has no price adjustments at
+ * all" and the union's third member (a flat new-price override), which
+ * this app doesn't query for (see the PRODUCT_FRAGMENT comment) and so
+ * has no representation to normalize into here. */
+function normalizeSellingPlanPriceAdjustment(
+  raw: RawSellingPlan["priceAdjustments"][number] | undefined
+): SellingPlanPriceAdjustment {
+  const value = raw?.adjustmentValue;
+  if (!value) return null;
+  if (value.__typename === "SellingPlanPercentagePriceAdjustment" && value.adjustmentPercentage != null) {
+    return { type: "percentage", percentage: value.adjustmentPercentage };
+  }
+  if (value.__typename === "SellingPlanFixedAmountPriceAdjustment" && value.adjustmentAmount) {
+    return { type: "fixed_amount", amount: value.adjustmentAmount };
+  }
+  return null;
+}
+
+function normalizeSellingPlan(plan: RawSellingPlan): SellingPlan {
+  return {
+    id: plan.id,
+    name: plan.name,
+    description: plan.description,
+    // Only the first adjustment — see SellingPlanPriceAdjustment's own
+    // doc comment in types.ts for why.
+    priceAdjustment: normalizeSellingPlanPriceAdjustment(plan.priceAdjustments[0]),
+  };
+}
+
+function normalizeSellingPlanGroup(group: RawSellingPlanGroup): SellingPlanGroup {
+  return {
+    name: group.name,
+    options: group.options,
+    sellingPlans: group.sellingPlans.nodes.map(normalizeSellingPlan),
   };
 }
 
@@ -261,6 +361,8 @@ function normalizeProduct(product: RawProduct): Product {
       max: product.priceRange.maxVariantPrice,
     },
     variants: product.variants.nodes.map(normalizeVariant),
+    requiresSellingPlan: product.requiresSellingPlan,
+    sellingPlanGroups: product.sellingPlanGroups.nodes.map(normalizeSellingPlanGroup),
   };
 }
 
@@ -294,6 +396,7 @@ function normalizeCartLine(line: RawCartLine): CartLine {
       handle: line.merchandise.product.handle,
       image: image ? normalizeImage(image) : null,
     },
+    sellingPlanName: line.sellingPlanAllocation?.sellingPlan.name ?? null,
   };
 }
 

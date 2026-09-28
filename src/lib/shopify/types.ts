@@ -22,12 +22,44 @@ export interface SelectedOption {
   value: string;
 }
 
+/** A selling plan's price adjustment, collapsed from Shopify's
+ * `SellingPlanPriceAdjustmentValue` union (only the two variants this app
+ * queries — percentage and fixed-amount-off — see queries.ts) down to a
+ * single discriminated shape the UI can switch on directly. `null` when a
+ * plan has no adjustments at all (same price as one-time). Only the
+ * *first* `priceAdjustments` entry is kept — real stores almost always
+ * have exactly one; a plan with tiered adjustments per interval is a rarer
+ * case this UI doesn't attempt to represent. */
+export type SellingPlanPriceAdjustment =
+  | { type: "percentage"; percentage: number }
+  | { type: "fixed_amount"; amount: Money }
+  | null;
+
+export interface SellingPlan {
+  id: string;
+  name: string;
+  description: string | null;
+  priceAdjustment: SellingPlanPriceAdjustment;
+}
+
+export interface SellingPlanGroup {
+  name: string;
+  options: Array<{ name: string; values: string[] }>;
+  sellingPlans: SellingPlan[];
+}
+
 export interface ProductVariant {
   id: string;
   title: string;
   availableForSale: boolean;
   price: Money;
   selectedOptions: SelectedOption[];
+  /** IDs of the selling plans this specific variant can be purchased
+   * under (from its `sellingPlanAllocations`) — a selling plan group can
+   * target a subset of a product's variants, so this isn't always every
+   * plan in `Product.sellingPlanGroups`. Empty when the variant supports
+   * no selling plans at all. */
+  sellingPlanIds: string[];
 }
 
 export interface Product {
@@ -40,6 +72,12 @@ export interface Product {
   images: ProductImage[];
   priceRange: { min: Money; max: Money };
   variants: ProductVariant[];
+  /** True when this product can *only* be bought on a selling plan —
+   * `sellingPlanGroups` will be non-empty whenever this is true, but the
+   * reverse isn't required (a product can offer selling plans while still
+   * allowing a one-time purchase). */
+  requiresSellingPlan: boolean;
+  sellingPlanGroups: SellingPlanGroup[];
 }
 
 /**
@@ -69,6 +107,12 @@ export interface CartLine {
     handle: string;
     image: ProductImage | null;
   };
+  /** Selling plan this line was purchased under, if any — `null` for a
+   * plain one-time-purchase line. Only the name is kept; nothing in the
+   * cart UI needs the plan's id or price adjustment once it's already a
+   * line item (the price shown is always the line's actual `price`,
+   * already adjusted by Shopify). */
+  sellingPlanName: string | null;
 }
 
 export interface Cart {
@@ -82,6 +126,11 @@ export interface Cart {
 export interface CartLineInput {
   merchandiseId: string;
   quantity: number;
+  /** Shopify's own `CartLineInput.sellingPlanId` — omit entirely for a
+   * one-time purchase (passing `undefined` rather than `null`, since
+   * that's what lets it drop out of the JSON body instead of sending an
+   * explicit null Shopify would need to interpret). */
+  sellingPlanId?: string;
 }
 
 /**
