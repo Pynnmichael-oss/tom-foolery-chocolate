@@ -8,6 +8,19 @@ import { gsap, useGSAP } from "@/components/motion/gsap";
 import { useMediaPreferences } from "@/lib/hooks/useMediaPreferences";
 import { useScrollToGiftingForm } from "@/lib/hooks/useScrollToGiftingForm";
 
+export interface HeroImageSource {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  /** CSS `object-position` (e.g. `"78% 22%"`) — plain inline style, not a
+   * Tailwind `object-[...]` class: Tailwind's JIT scanner needs a literal
+   * class string at build time to generate CSS for it, and can't see a
+   * value assembled from a prop at runtime. Omit for the browser default
+   * (`"50% 50%"`, dead center). */
+  objectPosition?: string;
+}
+
 /**
  * TODO(garrett): placeholder hero photo, AND it's under-resolution for a
  * full-bleed hero — two separate problems, same fix (real shoot photos).
@@ -39,13 +52,49 @@ import { useScrollToGiftingForm } from "@/lib/hooks/useScrollToGiftingForm";
  *    repo to swap in. Not upscaling it — `quality`/`sizes` below squeeze
  *    what's fetchable out of the existing pixels, but real photography
  *    (Drive folder above) is the only actual fix.
+ *
+ * SWAP POINT (2026-09-28 audit — see docs/gifting-hero-image-audit.md for
+ * the full candidate list with dimensions/file sizes): when real
+ * photography lands, update these two defaults, not the `Image` JSX below
+ * — `desktopImage`/`mobileImage` (GiftingHeroProps) already support two
+ * genuinely different sources with independent crops now, so a real
+ * mobile-specific photo (portrait-leaning, or just a different crop) can
+ * go straight into DEFAULT_MOBILE_IMAGE without another refactor. Until
+ * then this defaults to the exact same photo as desktop, same crop —
+ * zero art direction yet, just the plumbing for it.
  */
-const HERO_IMAGE = {
+const DEFAULT_DESKTOP_IMAGE: HeroImageSource = {
   src: "/photos/philosophy-live-a-little.jpg",
   alt: "A woman laughing and holding up a chocolate bar",
   width: 2033,
   height: 1146,
-} as const;
+  // Default (50% 50%) crops the subject (woman + chocolate bar, both
+  // sitting right-of-center in frame — see the source file) almost
+  // entirely out of the tall, narrow window `object-cover` has to work
+  // with on mobile, leaving only empty backdrop. Biased right + slightly
+  // high keeps her face and the bar in frame from the narrowest mobile
+  // crop up through desktop — a stand-in for real mobile art direction,
+  // not a substitute for it (see the TODO above).
+  objectPosition: "78% 22%",
+};
+
+const DEFAULT_MOBILE_IMAGE: HeroImageSource = DEFAULT_DESKTOP_IMAGE;
+
+export interface GiftingHeroProps {
+  /** Desktop/tablet hero image — rendered at the `sm:` breakpoint (640px)
+   * and up. Defaults to the current placeholder photo; see the TODO
+   * above for the real swap-in plan. */
+  desktopImage?: HeroImageSource;
+  /** Mobile hero image — rendered below `sm:`. Defaults to `desktopImage`
+   * itself (today, that's literally `DEFAULT_MOBILE_IMAGE === DEFAULT_-
+   * DESKTOP_IMAGE`, the same object) — when it resolves to the exact same
+   * `src` as `desktopImage`, only one `<Image>` renders (not two fetching
+   * the same file under different `hidden`/`sm:hidden` classes), so
+   * passing nothing here costs nothing extra over the single-image
+   * version this component used to be. Pass a genuinely different source
+   * to get true art-directed responsive images. */
+  mobileImage?: HeroImageSource;
+}
 
 /**
  * Corporate Gifting hero — a static full-bleed photo (no pin/scrub; this
@@ -53,7 +102,10 @@ const HERO_IMAGE = {
  * treatment) with a one-time fade-up on mount — fires immediately, no
  * ScrollTrigger needed since this is always in view at load.
  */
-export function GiftingHero() {
+export function GiftingHero({
+  desktopImage = DEFAULT_DESKTOP_IMAGE,
+  mobileImage = DEFAULT_MOBILE_IMAGE,
+}: GiftingHeroProps = {}) {
   const contentRef = useRef<HTMLDivElement>(null);
   const { prefersReducedMotion } = useMediaPreferences();
   const scrollToForm = useScrollToGiftingForm();
@@ -76,23 +128,36 @@ export function GiftingHero() {
     { dependencies: [prefersReducedMotion] }
   );
 
+  // Only render a second <Image> when there's genuinely a different photo
+  // to show — comparing `src` (not object identity) so a caller passing
+  // an equivalent-but-freshly-created object for both props still
+  // collapses to one image, same as the (identity-equal) defaults do.
+  const hasDistinctMobileImage = mobileImage.src !== desktopImage.src;
+
   return (
     <section className="relative flex min-h-[70vh] w-full items-center justify-center overflow-hidden bg-tf-black px-fluid-md py-fluid-2xl text-center sm:min-h-[85vh]">
       <div aria-hidden="true" className="absolute inset-0">
+        {hasDistinctMobileImage && (
+          <Image
+            src={mobileImage.src}
+            alt=""
+            fill
+            priority
+            quality={85}
+            sizes="100vw"
+            className="object-cover sm:hidden"
+            style={{ objectPosition: mobileImage.objectPosition ?? "50% 50%" }}
+          />
+        )}
         <Image
-          src={HERO_IMAGE.src}
+          src={desktopImage.src}
           alt=""
           fill
           priority
           quality={85}
           sizes="100vw"
-          // Default (50% 50%) crops the subject (woman + chocolate bar,
-          // both sitting right-of-center in frame — see the source file)
-          // almost entirely out of the tall, narrow window `object-cover`
-          // has to work with on mobile, leaving only empty backdrop.
-          // Biased right + slightly high keeps her face and the bar in
-          // frame from the narrowest mobile crop up through desktop.
-          className="object-cover object-[78%_22%]"
+          className={hasDistinctMobileImage ? "hidden object-cover sm:block" : "object-cover"}
+          style={{ objectPosition: desktopImage.objectPosition ?? "50% 50%" }}
         />
         {/* Radial scrim, not a flat wash over the whole photo (that was
          * the old `bg-tf-black/50` here) — content is vertically centered
