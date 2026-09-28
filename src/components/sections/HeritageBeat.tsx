@@ -27,21 +27,21 @@ const HERITAGE_PHOTO = {
 } as const;
 
 /**
- * Copy from Garrett (owner), verbatim. Paragraph three is deliberately its
- * own entry — it's the emphasized closer.
+ * Copy from Garrett (owner), verbatim. The closer is deliberately its own
+ * entry — it's the emphasized last line. (The "— Garrett" sign-off that
+ * originally followed it was removed at his request.)
  */
 const INTRO_PARAGRAPHS = [
   "Before there was Tom Foolery, there was Tom Meldrum — my grandfather and proprietor of the Sugar Bowl, a good old-fashioned candy store in the heart of Massillon, Ohio. It was the kind of place you stopped by for a sweet treat after work, a gift for any occasion, or just a little joy in your day.",
   "More than 50 years and three generations later, Tom Foolery is our ode to those days. We're on a mission to bring a little fun to your day, one piece of chocolate at a time. With real, high-quality chocolate, nostalgic flavors, and a little twist on it all, every bite is meant to bring a smile to your face.",
 ] as const;
 const CLOSER = "So here's to breaking open a bar or a bon bon, and living a little.";
-const SIGN_OFF = "— Garrett";
 
 /**
  * Heritage beat on /story: the family photo beside Garrett's note (photo
  * left, copy right from `lg` up; photo above copy below that).
  *
- * Motion: the photo fades/rises, then the paragraphs and sign-off stagger
+ * Motion: the photo fades/rises, then the paragraphs stagger
  * in — each group on its own ScrollTrigger so mobile's stacked layout
  * reveals the copy as it scrolls into view, not while it's still off
  * screen. Transform/opacity only, and only under
@@ -151,17 +151,6 @@ export function HeritageBeat() {
             style={{ fontSize: "clamp(1.375rem, 1.1rem + 1.1vw, 1.9rem)", lineHeight: 1.25 }}
           >
             {CLOSER}
-          </p>
-          {/* Signature: no script face in the brand set (Feature Deck is a
-           * serif — see BRAND_REFERENCE), so this is the display face in
-           * italic at signature scale, echoing StoryHero's "—Tom" sign-off,
-           * just larger. */}
-          <p
-            data-story-reveal="line"
-            className="font-display italic text-fg"
-            style={{ fontSize: "clamp(2.5rem, 1.8rem + 3vw, 4rem)", lineHeight: 1 }}
-          >
-            {SIGN_OFF}
           </p>
         </div>
       </div>
