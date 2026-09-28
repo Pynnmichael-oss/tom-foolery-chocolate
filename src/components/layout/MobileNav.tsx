@@ -153,7 +153,12 @@ export function MobileNav() {
                 // avoidable extra work competing for bandwidth/main-thread
                 // time during the page's own initial load.
                 prefetch={false}
-                className="font-sans text-2xl font-black uppercase tracking-[0.075em] text-tf-white transition-colors hover:text-tf-turmeric"
+                // py-[6px]: the text's own line box is ~32px tall at this
+                // size — short of the 44px minimum tap target (WCAG
+                // 2.5.5) — this pads it to 44px without changing the
+                // visual gap between links (gap-fluid-lg on the parent
+                // already accounts for it).
+                className="rounded-sm px-2 py-[6px] font-sans text-2xl font-black uppercase tracking-[0.075em] text-tf-white transition-colors hover:text-tf-turmeric"
               >
                 {link.label}
               </Link>
