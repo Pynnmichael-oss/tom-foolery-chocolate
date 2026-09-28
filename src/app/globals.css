@@ -61,3 +61,61 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * Hero entrance — pre-paint initial state.
+ *
+ * GSAP animates these elements *to* their resting state (fromTo/to), so the
+ * hidden/offset starting state has to already be in the stylesheet before
+ * first paint; otherwise the server HTML paints visible, hydration hides it,
+ * and the timeline reveals it (visible → hidden → visible).
+ *
+ * Gated on `html.js` (class added by the inline <head> script in layout.tsx,
+ * so no-JS visitors never get a hidden state) AND
+ * `prefers-reduced-motion: no-preference` (reduced-motion visitors get the
+ * final state and GSAP never touches these). Once GSAP takes over it writes
+ * inline styles, which win over these rules.
+ *
+ * Headlines are transform-only — never opacity — so they paint visible
+ * immediately (LCP).
+ */
+@media (prefers-reduced-motion: no-preference) {
+  /* Gifting hero (graphic) */
+  html.js [data-hero="pre"],
+  html.js [data-hero="sub"],
+  html.js [data-hero="cta"] {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  html.js [data-hero="title"] {
+    transform: translateY(28px);
+  }
+  html.js [data-hero="product"] {
+    transform: translateX(160px) rotate(10deg);
+  }
+  html.js [data-hero="badge"] {
+    transform: scale(0) rotate(-60deg);
+  }
+  html.js [data-hero="tom"] {
+    transform: translateY(105%);
+  }
+
+  /* Home hero (scroll-scrubbed) */
+  html.js [data-home-hero="logo"] {
+    opacity: 0;
+    transform: translateY(24px) scale(0.85);
+  }
+  html.js [data-home-hero="pre"] {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  html.js [data-home-hero="title"] {
+    transform: translateY(32px);
+  }
+  html.js [data-home-hero="accent"] {
+    transform: scaleX(0);
+  }
+  html.js [data-home-hero="cue"] {
+    opacity: 0;
+  }
+}

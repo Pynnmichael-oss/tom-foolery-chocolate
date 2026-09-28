@@ -33,12 +33,28 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Runs synchronously while the HTML is parsed, before first paint. Marks the
+ * document as JS-enabled so hero entrance styles in globals.css (gated on
+ * `html.js`) can set the hidden starting state without hiding anything from
+ * no-JS visitors. The timeout is a failsafe: if the JS bundle never takes
+ * over (script error, blocked chunk), drop the class so nothing stays
+ * hidden — elements GSAP already owns carry inline styles, which the class
+ * removal doesn't affect.
+ */
+const JS_CLASS_SCRIPT = `(function(){var e=document.documentElement;e.classList.add("js");setTimeout(function(){e.classList.remove("js")},10000)})()`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
       className={`${newsreader.variable} ${poppins.variable} h-full antialiased`}
+      // The inline script below adds `js` to this element before hydration.
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: JS_CLASS_SCRIPT }} />
+      </head>
       <body className="min-h-full bg-bg font-sans text-fg">
         <OrganizationJsonLd />
         <OmnisendSnippet />

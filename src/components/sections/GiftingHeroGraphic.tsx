@@ -73,9 +73,11 @@ const CTA_BASE =
  *
  * Motion (GSAP, transform/opacity only) runs only under
  * `prefers-reduced-motion: no-preference`; otherwise nothing is touched
- * and the page is its final static state. Rotations on the product/badge
- * use Tailwind's `rotate` *property* (not `transform`), so GSAP's own
- * transform tweens compose with them instead of overwriting them.
+ * and the page is its final static state. The hidden/offset starting state
+ * is plain CSS (globals.css, `html.js [data-hero=…]`) so it's in place
+ * before first paint; GSAP only animates *to* the resting state. The
+ * static rotations on the product/badge sit on inner wrappers so the
+ * animated outer elements only ever carry the entrance transform.
  */
 export function GiftingHeroGraphic({ groundColor = "var(--tf-rose)" }: GiftingHeroGraphicProps) {
   const rootRef = useRef<HTMLElement>(null);
@@ -87,20 +89,53 @@ export function GiftingHeroGraphic({ groundColor = "var(--tf-rose)" }: GiftingHe
       const mm = gsap.matchMedia();
 
       mm.add(breakpoints.motionOK, () => {
-        const text = ["[data-hero=pre]", "[data-hero=title]", "[data-hero=sub]", "[data-hero=cta]"]
-          .map((s) => q(s))
-          .filter(Boolean);
         const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
-        tl.from(text, { y: 28, opacity: 0, duration: 0.7, stagger: 0.12 }, 0)
-          // Product deliberately slides via transform only (no opacity):
-          // it's a large above-the-fold image, and fading it from 0 would
-          // push its paint — and potentially LCP — later for no visual gain.
-          // `rotation` here is an *offset* on top of the static -9deg.
-          .from(q("[data-hero=product]"), { x: 160, rotation: 10, duration: 0.95, ease: "back.out(1.5)" }, 0.2)
-          .from(q("[data-hero=badge]"), { scale: 0, rotation: -60, duration: 0.6, ease: "back.out(2.2)" }, "-=0.1")
-          // Single, delayed peek: rises from behind the wave once.
-          .from(q("[data-hero=tom]"), { yPercent: 105, duration: 0.55, ease: "power2.out" }, "+=0.5");
+        // Every `from` object below mirrors the pre-paint CSS in
+        // globals.css (`html.js [data-hero=…]`) — so when this runs
+        // post-hydration, "from" is already what's on screen and nothing
+        // jumps. Text rises via transform; only the supporting elements
+        // fade. The headline is deliberately transform-only (LCP: it must
+        // paint visible immediately).
+        const rise = (sel: string, fade: boolean, at: number) =>
+          tl.fromTo(
+            q(sel),
+            fade ? { y: 28, opacity: 0 } : { y: 28 },
+            fade ? { y: 0, opacity: 1, duration: 0.7 } : { y: 0, duration: 0.7 },
+            at
+          );
+        rise("[data-hero=pre]", true, 0);
+        rise("[data-hero=title]", false, 0.12);
+        rise("[data-hero=sub]", true, 0.24);
+        rise("[data-hero=cta]", true, 0.36);
+
+        // Product deliberately slides via transform only (no opacity):
+        // it's a large above-the-fold image, and fading it from 0 would
+        // push its paint — and potentially LCP — later for no visual gain.
+        // `rotation` is an *offset* on top of the static -9deg, which lives
+        // on the inner wrapper so it never fights this transform.
+        tl.fromTo(
+          q("[data-hero=product]"),
+          { x: 160, rotation: 10 },
+          { x: 0, rotation: 0, duration: 0.95, ease: "back.out(1.5)" },
+          0.2
+        )
+          .fromTo(
+            q("[data-hero=badge]"),
+            { scale: 0, rotation: -60 },
+            { scale: 1, rotation: 0, duration: 0.6, ease: "back.out(2.2)" },
+            "-=0.1"
+          )
+          // Single, delayed peek: rises from behind the wave once. `y: 0`
+          // is explicit because GSAP reads the CSS starting transform
+          // (translateY(105%)) as a pixel `y`; without pinning it, that
+          // pixel offset would survive the yPercent tween.
+          .fromTo(
+            q("[data-hero=tom]"),
+            { y: 0, yPercent: 105 },
+            { yPercent: 0, duration: 0.55, ease: "power2.out" },
+            "+=0.5"
+          );
 
         return () => {
           tl.kill();
@@ -125,9 +160,9 @@ export function GiftingHeroGraphic({ groundColor = "var(--tf-rose)" }: GiftingHe
         <div className="flex max-w-[34rem] flex-col items-start gap-fluid-md lg:max-w-[36rem]">
           <p
             data-hero="pre"
-            className="font-sans text-xs font-black uppercase tracking-[0.18em] sm:text-sm"
+            className="font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em]"
           >
-            Gifts for the clever &amp; curious
+            Corporate Gifting
           </p>
           <h1
             data-hero="title"
@@ -140,16 +175,19 @@ export function GiftingHeroGraphic({ groundColor = "var(--tf-rose)" }: GiftingHe
             Stand out from the crowd with a unique, personalized gift for any occasion.
           </p>
           <div data-hero="cta" className="mt-fluid-xs flex flex-wrap gap-fluid-sm">
-            <Link href="/shop" className={`${CTA_BASE} bg-tf-black text-tf-white`}>
-              Shop Gifts
-            </Link>
             <a
               href="#gifting-form"
               onClick={scrollToForm}
-              className={`${CTA_BASE} bg-transparent text-tf-black hover:bg-tf-black/10`}
+              className={`${CTA_BASE} bg-tf-black text-tf-white`}
             >
               Corporate Orders
             </a>
+            <Link
+              href="/shop"
+              className={`${CTA_BASE} bg-transparent text-tf-black hover:bg-tf-black/10`}
+            >
+              Shop Gifts
+            </Link>
           </div>
         </div>
       </div>
@@ -171,28 +209,32 @@ export function GiftingHeroGraphic({ groundColor = "var(--tf-rose)" }: GiftingHe
         {/* Product + badge, centered on the seam: top-center on mobile,
          * left-middle on desktop. */}
         <div className="absolute left-1/2 top-0 z-20 w-[min(82vw,22rem)] -translate-x-1/2 -translate-y-[52%] lg:left-0 lg:top-[57%] lg:w-[clamp(20rem,33vw,34rem)] lg:-translate-y-1/2">
-          <div data-hero="product" className="-rotate-9">
-            <Image
-              src={PRODUCT.src}
-              alt={PRODUCT.alt}
-              width={PRODUCT.width}
-              height={PRODUCT.height}
-              priority
-              quality={85}
-              sizes="(min-width: 1024px) 33vw, 82vw"
-              className="h-auto w-full"
-              style={{ filter: "drop-shadow(0 22px 24px rgba(37, 56, 42, 0.38))" }}
-            />
+          <div data-hero="product">
+            <div className="-rotate-9">
+              <Image
+                src={PRODUCT.src}
+                alt={PRODUCT.alt}
+                width={PRODUCT.width}
+                height={PRODUCT.height}
+                priority
+                quality={85}
+                sizes="(min-width: 1024px) 33vw, 82vw"
+                className="h-auto w-full"
+                style={{ filter: "drop-shadow(0 22px 24px rgba(37, 56, 42, 0.38))" }}
+              />
+            </div>
           </div>
           {/* Badge: its own element so it pops in on its own timing rather
            * than riding the product's slide. */}
           <div
             data-hero="badge"
-            className="absolute -right-[4%] -top-[14%] flex size-[clamp(5.5rem,9vw,8.25rem)] rotate-12 items-center justify-center rounded-full bg-tf-turmeric text-center"
+            className="absolute -right-[4%] -top-[14%] size-[clamp(5.5rem,9vw,8.25rem)]"
           >
-            <span className="font-display text-[clamp(1.05rem,1.7vw,1.6rem)] font-semibold leading-[1.02]">
-              Live a<br />Little
-            </span>
+            <div className="flex size-full rotate-12 items-center justify-center rounded-full bg-tf-turmeric text-center">
+              <span className="font-display text-[clamp(1.05rem,1.7vw,1.6rem)] font-semibold leading-[1.02]">
+                Live a<br />Little
+              </span>
+            </div>
           </div>
         </div>
       </div>

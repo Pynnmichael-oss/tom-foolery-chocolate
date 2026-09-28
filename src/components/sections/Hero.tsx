@@ -4,7 +4,6 @@ import { useRef } from "react";
 import { PinnedSection } from "@/components/motion/PinnedSection";
 import { EyesHatIcon } from "@/components/ui/logos";
 import { BrandVideo } from "@/components/media/BrandVideo";
-import { gsap } from "@/components/motion/gsap";
 
 /** Generated brand-black frame with a faint stripe texture (same motif as
  * StripeDivider) — stands in as `poster` for `backgroundVideo` until a real
@@ -39,18 +38,16 @@ export function Hero({ backgroundVideo, backgroundVideoPoster }: HeroProps = {})
       pinDistance="+=150%"
       scrub={true}
       onTimeline={(tl, { reducedMotion }) => {
-        if (reducedMotion) {
-          // Simple, non-scroll-tied fade to the final resting state.
-          tl.fromTo(
-            [logoRef.current, preheaderRef.current, headlineRef.current],
-            { opacity: 0 },
-            { opacity: 1, duration: 0.8, stagger: 0.15, ease: "power1.out" }
-          );
-          gsap.set(accentRef.current, { scaleX: 1 });
-          gsap.set(cueRef.current, { opacity: 1 });
-          return;
-        }
+        // Reduced motion: no entrance at all. The resting state is what the
+        // static CSS already renders (the hidden starting state in
+        // globals.css only applies under `no-preference`), so there's
+        // nothing to hide-then-reveal.
+        if (reducedMotion) return;
 
+        // Every `from` mirrors the pre-paint CSS in globals.css
+        // (`html.js [data-home-hero=…]`), so this animates *to* the resting
+        // state instead of hiding after paint. The headline rises via
+        // transform only — never opacity — so it paints visible right away.
         tl.fromTo(
           logoRef.current,
           { opacity: 0, scale: 0.85, y: 24 },
@@ -64,8 +61,8 @@ export function Hero({ backgroundVideo, backgroundVideoPoster }: HeroProps = {})
           )
           .fromTo(
             headlineRef.current,
-            { opacity: 0, y: 32 },
-            { opacity: 1, y: 0, duration: 0.9, ease: "power2.out" },
+            { y: 32 },
+            { y: 0, duration: 0.9, ease: "power2.out" },
             "-=0.3"
           )
           .fromTo(
@@ -114,6 +111,7 @@ export function Hero({ backgroundVideo, backgroundVideoPoster }: HeroProps = {})
        * (64-80px is comfortably above the 27px minimum regardless). */}
       <EyesHatIcon
         ref={logoRef}
+        data-home-hero="logo"
         tone="negative"
         title="Tom Foolery"
         className="mb-fluid-lg h-16 w-auto sm:h-20"
@@ -121,6 +119,7 @@ export function Hero({ backgroundVideo, backgroundVideoPoster }: HeroProps = {})
 
       <p
         ref={preheaderRef}
+        data-home-hero="pre"
         className="mb-fluid-sm max-w-xl font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-white/90"
       >
         Chocolate as interesting as it is irresistible
@@ -128,6 +127,7 @@ export function Hero({ backgroundVideo, backgroundVideoPoster }: HeroProps = {})
 
       <h1
         ref={headlineRef}
+        data-home-hero="title"
         className="relative font-display font-semibold text-[length:var(--fs-header)] text-tf-white"
         style={{
           lineHeight: "calc(1em + 16px)",
@@ -136,14 +136,16 @@ export function Hero({ backgroundVideo, backgroundVideoPoster }: HeroProps = {})
         Live a Little
         <span
           ref={accentRef}
+          data-home-hero="accent"
           aria-hidden="true"
-          className="absolute -bottom-2 left-1/2 h-[3px] w-24 origin-left -translate-x-1/2 scale-x-0 bg-tf-turmeric sm:w-32"
+          className="absolute -bottom-2 left-1/2 h-[3px] w-24 origin-left -translate-x-1/2 bg-tf-turmeric sm:w-32"
         />
       </h1>
 
       <div
         ref={cueRef}
-        className="absolute bottom-fluid-md left-1/2 flex -translate-x-1/2 flex-col items-center gap-fluid-xs text-tf-white/70 opacity-0"
+        data-home-hero="cue"
+        className="absolute bottom-fluid-md left-1/2 flex -translate-x-1/2 flex-col items-center gap-fluid-xs text-tf-white/70"
       >
         <span className="font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em]">
           Scroll
