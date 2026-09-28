@@ -1,9 +1,27 @@
 /**
- * In-memory fallback "backend" used whenever isShopifyConfigured() is
- * false (see client.ts) — no Shopify credentials required to build, run,
- * or click through the whole commerce flow, cart included. Data shapes
- * match the normalized types in types.ts exactly, so nothing downstream
- * needs to know mock data is in play.
+ * In-memory fallback "backend," used in two situations — both gated so
+ * this can never stand in for a real customer-facing production request:
+ *
+ * 1. isShopifyConfigured() is false (see client.ts) — no Shopify
+ *    credentials at all. No Shopify credentials required to build, run,
+ *    or click through the whole commerce flow, cart included.
+ * 2. A real Shopify API call throws, but ONLY outside production (see
+ *    isProductionRuntime() in client.ts, and queries.ts's
+ *    handleReadFailure) — graceful degradation while developing/on a
+ *    Vercel Preview deploy with a flaky or misconfigured token, say.
+ *
+ * In production, a real Shopify read failure is rethrown instead of
+ * falling back here — see queries.ts's handleReadFailure for why (short
+ * version: ISR already keeps serving the last good page on a
+ * revalidation failure; falling back to mock data would instead risk
+ * showing a real customer fake demo products, e.g. one of the selling-
+ * plan demo entries below, as if they were purchasable). The product
+ * page and shop grid (src/app/shop/error.tsx) have their own on-brand
+ * error state for the one case ISR can't paper over: a genuine
+ * first-ever render with no prior successful build to fall back to.
+ *
+ * Data shapes match the normalized types in types.ts exactly, so nothing
+ * downstream needs to know mock data is in play.
  */
 import { applySellingPlanAdjustment } from "./format";
 import type {

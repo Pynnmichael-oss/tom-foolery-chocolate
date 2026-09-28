@@ -1,4 +1,4 @@
-import { isShopifyConfigured, shopifyFetch, ShopifyApiError } from "./client";
+import { isProductionRuntime, isShopifyConfigured, shopifyFetch, ShopifyApiError } from "./client";
 import * as mock from "./mock-data";
 import type {
   Cart,
@@ -429,6 +429,29 @@ function assertNoUserErrors(errors: UserError[] | undefined, operation: string):
 /* Products                                                             */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Shared by every reader below whose catch block used to always fall
+ * back to mock data on a real Shopify failure — see mock-data.ts's own
+ * top comment for the full rule this implements. In production, this
+ * rethrows instead of swallowing the error: ISR means a *revalidation*
+ * failure on an already-built page keeps serving the last good static
+ * output automatically (Next's own behavior, nothing this function needs
+ * to do), so the rethrow only actually surfaces for a genuine first-ever
+ * render failure — which is exactly when it needs to surface, rather
+ * than quietly showing fake demo products to a real customer. Outside
+ * production (including Vercel Preview — see isProductionRuntime),
+ * mock data keeps standing in, same as always.
+ *
+ * `mockValue` is a thunk, not a plain value, so it's never even evaluated
+ * in production, where it wouldn't be used anyway.
+ */
+function handleReadFailure<T>(error: unknown, context: string, mockValue: () => T): T {
+  console.error(`[shopify] ${context} failed:`, error);
+  if (isProductionRuntime()) throw error;
+  console.error(`[shopify] ${context}: falling back to mock data (non-production).`);
+  return mockValue();
+}
+
 export async function getProducts(first = 24): Promise<Product[]> {
   if (!isShopifyConfigured()) return mock.getMockProducts();
 
@@ -441,8 +464,7 @@ export async function getProducts(first = 24): Promise<Product[]> {
     });
     return data.products.nodes.map(normalizeProduct);
   } catch (error) {
-    console.error("[shopify] getProducts failed, falling back to mock data:", error);
-    return mock.getMockProducts();
+    return handleReadFailure(error, "getProducts", () => mock.getMockProducts());
   }
 }
 
@@ -458,8 +480,7 @@ export async function getProduct(handle: string): Promise<Product | null> {
     });
     return data.product ? normalizeProduct(data.product) : null;
   } catch (error) {
-    console.error(`[shopify] getProduct(${handle}) failed, falling back to mock data:`, error);
-    return mock.getMockProduct(handle);
+    return handleReadFailure(error, `getProduct(${handle})`, () => mock.getMockProduct(handle));
   }
 }
 
@@ -481,13 +502,16 @@ export async function getFeaturedProducts(first = 3): Promise<FeaturedProduct[]>
     });
     const nodes = data.collection?.products.nodes ?? [];
     // Collection doesn't exist yet (or is empty) — mock fallback keeps the
-    // homepage rail populated instead of silently rendering nothing.
+    // homepage rail populated instead of silently rendering nothing. Not
+    // an error path (the query succeeded; there's just no data), so this
+    // one's untouched by handleReadFailure's production/non-production
+    // split below — an empty "featured" collection is a legitimate
+    // Shopify state, not a failure to recover from.
     return nodes.length > 0
       ? nodes.map(normalizeFeaturedProduct)
       : mock.getMockFeaturedProducts();
   } catch (error) {
-    console.error("[shopify] getFeaturedProducts failed, falling back to mock data:", error);
-    return mock.getMockFeaturedProducts();
+    return handleReadFailure(error, "getFeaturedProducts", () => mock.getMockFeaturedProducts());
   }
 }
 
