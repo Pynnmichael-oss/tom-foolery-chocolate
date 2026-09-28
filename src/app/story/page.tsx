@@ -2,15 +2,26 @@ import type { Metadata } from "next";
 import { StoryHero } from "@/components/sections/StoryHero";
 import { HeritageBeat } from "@/components/sections/HeritageBeat";
 import { StoryClosingCta } from "@/components/sections/StoryClosingCta";
-import { POWER_STATEMENTS } from "@/lib/site";
+import { DEFAULT_OG_IMAGE } from "@/lib/site";
+
+// Distinct from the homepage's description (POWER_STATEMENTS.chocolate-
+// Interesting) — duplicate <meta name="description"> across pages is
+// worth avoiding on its own, and this page's real content (as of the
+// Sugar Bowl/Tom Meldrum copy) is specific enough to describe on its own
+// terms rather than reusing the site-wide tagline.
+const DESCRIPTION =
+  "Three generations from Tom Meldrum's Sugar Bowl candy store to Tom Foolery today — the family history behind the chocolate.";
 
 export const metadata: Metadata = {
   title: "Our Story",
-  description: POWER_STATEMENTS.chocolateInteresting,
+  description: DESCRIPTION,
   alternates: { canonical: "/story" },
+  // images: DEFAULT_OG_IMAGE — see that constant's own comment on why an
+  // openGraph override needs this explicitly, not just title/description.
   openGraph: {
     title: "Our Story",
-    description: POWER_STATEMENTS.chocolateInteresting,
+    description: DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
   },
 };
 

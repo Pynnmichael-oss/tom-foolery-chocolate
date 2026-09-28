@@ -90,8 +90,8 @@ export function ContactForm() {
        * tabIndex={-1} takes it out of tab order entirely), but a naive
        * bot that fills every field it finds in the DOM will fill this
        * one too. /api/contact checks it server-side and silently no-ops
-       * instead of ever sending an email. Same pattern as
-       * /api/subscribe/route.ts's own honeypot. */}
+       * instead of ever sending an email — same `isHoneypotTriggered`
+       * check /api/gifting's own honeypot uses (src/lib/forms/shared.ts). */}
       <label htmlFor="tf-contact-website" className="sr-only" aria-hidden="true">
         Leave this field blank
       </label>

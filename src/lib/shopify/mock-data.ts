@@ -35,6 +35,7 @@ import type {
   ProductVariant,
   SellingPlan,
   SellingPlanGroup,
+  ShopPolicies,
 } from "./types";
 
 function placeholderImage(label: string, bg: string, fg = "FFFFFF"): {
@@ -285,6 +286,23 @@ export function getMockProducts(): Product[] {
 
 export function getMockProduct(handle: string): Product | null {
   return MOCK_PRODUCTS.find((p) => p.handle === handle) ?? null;
+}
+
+// ---------------------------------------------------------------------
+// Shop policies (/privacy, /returns, /shipping, /terms) — no mock text:
+// these are legal copy a merchant writes in the Shopify admin, not
+// something to invent a placeholder for. All null here means every
+// policy route 404s in mock mode, same as it would for a real,
+// not-yet-filled-in policy in the admin.
+// ---------------------------------------------------------------------
+
+export function getMockShopPolicies(): ShopPolicies {
+  return {
+    privacyPolicy: null,
+    refundPolicy: null,
+    shippingPolicy: null,
+    termsOfService: null,
+  };
 }
 
 // ---------------------------------------------------------------------

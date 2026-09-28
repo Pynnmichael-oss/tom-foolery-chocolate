@@ -1,4 +1,5 @@
-import { isProductionRuntime, isShopifyConfigured, shopifyFetch, ShopifyApiError } from "./client";
+import { isShopifyConfigured, shopifyFetch, ShopifyApiError } from "./client";
+import { isProductionRuntime } from "@/lib/env";
 import * as mock from "./mock-data";
 import type {
   Cart,
@@ -12,6 +13,8 @@ import type {
   SellingPlan,
   SellingPlanGroup,
   SellingPlanPriceAdjustment,
+  ShopPolicy,
+  ShopPolicies,
 } from "./types";
 
 /* ------------------------------------------------------------------ */
@@ -180,6 +183,17 @@ const CART_QUERY = `#graphql
   }
 `;
 
+const SHOP_POLICIES_QUERY = `#graphql
+  query ShopPolicies {
+    shop {
+      privacyPolicy { title body handle }
+      refundPolicy { title body handle }
+      shippingPolicy { title body handle }
+      termsOfService { title body handle }
+    }
+  }
+`;
+
 const CART_CREATE_MUTATION = `#graphql
   ${CART_FRAGMENT}
   mutation CartCreate($lines: [CartLineInput!]) {
@@ -318,6 +332,12 @@ interface UserError {
   message: string;
 }
 
+interface RawShopPolicy {
+  title: string;
+  body: string;
+  handle: string;
+}
+
 /* ------------------------------------------------------------------ */
 /* Normalization                                                        */
 /* ------------------------------------------------------------------ */
@@ -329,6 +349,14 @@ function normalizeImage(image: RawImage) {
     width: image.width ?? undefined,
     height: image.height ?? undefined,
   };
+}
+
+/** A policy the merchant never filled in comes back with an empty (or
+ * whitespace-only) `body` rather than `null` — treated as "doesn't exist"
+ * so the page for it can 404 instead of rendering blank. */
+function normalizePolicy(policy: RawShopPolicy | null): ShopPolicy | null {
+  if (!policy || !policy.body.trim()) return null;
+  return { title: policy.title, bodyHtml: policy.body, handle: policy.handle };
 }
 
 function normalizeVariant(variant: RawVariant): ProductVariant {
@@ -496,8 +524,30 @@ function handleReadFailure<T>(error: unknown, context: string, mockValue: () => 
   return mockValue();
 }
 
+/**
+ * Same production/non-production split as `handleReadFailure` above, but
+ * for the *unconfigured* case (missing env vars) rather than a request
+ * that failed at runtime. Every query/mutation below checks
+ * `isShopifyConfigured()` first and, if it's false, used to fall straight
+ * to mock data unconditionally — including in a genuine production
+ * deploy, where a misconfigured/missing env var would then silently serve
+ * fake demo products (and a fake, non-functional cart) to a real
+ * customer instead of failing loudly. Outside production (local dev,
+ * Vercel Preview), mock data is still the right, expected behavior — it's
+ * what lets the whole site (including cart) run with zero Shopify
+ * credentials configured.
+ */
+function unconfiguredFallback<T>(mockValue: () => T): T {
+  if (isProductionRuntime()) {
+    throw new ShopifyApiError(
+      "Shopify is not configured in production — missing NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN or NEXT_PUBLIC_SHOPIFY_STOREFRONT_PUBLIC_TOKEN."
+    );
+  }
+  return mockValue();
+}
+
 export async function getProducts(first = 24): Promise<Product[]> {
-  if (!isShopifyConfigured()) return mock.getMockProducts();
+  if (!isShopifyConfigured()) return unconfiguredFallback(() => mock.getMockProducts());
 
   try {
     const data = await shopifyFetch<{ products: { nodes: RawProduct[] } }>({
@@ -513,7 +563,7 @@ export async function getProducts(first = 24): Promise<Product[]> {
 }
 
 export async function getProduct(handle: string): Promise<Product | null> {
-  if (!isShopifyConfigured()) return mock.getMockProduct(handle);
+  if (!isShopifyConfigured()) return unconfiguredFallback(() => mock.getMockProduct(handle));
 
   try {
     const data = await shopifyFetch<{ product: RawProduct | null }>({
@@ -571,7 +621,7 @@ export async function getCollectionHandles(): Promise<string[]> {
 /* ------------------------------------------------------------------ */
 
 export async function getFeaturedProducts(first = 3): Promise<FeaturedProduct[]> {
-  if (!isShopifyConfigured()) return mock.getMockFeaturedProducts();
+  if (!isShopifyConfigured()) return unconfiguredFallback(() => mock.getMockFeaturedProducts());
 
   try {
     const data = await shopifyFetch<{
@@ -598,11 +648,57 @@ export async function getFeaturedProducts(first = 3): Promise<FeaturedProduct[]>
 }
 
 /* ------------------------------------------------------------------ */
+/* Shop policies                                                         */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The four Shopify-hosted policies (Settings → Policies in the admin),
+ * used by /privacy, /returns, /shipping, /terms. Any policy the merchant
+ * hasn't filled in comes back `null` — a legitimate Shopify state (like
+ * `getFeaturedProducts`'s empty-collection case above), not a failure —
+ * so each page decides for itself whether to 404, independent of whether
+ * this call as a whole succeeded.
+ */
+export async function getShopPolicies(): Promise<ShopPolicies> {
+  const empty: ShopPolicies = {
+    privacyPolicy: null,
+    refundPolicy: null,
+    shippingPolicy: null,
+    termsOfService: null,
+  };
+
+  if (!isShopifyConfigured()) return unconfiguredFallback(() => mock.getMockShopPolicies());
+
+  try {
+    const data = await shopifyFetch<{
+      shop: {
+        privacyPolicy: RawShopPolicy | null;
+        refundPolicy: RawShopPolicy | null;
+        shippingPolicy: RawShopPolicy | null;
+        termsOfService: RawShopPolicy | null;
+      };
+    }>({
+      query: SHOP_POLICIES_QUERY,
+      revalidate: 3600,
+      tags: ["shop-policies"],
+    });
+    return {
+      privacyPolicy: normalizePolicy(data.shop.privacyPolicy),
+      refundPolicy: normalizePolicy(data.shop.refundPolicy),
+      shippingPolicy: normalizePolicy(data.shop.shippingPolicy),
+      termsOfService: normalizePolicy(data.shop.termsOfService),
+    };
+  } catch (error) {
+    return handleReadFailure(error, "getShopPolicies", () => empty);
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* Cart                                                                  */
 /* ------------------------------------------------------------------ */
 
 export async function getCart(cartId: string): Promise<Cart | null> {
-  if (!isShopifyConfigured()) return mock.getMockCart(cartId);
+  if (!isShopifyConfigured()) return unconfiguredFallback(() => mock.getMockCart(cartId));
 
   try {
     const data = await shopifyFetch<{ cart: RawCart | null }>({
@@ -618,7 +714,7 @@ export async function getCart(cartId: string): Promise<Cart | null> {
 }
 
 export async function createCart(lines: CartLineInput[] = []): Promise<Cart> {
-  if (!isShopifyConfigured()) return mock.createMockCart(lines);
+  if (!isShopifyConfigured()) return unconfiguredFallback(() => mock.createMockCart(lines));
 
   const data = await shopifyFetch<{
     cartCreate: { cart: RawCart; userErrors: UserError[] };
@@ -632,7 +728,7 @@ export async function createCart(lines: CartLineInput[] = []): Promise<Cart> {
 }
 
 export async function addLines(cartId: string, lines: CartLineInput[]): Promise<Cart> {
-  if (!isShopifyConfigured()) return mock.addMockLines(cartId, lines);
+  if (!isShopifyConfigured()) return unconfiguredFallback(() => mock.addMockLines(cartId, lines));
 
   const data = await shopifyFetch<{
     cartLinesAdd: { cart: RawCart; userErrors: UserError[] };
@@ -646,7 +742,7 @@ export async function addLines(cartId: string, lines: CartLineInput[]): Promise<
 }
 
 export async function updateLine(cartId: string, lineId: string, quantity: number): Promise<Cart> {
-  if (!isShopifyConfigured()) return mock.updateMockLine(cartId, lineId, quantity);
+  if (!isShopifyConfigured()) return unconfiguredFallback(() => mock.updateMockLine(cartId, lineId, quantity));
 
   const data = await shopifyFetch<{
     cartLinesUpdate: { cart: RawCart; userErrors: UserError[] };
@@ -660,7 +756,7 @@ export async function updateLine(cartId: string, lineId: string, quantity: numbe
 }
 
 export async function removeLine(cartId: string, lineId: string): Promise<Cart> {
-  if (!isShopifyConfigured()) return mock.removeMockLine(cartId, lineId);
+  if (!isShopifyConfigured()) return unconfiguredFallback(() => mock.removeMockLine(cartId, lineId));
 
   const data = await shopifyFetch<{
     cartLinesRemove: { cart: RawCart; userErrors: UserError[] };

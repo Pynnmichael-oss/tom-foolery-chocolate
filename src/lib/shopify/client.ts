@@ -25,34 +25,6 @@ export function isShopifyConfigured(): boolean {
   );
 }
 
-/**
- * True only for a genuine production deploy — used by queries.ts's
- * mock-data-on-error fallback (see that file's own comment) to decide
- * whether a real Shopify API failure should be swallowed (gracefully
- * degrade to mock data) or rethrown (surface it, so ISR keeps serving the
- * last good page instead of silently showing fake demo products to a
- * real customer).
- *
- * `NODE_ENV === "production"` alone isn't a safe enough signal: Vercel
- * Preview deployments also build with `NODE_ENV=production` (it's a
- * build-mode flag, not an environment identity), which would make a
- * preview branch's missing/misconfigured credentials look like a hard
- * production failure instead of the graceful degradation you actually
- * want while iterating on a preview. `VERCEL_ENV` (set only when
- * actually running on Vercel — "production", "preview", or
- * "development") is the real environment signal, so this only commits to
- * "production" when VERCEL_ENV agrees, or is absent entirely (a plain
- * `next build`/`next start` outside Vercel — e.g. a self-hosted
- * production deploy — has no VERCEL_ENV at all, and that's still
- * production).
- */
-export function isProductionRuntime(): boolean {
-  return (
-    process.env.NODE_ENV === "production" &&
-    (!process.env.VERCEL_ENV || process.env.VERCEL_ENV === "production")
-  );
-}
-
 export class ShopifyApiError extends Error {
   constructor(
     message: string,
