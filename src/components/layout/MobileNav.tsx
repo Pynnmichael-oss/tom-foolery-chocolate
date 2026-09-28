@@ -140,6 +140,19 @@ export function MobileNav() {
               <Link
                 key={link.href}
                 href={link.href}
+                // This panel (and these links) exist in the DOM on every
+                // page, at every viewport width, even when closed and
+                // `sm:hidden` — only `display:none` (desktop) actually
+                // removes an element from layout; below that breakpoint
+                // it's merely `opacity-0`/`pointer-events-none`, still
+                // occupying its full-viewport box. `next/link`'s default
+                // prefetch is viewport-intersection-triggered, so without
+                // this it fires on every load regardless of whether the
+                // menu is ever opened — confirmed by hand (Lighthouse
+                // network panel): 4 links × 2 requests each, entirely
+                // avoidable extra work competing for bandwidth/main-thread
+                // time during the page's own initial load.
+                prefetch={false}
                 className="font-sans text-2xl font-black uppercase tracking-[0.075em] text-tf-white transition-colors hover:text-tf-turmeric"
               >
                 {link.label}
