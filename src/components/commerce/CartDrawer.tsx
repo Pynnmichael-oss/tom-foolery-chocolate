@@ -1,30 +1,35 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { buttonClasses } from "@/components/ui/buttonClasses";
 import { EyesHatIcon } from "@/components/ui/logos";
 import { useCart } from "./CartProvider";
 import { formatMoney } from "@/lib/shopify/format";
+import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 
-const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
-/** Right-side slide-in cart drawer. Focus-trapped while open, closes on
- * ESC or overlay click, restores focus to whatever opened it. The slide is
- * a CSS transition disabled entirely under reduced motion (instant show/hide
- * instead), so no JS branching is needed for that part. */
+/** Right-side slide-in cart drawer. Focus-trapped while open (see
+ * useFocusTrap — also used by MobileNav), closes on ESC or overlay click,
+ * restores focus to whatever opened it. The slide is a CSS transition
+ * disabled entirely under reduced motion (instant show/hide instead), so
+ * no JS branching is needed for that part. */
 export function CartDrawer() {
   const { cart, isDrawerOpen, closeDrawer, updateItem, removeItem, isPending } = useCart();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   // Line-level mutations (quantity +/-, remove) never throw — see
   // shopify/actions.ts — but can still fail (e.g. Shopify reports a line
   // as out of stock mid-session); surfaced here as a small banner rather
   // than silently leaving the drawer showing stale-looking quantities.
   const [error, setError] = useState<string | null>(null);
+
+  useFocusTrap({
+    isOpen: isDrawerOpen,
+    onClose: closeDrawer,
+    panelRef,
+    initialFocusRef: closeButtonRef,
+  });
 
   async function handleUpdate(lineId: string, quantity: number) {
     setError(null);
@@ -38,52 +43,12 @@ export function CartDrawer() {
     if (!result.success) setError(result.error);
   }
 
-  // Move focus into the drawer on open, restore it on close.
-  useEffect(() => {
-    if (isDrawerOpen) {
-      previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
-      closeButtonRef.current?.focus();
-    } else {
-      previouslyFocusedRef.current?.focus?.();
-    }
-  }, [isDrawerOpen]);
-
-  // ESC to close + Tab focus trap.
-  useEffect(() => {
-    if (!isDrawerOpen) return;
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        closeDrawer();
-        return;
-      }
-      if (event.key !== "Tab" || !panelRef.current) return;
-
-      const focusable = Array.from(
-        panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
-      );
-      if (focusable.length === 0) return;
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    }
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [isDrawerOpen, closeDrawer]);
-
   const lines = cart?.lines ?? [];
 
   return (
-    <div className="fixed inset-0 z-[60]" inert={!isDrawerOpen}>
+    // id: a stable hook for MobileNav to make this inert while the
+    // full-screen mobile menu is open (see that component's own comment).
+    <div id="cart-drawer-root" className="fixed inset-0 z-[60]" inert={!isDrawerOpen}>
       {/* Overlay */}
       <div
         onClick={closeDrawer}

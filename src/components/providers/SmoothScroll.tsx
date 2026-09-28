@@ -1,9 +1,49 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import Lenis from "lenis";
 import { gsap, ScrollTrigger } from "@/components/motion/gsap";
 import { useMediaPreferences } from "@/lib/hooks/useMediaPreferences";
+
+// Module-scope external store, not React state/context: SmoothScroll
+// mounts exactly once for the whole app (root layout), so its Lenis
+// instance genuinely is an app-wide singleton — `useSyncExternalStore` is
+// the correct way to expose a value like that to on-demand consumers
+// (MobileNav) without an eslint `set-state-in-effect` violation (calling
+// a `useState` setter directly inside the effect that creates the
+// instance would trip that rule; this only ever *notifies*, it never
+// calls a React state setter itself).
+let lenisInstance: Lenis | null = null;
+const listeners = new Set<() => void>();
+
+function setLenisInstance(instance: Lenis | null) {
+  lenisInstance = instance;
+  listeners.forEach((listener) => listener());
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+function getSnapshot() {
+  return lenisInstance;
+}
+
+function getServerSnapshot() {
+  return null;
+}
+
+/**
+ * The shared Lenis instance, for a modal-like full-screen overlay
+ * (MobileNav) to stop/start smooth scroll while it's open. `null` under
+ * `prefers-reduced-motion` (SmoothScroll never creates one then) or
+ * before the effect below has run — always guard with
+ * `lenis?.stop()`/`lenis?.start()`, never assume it exists.
+ */
+export function useLenis(): Lenis | null {
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
 
 /**
  * Drives Lenis smooth scroll from gsap's ticker so ScrollTrigger and Lenis
@@ -23,7 +63,6 @@ import { useMediaPreferences } from "@/lib/hooks/useMediaPreferences";
  * for the rAF ticker). Leaves native (instant) scrolling in place.
  */
 export function SmoothScroll({ children }: { children: React.ReactNode }) {
-  const lenisRef = useRef<Lenis | null>(null);
   const { prefersReducedMotion } = useMediaPreferences();
 
   useEffect(() => {
@@ -39,7 +78,7 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
       // (BrandCompass's `+=400%` especially) without `duration` alone
       // needing to drop low enough to feel abrupt on an ordinary scroll.
     });
-    lenisRef.current = lenis;
+    setLenisInstance(lenis);
 
     lenis.on("scroll", ScrollTrigger.update);
 
@@ -68,7 +107,7 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
       window.removeEventListener("load", refresh);
       gsap.ticker.remove(onTick);
       lenis.destroy();
-      lenisRef.current = null;
+      setLenisInstance(null);
     };
   }, [prefersReducedMotion]);
 

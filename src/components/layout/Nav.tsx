@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { HorizontalSignature } from "@/components/ui/logos";
 import { useCart } from "@/components/commerce/CartProvider";
+import { MobileNav } from "@/components/layout/MobileNav";
 
 /**
  * Sticky nav. Deliberately doesn't try to adapt its color to whatever
@@ -13,6 +15,7 @@ import { useCart } from "@/components/commerce/CartProvider";
  */
 export function Nav() {
   const { itemCount, openDrawer } = useCart();
+  const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-tf-black/10 bg-tf-white/90 backdrop-blur-sm">
@@ -53,22 +56,31 @@ export function Nav() {
           </Link>
         </nav>
 
-        <Button
-          variant="primary"
-          className="relative shrink-0"
-          onClick={openDrawer}
-          aria-label={`Open cart${itemCount > 0 ? ` (${itemCount} item${itemCount === 1 ? "" : "s"})` : ""}`}
-        >
-          Cart
-          {itemCount > 0 && (
-            <span
-              aria-hidden="true"
-              className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-tf-black px-1 font-sans text-[10px] font-black text-tf-white"
-            >
-              {itemCount}
-            </span>
-          )}
-        </Button>
+        <div className="flex shrink-0 items-center gap-fluid-sm">
+          <Button
+            variant="primary"
+            className="relative shrink-0"
+            onClick={openDrawer}
+            aria-label={`Open cart${itemCount > 0 ? ` (${itemCount} item${itemCount === 1 ? "" : "s"})` : ""}`}
+          >
+            Cart
+            {itemCount > 0 && (
+              <span
+                aria-hidden="true"
+                className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-tf-black px-1 font-sans text-[10px] font-black text-tf-white"
+              >
+                {itemCount}
+              </span>
+            )}
+          </Button>
+
+          {/* Hamburger toggle + full-screen panel — sm:hidden, same
+           * breakpoint the desktop link row above switches on. `key`
+           * remounts it on every navigation, which is what resets its
+           * `isOpen` state closed (see that component's own comment on
+           * why this isn't an effect). */}
+          <MobileNav key={pathname} />
+        </div>
       </div>
     </header>
   );
