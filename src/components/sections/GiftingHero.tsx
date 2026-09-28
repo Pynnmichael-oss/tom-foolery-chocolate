@@ -7,6 +7,7 @@ import { buttonClasses } from "@/components/ui/buttonClasses";
 import { gsap, useGSAP } from "@/components/motion/gsap";
 import { useMediaPreferences } from "@/lib/hooks/useMediaPreferences";
 import { useScrollToGiftingForm } from "@/lib/hooks/useScrollToGiftingForm";
+import { GiftingHeroGraphic } from "./GiftingHeroGraphic";
 
 export interface HeroImageSource {
   src: string;
@@ -81,6 +82,15 @@ const DEFAULT_DESKTOP_IMAGE: HeroImageSource = {
 const DEFAULT_MOBILE_IMAGE: HeroImageSource = DEFAULT_DESKTOP_IMAGE;
 
 export interface GiftingHeroProps {
+  /** `"photo"` — the original full-bleed photo hero (uses `desktopImage`/
+   * `mobileImage`). `"graphic"` — brand-ground text panel + CSS stripe
+   * field with the product cutout (see GiftingHeroGraphic.tsx; ignores the
+   * image props). Defaults to `"photo"` here so existing callers are
+   * untouched; the gifting page opts into `"graphic"` explicitly. */
+  variant?: "photo" | "graphic";
+  /** Graphic variant only — ground color of the text panel. Defaults to
+   * brand rose. */
+  groundColor?: string;
   /** Desktop/tablet hero image — rendered at the `sm:` breakpoint (640px)
    * and up. Defaults to the current placeholder photo; see the TODO
    * above for the real swap-in plan. */
@@ -103,9 +113,19 @@ export interface GiftingHeroProps {
  * ScrollTrigger needed since this is always in view at load.
  */
 export function GiftingHero({
+  variant = "photo",
+  groundColor,
+  desktopImage,
+  mobileImage,
+}: GiftingHeroProps = {}) {
+  if (variant === "graphic") return <GiftingHeroGraphic groundColor={groundColor} />;
+  return <GiftingHeroPhoto desktopImage={desktopImage} mobileImage={mobileImage} />;
+}
+
+function GiftingHeroPhoto({
   desktopImage = DEFAULT_DESKTOP_IMAGE,
   mobileImage = DEFAULT_MOBILE_IMAGE,
-}: GiftingHeroProps = {}) {
+}: Pick<GiftingHeroProps, "desktopImage" | "mobileImage">) {
   const contentRef = useRef<HTMLDivElement>(null);
   const { prefersReducedMotion } = useMediaPreferences();
   const scrollToForm = useScrollToGiftingForm();

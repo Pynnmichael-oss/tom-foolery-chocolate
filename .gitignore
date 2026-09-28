@@ -51,3 +51,6 @@ brand/TomFoolery_Brand_Standards_August2026.pdf
 # output in public/video/ is committed; see public/video/README.md.
 /*-source.mp4
 /*-source.mov
+
+# raw studio source images used to derive cutouts — large, not shipped.
+/public/photos/source/

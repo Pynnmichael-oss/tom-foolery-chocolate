@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 export default function GiftingPage() {
   return (
     <main id="main-content">
-      <GiftingHero />
+      <GiftingHero variant="graphic" />
       <GiftingPanels />
       <GiftingStats />
 
