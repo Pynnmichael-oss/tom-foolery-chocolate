@@ -46,6 +46,8 @@ type OptimisticAction =
       variant: ProductVariant;
       product: Pick<Product, "title" | "handle" | "images">;
       quantity: number;
+      sellingPlanId?: string;
+      sellingPlanName?: string;
     }
   | { type: "update"; lineId: string; quantity: number }
   | { type: "remove"; lineId: string };
@@ -67,10 +69,17 @@ function cartReducer(cart: Cart | null, action: OptimisticAction): Cart | null {
         subtotal: { amount: "0", currencyCode: action.variant.price.currencyCode },
         lines: [],
       };
-      const existing = base.lines.find((l) => l.merchandiseId === action.variant.id);
+      // Same variant on a *different* selling plan (or one plan vs.
+      // one-time) is a distinct cart line, same as Shopify's own cart —
+      // matching on merchandiseId alone would incorrectly merge a
+      // one-time purchase and a subscription of the same product into a
+      // single quantity.
+      const existing = base.lines.find(
+        (l) => l.merchandiseId === action.variant.id && l.sellingPlanName === (action.sellingPlanName ?? null)
+      );
       const lines: CartLine[] = existing
         ? base.lines.map((l) =>
-            l.merchandiseId === action.variant.id
+            l === existing
               ? {
                   ...l,
                   quantity: l.quantity + action.quantity,
@@ -84,7 +93,11 @@ function cartReducer(cart: Cart | null, action: OptimisticAction): Cart | null {
         : [
             ...base.lines,
             {
-              id: `optimistic-${action.variant.id}`,
+              // Selling plan folded into the optimistic id too, so two
+              // simultaneous optimistic adds of the same variant under
+              // different plans don't collide on this key before the
+              // real cart mutation returns and replaces it.
+              id: `optimistic-${action.variant.id}-${action.sellingPlanId ?? "one-time"}`,
               quantity: action.quantity,
               merchandiseId: action.variant.id,
               variantTitle: action.variant.title,
@@ -98,6 +111,7 @@ function cartReducer(cart: Cart | null, action: OptimisticAction): Cart | null {
                 handle: action.product.handle,
                 image: action.product.images[0] ?? null,
               },
+              sellingPlanName: action.sellingPlanName ?? null,
             },
           ];
       return recomputeTotals({ ...base, lines });
@@ -145,7 +159,8 @@ interface CartContextValue {
   addItem: (
     variant: ProductVariant,
     product: Pick<Product, "title" | "handle" | "images">,
-    quantity?: number
+    quantity?: number,
+    sellingPlan?: { id: string; name: string }
   ) => Promise<CartResult>;
   updateItem: (lineId: string, quantity: number) => Promise<CartResult>;
   removeItem: (lineId: string) => Promise<CartResult>;
@@ -184,7 +199,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   function addItem(
     variant: ProductVariant,
     product: Pick<Product, "title" | "handle" | "images">,
-    quantity = 1
+    quantity = 1,
+    sellingPlan?: { id: string; name: string }
   ): Promise<CartResult> {
     let settle!: (result: CartResult) => void;
     const promise = new Promise<CartResult>((resolve) => {
@@ -192,8 +208,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
 
     startTransition(async () => {
-      applyOptimistic({ type: "add", variant, product, quantity });
-      const result = await addToCartAction(cart?.id || readCartIdCookie(), variant.id, quantity);
+      applyOptimistic({
+        type: "add",
+        variant,
+        product,
+        quantity,
+        sellingPlanId: sellingPlan?.id,
+        sellingPlanName: sellingPlan?.name,
+      });
+      const result = await addToCartAction(
+        cart?.id || readCartIdCookie(),
+        variant.id,
+        quantity,
+        sellingPlan?.id
+      );
       if (result.success) {
         writeCartIdCookie(result.cart.id);
         setCart(result.cart);

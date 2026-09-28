@@ -9,6 +9,9 @@ export interface AddToCartButtonProps {
   product: Pick<Product, "title" | "handle" | "images">;
   variant: ProductVariant | null;
   quantity?: number;
+  /** Selling plan the customer picked in ProductDetail.tsx's purchase-
+   * options selector — omit entirely for a one-time purchase. */
+  sellingPlan?: { id: string; name: string };
   className?: string;
 }
 
@@ -19,6 +22,7 @@ export function AddToCartButton({
   product,
   variant,
   quantity = 1,
+  sellingPlan,
   className = "",
 }: AddToCartButtonProps) {
   const { addItem } = useCart();
@@ -38,8 +42,9 @@ export function AddToCartButton({
     // addItem never throws — it always resolves to a CartResult, even when
     // the mutation failed server-side (see shopify/actions.ts), so a real
     // failure (e.g. Shopify's "Variant can only be purchased with a
-    // selling plan.") shows here instead of blanking the page.
-    const result = await addItem(variant, product, quantity);
+    // selling plan.", already mapped to friendly copy by then) shows here
+    // instead of blanking the page.
+    const result = await addItem(variant, product, quantity, sellingPlan);
     if (!result.success) {
       setError(result.error);
       return;

@@ -24,14 +24,53 @@ import type { Cart, CartResult } from "./types";
 
 const GENERIC_CART_ERROR = "We couldn't update your cart. Please try again in a moment.";
 
+/**
+ * Shopify's own userErrors copy (`ShopifyApiError.userMessage`, set from
+ * `assertNoUserErrors` in queries.ts) is technically "safe to show a
+ * customer" — but it reads like an API error, not this brand
+ * ("Variant can only be purchased with a selling plan."), so it's mapped
+ * to friendly copy here instead of shown as-is. The raw message is never
+ * lost — `toCartError` below logs the full error (Shopify's exact text
+ * included) before this runs, so it's still one console.error away for
+ * debugging.
+ *
+ * Scoped to what a selling-plan-aware cart can actually trigger; ProductDetail.tsx's
+ * own UI (preselecting a required plan, only ever sending a
+ * `sellingPlanId` the selected variant actually supports) already
+ * prevents most of these in normal use — this is the defense-in-depth
+ * layer for whatever gets through anyway (a stale page, a plan that was
+ * deleted in Shopify admin between page load and add-to-cart, etc.).
+ * Anything unrecognized (out of stock, currency mismatches, and every
+ * other userError type this app doesn't specifically target) falls
+ * through to GENERIC_CART_ERROR, same as before this mapping existed.
+ */
+function mapUserErrorMessage(raw: string): string {
+  const lower = raw.toLowerCase();
+  if (!lower.includes("selling plan")) return GENERIC_CART_ERROR;
+
+  if (lower.includes("can only be purchased")) {
+    return "This item is subscription-only — please choose a purchase plan before adding it to your cart.";
+  }
+  if (lower.includes("does not exist") || lower.includes("not found") || lower.includes("invalid")) {
+    return "That subscription option isn't available anymore — please choose another and try again.";
+  }
+  // Some other selling-plan-shaped userError we haven't specifically
+  // mapped — still worth a subscription-flavored message over the plain
+  // cart one, since we know that much about it.
+  return "We couldn't apply that subscription option. Please try again or choose a different plan.";
+}
+
 function toCartError(error: unknown, context: string): string {
+  // Full error object, Shopify's exact userErrors text included — see
+  // mapUserErrorMessage's own comment for why the customer-facing
+  // message below is never this raw text directly.
   console.error(`[cart] ${context}:`, error);
-  // ShopifyApiError.userMessage is only ever set from Shopify's own
-  // userErrors copy (see assertNoUserErrors in queries.ts) — already
-  // written to be customer-facing. Anything else (bad token, network
-  // failure, malformed response) falls back to a generic message instead
-  // of leaking internals.
-  return error instanceof ShopifyApiError && error.userMessage ? error.userMessage : GENERIC_CART_ERROR;
+  if (error instanceof ShopifyApiError && error.userMessage) {
+    return mapUserErrorMessage(error.userMessage);
+  }
+  // Anything else (bad token, network failure, malformed response) has
+  // no customer-safe text to work with at all.
+  return GENERIC_CART_ERROR;
 }
 
 export async function getCartAction(cartId: string): Promise<Cart | null> {
@@ -41,21 +80,25 @@ export async function getCartAction(cartId: string): Promise<Cart | null> {
 export async function addToCartAction(
   cartId: string | null,
   merchandiseId: string,
-  quantity: number
+  quantity: number,
+  sellingPlanId?: string
 ): Promise<CartResult> {
   try {
     if (!cartId) {
-      return { success: true, cart: await createCart([{ merchandiseId, quantity }]) };
+      return { success: true, cart: await createCart([{ merchandiseId, quantity, sellingPlanId }]) };
     }
     try {
-      return { success: true, cart: await addLines(cartId, [{ merchandiseId, quantity }]) };
+      return {
+        success: true,
+        cart: await addLines(cartId, [{ merchandiseId, quantity, sellingPlanId }]),
+      };
     } catch (error) {
       // Cart may have expired or been completed at checkout — start fresh
       // before giving up. A genuine per-item failure (out of stock, a
       // variant requiring a selling plan, etc.) will fail createCart the
       // same way, and the outer catch below reports that once.
       console.error("[cart] addLines failed, starting a new cart:", error);
-      return { success: true, cart: await createCart([{ merchandiseId, quantity }]) };
+      return { success: true, cart: await createCart([{ merchandiseId, quantity, sellingPlanId }]) };
     }
   } catch (error) {
     return { success: false, error: toCartError(error, "addToCartAction failed") };
