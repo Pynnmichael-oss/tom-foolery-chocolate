@@ -9,7 +9,6 @@ import { WhatWeBelieve } from "@/components/sections/WhatWeBelieve";
 import { BrandCompass } from "@/components/sections/BrandCompass";
 import { TomPeek } from "@/components/sections/TomPeek";
 import { StripeDivider } from "@/components/ui/StripeDivider";
-import { Footer } from "@/components/layout/Footer";
 
 /** The Heritage StorySection photo is below the Hero fold — no `priority`,
  * lazy-loads by default. `sizes` matches its actual rendered width:
@@ -79,8 +78,6 @@ export default function Home() {
       <div className="mx-auto flex max-w-6xl justify-end px-fluid-md">
         <TomPeek className="mb-fluid-md" />
       </div>
-
-      <Footer />
     </main>
   );
 }

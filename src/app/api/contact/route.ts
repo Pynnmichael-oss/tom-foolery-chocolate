@@ -1,4 +1,12 @@
 import { isResendConfigured, sendEmail } from "@/lib/resend/client";
+import { resolveFormEmail } from "@/lib/forms/email-config";
+import {
+  EMAIL_RE,
+  escapeHtml,
+  getClientIp,
+  isHoneypotTriggered,
+  createRateLimiter,
+} from "@/lib/forms/shared";
 
 // Never cache/prerender — this only ever runs in response to a real
 // submission (see Route Handlers docs: POST isn't cached by default
@@ -6,70 +14,16 @@ import { isResendConfigured, sendEmail } from "@/lib/resend/client";
 // opt into caching and it's worth being unambiguous here).
 export const dynamic = "force-dynamic";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_MESSAGE_LENGTH = 5000;
 
-// Same shape as /api/subscribe/route.ts's rate limiter — see that file's
-// own TODO, which applies here too: in-memory, keyed by IP, module-
-// scoped, resets on every cold start and isn't shared across concurrent
-// serverless instances. A rough abuse deterrent, not a real limit under
-// load or behind a multi-instance deploy — move to Upstash/Vercel KV (or
-// similar shared store) before this needs to actually hold up.
-const RATE_LIMIT_MAX = 5;
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
-const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
-
-function checkRateLimit(key: string): boolean {
-  const now = Date.now();
-  const bucket = rateLimitBuckets.get(key);
-  if (!bucket || now > bucket.resetAt) {
-    rateLimitBuckets.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return true;
-  }
-  if (bucket.count >= RATE_LIMIT_MAX) return false;
-  bucket.count += 1;
-  return true;
-}
-
-function getClientIp(request: Request): string {
-  // First entry in x-forwarded-for is the original client — everything
-  // after it is proxies/load balancers the request passed through.
-  const forwarded = request.headers.get("x-forwarded-for");
-  return forwarded?.split(",")[0]?.trim() ?? "";
-}
-
-// Overridable once a verified sending domain exists — see .env.example.
-// `onboarding@resend.dev` is Resend's own shared sandbox sender, usable
-// with any API key before a domain is verified, but only deliverable to
-// the Resend account's own registered email (see the setup notes in
-// .env.example) — swap CONTACT_FROM_EMAIL once tomfoolerychocolate.com
-// (or a subdomain) is verified in Resend so it can actually reach Garrett.
-const DEFAULT_FROM = "Tom Foolery Website <onboarding@resend.dev>";
-// TODO(garrett): this is TEMPORARY — pointed at Michael's inbox for testing
-// while onboarding@resend.dev (no verified domain yet) can only deliver to
-// the Resend account's own verified email, not garrett@tomfoolerychocolate.com.
-// Switch this back to "garrett@tomfoolerychocolate.com" once
-// tomfoolerychocolate.com (or a subdomain) is verified in Resend — see the
-// setup notes in .env.example.
-const DEFAULT_TO = "pynnmichael@outlook.com";
+const checkRateLimit = createRateLimiter({ max: 5, windowMs: 10 * 60 * 1000 });
 
 interface ContactPayload {
   name?: unknown;
   email?: unknown;
   message?: unknown;
-  /** Honeypot — see ContactForm.tsx's hidden `website` input. A real
-   * visitor never sees or fills this field; anything in it means a bot
-   * that fills every field it finds. */
+  /** Honeypot — see ContactForm.tsx's hidden `website` input. */
   website?: unknown;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 export async function POST(request: Request) {
@@ -80,10 +34,9 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  // Bot caught by the honeypot: fake success, no email sent, no hint it
-  // was caught (a real error response would just teach the bot to leave
-  // the field blank next time) — same as /api/subscribe/route.ts.
-  if (typeof body.website === "string" && body.website.trim() !== "") {
+  // Bot caught by the honeypot: fake success, no email sent — see
+  // isHoneypotTriggered's own comment on why this isn't a real error.
+  if (isHoneypotTriggered(body.website)) {
     return Response.json({ success: true });
   }
 
@@ -128,10 +81,16 @@ export async function POST(request: Request) {
     );
   }
 
+  const emailConfig = resolveFormEmail("contact", {
+    to: "CONTACT_TO_EMAIL",
+    from: "CONTACT_FROM_EMAIL",
+  });
+  if ("errorResponse" in emailConfig) return emailConfig.errorResponse;
+
   try {
     const sent = await sendEmail({
-      to: process.env.CONTACT_TO_EMAIL || DEFAULT_TO,
-      from: process.env.CONTACT_FROM_EMAIL || DEFAULT_FROM,
+      to: emailConfig.to,
+      from: emailConfig.from,
       replyTo: email,
       subject: `New contact form message from ${name}`,
       text: `From: ${name} <${email}>\n\n${message}`,

@@ -141,3 +141,20 @@ export interface CartLineInput {
  * page, so callers (CartProvider) always get a value to branch on instead.
  */
 export type CartResult = { success: true; cart: Cart } | { success: false; error: string };
+
+/** One of Shopify's built-in shop policies (Settings → Policies in the
+ * admin). `bodyHtml` is merchant-authored rich text from the admin's own
+ * policy editor — same trust level as `Product.descriptionHtml` — never
+ * user-submitted. */
+export interface ShopPolicy {
+  title: string;
+  bodyHtml: string;
+  handle: string;
+}
+
+export interface ShopPolicies {
+  privacyPolicy: ShopPolicy | null;
+  refundPolicy: ShopPolicy | null;
+  shippingPolicy: ShopPolicy | null;
+  termsOfService: ShopPolicy | null;
+}

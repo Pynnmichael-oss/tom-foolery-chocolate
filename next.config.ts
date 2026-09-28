@@ -1,5 +1,22 @@
 import type { NextConfig } from "next";
 
+// Fail the build rather than ship canonical URLs, OG/Twitter images, the
+// sitemap, and robots.txt pointed at a placeholder host — a launch
+// blocker that's easy to miss otherwise (see src/lib/site.ts's SITE_URL,
+// which every one of those reads). Scoped to `VERCEL_ENV === "production"`
+// specifically (not the broader isProductionRuntime helper elsewhere in
+// this repo) — a plain local `next build` and Vercel Preview deploys both
+// legitimately have no real domain yet, and shouldn't fail over it.
+if (process.env.VERCEL_ENV === "production") {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (!siteUrl || /localhost|\.vercel\.app/i.test(siteUrl)) {
+    throw new Error(
+      `NEXT_PUBLIC_SITE_URL is unset or points at a placeholder host (got: ${JSON.stringify(siteUrl ?? null)}). ` +
+        "Set it to the real production domain in Vercel → Project Settings → Environment Variables (Production) before deploying."
+    );
+  }
+}
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [

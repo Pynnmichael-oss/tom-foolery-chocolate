@@ -49,16 +49,25 @@ export function StoryHero({ preheader, lines, signOff }: StoryHeroProps) {
       });
 
       mm.add(breakpoints.motionOK, () => {
-        gsap.set(lineEls, { opacity: 0, y: 28 });
-
+        // `fromTo`, not `set` + `to`: the hidden starting state below
+        // mirrors the pre-paint CSS in globals.css
+        // (`html.js [data-story-hero-line]`), which is already in place
+        // before first paint. A runtime `gsap.set(..., {opacity:0})` here
+        // would instead hide content the server already painted visible —
+        // a flash for any line already in view at load (this page's own
+        // opening lines).
         const tweens = Array.from(lineEls).map((el) =>
-          gsap.to(el, {
-            opacity: 1,
-            y: 0,
-            duration: 0.7,
-            ease: "power3.out",
-            scrollTrigger: { trigger: el, start: "top 82%" },
-          })
+          gsap.fromTo(
+            el,
+            { opacity: 0, y: 28 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.7,
+              ease: "power3.out",
+              scrollTrigger: { trigger: el, start: "top 82%" },
+            }
+          )
         );
 
         return () => {

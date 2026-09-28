@@ -4,6 +4,7 @@ import { GiftingPanels } from "@/components/sections/GiftingPanels";
 import { GiftingStats } from "@/components/sections/GiftingStats";
 import { GiftingForm } from "@/components/sections/GiftingForm";
 import { Preheader, Headline, BodyText } from "@/components/ui/typography";
+import { DEFAULT_OG_IMAGE } from "@/lib/site";
 
 const DESCRIPTION =
   "Clever & curious gifts for clients, guests, & more — custom & branded, wedding/event, and ready-to-ship chocolate gifting from Tom Foolery.";
@@ -16,9 +17,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/gifting" },
   // Real content as of 2026-09-17 (was a robots:noindex placeholder
   // before) — indexable now, same as every other real page on the site.
+  // images: DEFAULT_OG_IMAGE — see that constant's own comment on why an
+  // openGraph override needs this explicitly, not just title/description.
   openGraph: {
     title: "Corporate Gifting",
     description: DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
   },
 };
 

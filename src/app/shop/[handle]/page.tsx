@@ -23,11 +23,13 @@ export async function generateMetadata(
   // Product-specific description first (unique per page, good SEO
   // practice) with a short brand-voice flourish appended — not a full
   // power statement repeated verbatim on every PDP, which would read as
-  // duplicate content across the catalog.
-  const description = `${product.description} ${POWER_STATEMENTS.liveALittle}.`.slice(
-    0,
-    160
-  );
+  // duplicate content across the catalog. Trailing punctuation is
+  // stripped from the description before joining so this never produces
+  // "...cookies Live a Little." (missing separator) or "...cookies.. Live
+  // a Little." (doubled) depending on whether the source description
+  // happens to end in a period.
+  const trimmedDescription = product.description.trim().replace(/[.!?]+$/, "");
+  const description = `${trimmedDescription}. ${POWER_STATEMENTS.liveALittle}.`.slice(0, 160);
 
   const image = product.images[0];
 

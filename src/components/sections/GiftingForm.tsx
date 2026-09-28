@@ -73,6 +73,12 @@ function clientError(form: FormState): string | null {
  */
 export function GiftingForm() {
   const [form, setForm] = useState<FormState>(INITIAL_STATE);
+  // Honeypot — a real visitor never sees or fills this (see the hidden
+  // `website` input below), so it's plain state read straight off the
+  // form at submit time, same pattern as ContactForm.tsx. Kept separate
+  // from `form`/`FormState` since it's not a real field and never
+  // participates in `clientError`.
+  const [website, setWebsite] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -106,7 +112,7 @@ export function GiftingForm() {
       const response = await fetch("/api/gifting", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, website }),
       });
       const data = await response.json().catch(() => null);
 
@@ -136,6 +142,28 @@ export function GiftingForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-fluid-xl text-left" noValidate>
+      {/* Honeypot — invisible and unreachable to a real visitor (sr-only
+       * + aria-hidden, so it doesn't confuse a screen reader either;
+       * tabIndex={-1} takes it out of tab order entirely), but a naive
+       * bot that fills every field it finds in the DOM will fill this
+       * one too. /api/gifting checks it server-side and silently no-ops
+       * instead of ever sending an email. Same pattern as
+       * ContactForm.tsx/`/api/contact`. */}
+      <label htmlFor="tf-gifting-website" className="sr-only" aria-hidden="true">
+        Leave this field blank
+      </label>
+      <input
+        id="tf-gifting-website"
+        name="website"
+        type="text"
+        value={website}
+        onChange={(e) => setWebsite(e.target.value)}
+        className="sr-only"
+        aria-hidden="true"
+        tabIndex={-1}
+        autoComplete="off"
+      />
+
       <fieldset className="flex flex-col gap-fluid-md">
         <legend className={LEGEND_CLASS}>Your Info</legend>
 
@@ -287,7 +315,8 @@ export function GiftingForm() {
           <label htmlFor="tf-gifting-timeline" className={LABEL_CLASS}>
             Timeline
           </label>
-          <p className="font-sans text-sm italic text-tf-black/60">
+          {/* /75 not /60 — WCAG AA (/60 measures 3.69:1, fails at this size) */}
+          <p className="font-sans text-sm italic text-tf-black/75">
             When do you need the gifts in your recipients&rsquo; hands by?
           </p>
           <input

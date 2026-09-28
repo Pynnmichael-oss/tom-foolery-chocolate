@@ -4,6 +4,7 @@ import "./globals.css";
 import { newsreader, poppins } from "@/lib/fonts";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
 import { Nav } from "@/components/layout/Nav";
+import { Footer } from "@/components/layout/Footer";
 import { CartProvider } from "@/components/commerce/CartProvider";
 import { CartDrawer } from "@/components/commerce/CartDrawer";
 import { OmnisendSnippet } from "@/components/analytics/OmnisendSnippet";
@@ -74,6 +75,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <CartProvider>
             <Nav />
             {children}
+            {/* Root-layout mount (moved out of the homepage, 2026-09-28)
+             * so it renders on every route, not just `/` — a launch
+             * blocker: FAQ/Wholesale/Where to Find Us/policy links were
+             * otherwise unreachable from every other page. */}
+            <Footer />
             <CartDrawer />
           </CartProvider>
         </SmoothScroll>

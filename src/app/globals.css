@@ -120,11 +120,22 @@ body {
   }
 }
 
-/* Story page heritage beat — same pre-paint pattern as the hero blocks
- * above (gated on html.js + no-preference; GSAP fromTo mirrors these). */
+/* Story page heritage beat + StoryHero monologue + /shop product grid —
+ * same pre-paint pattern as the hero blocks above (gated on html.js +
+ * no-preference; GSAP fromTo mirrors these). Without this, each of these
+ * sections' own post-hydration `gsap.set(..., {opacity:0})` briefly hid
+ * content the server had already painted visible — a visible→hidden→
+ * visible flash on anything already in view at load (the top of
+ * StoryHero's monologue, the first row of /shop's grid). */
 @media (prefers-reduced-motion: no-preference) {
-  html.js [data-story-reveal] {
+  html.js [data-story-reveal],
+  html.js [data-story-hero-line] {
     opacity: 0;
     transform: translateY(24px);
+  }
+
+  html.js [data-product-card] {
+    opacity: 0;
+    transform: translateY(32px);
   }
 }

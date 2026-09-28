@@ -146,6 +146,13 @@ export function ProductDetail({ product }: { product: Product }) {
                 width={activeImage.width ?? 1000}
                 height={activeImage.height ?? 1000}
                 className="h-full w-full object-contain"
+                // Matches the gallery column's actual rendered width
+                // (half the max-w-6xl grid at md+, full-bleed below it).
+                // Without this, next/image has no `sizes` to size a
+                // srcset against and falls back to ~1x/2x of the `width`
+                // prop above — Shopify's real (large) image dimension —
+                // requesting the full-resolution original even on mobile.
+                sizes="(min-width: 768px) 50vw, 100vw"
                 priority
               />
             ) : (
