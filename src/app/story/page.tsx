@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import { StoryHero } from "@/components/sections/StoryHero";
-import { StripeCurtainReveal } from "@/components/sections/StripeCurtainReveal";
 import { HeritageBeat } from "@/components/sections/HeritageBeat";
-import { LiveALittleStatement } from "@/components/sections/LiveALittleStatement";
-import { BrandCompass } from "@/components/sections/BrandCompass";
-import { ClosingPhotoGrid } from "@/components/sections/ClosingPhotoGrid";
 import { StoryClosingCta } from "@/components/sections/StoryClosingCta";
 import { POWER_STATEMENTS } from "@/lib/site";
 
@@ -36,41 +32,20 @@ const STORY_HERO_LINES = [
 ];
 
 /**
- * Standalone Story page — Tom's monologue, a grounded heritage beat, a
- * stripe-curtain transition, the pinned "Live a Little" statement, the
- * brand compass, and a photo grid bridging into the closing CTA.
- * `ScrollTrigger.refresh()` on font-load/window-load is already wired up
- * globally by `SmoothScroll` (see that file's own comment); every photo
- * on this page renders inside an explicit-dimension or `fill`-in-
- * `aspect-square` (`ClosingPhotoGrid`) wrapper, so nothing here shifts
- * layout on load and no additional refresh call is needed beyond that
- * global one.
+ * Standalone Story page — Tom's monologue, the heritage photo beside
+ * Garrett's note, and the closing "Shop the Collection" CTA.
  *
- * `HeritageBeat` moved directly after `StoryHero` (2026-09-15, was after
- * `StripeCurtainReveal`) so the real heritage photo lands sooner in the
- * scroll — skipping the curtain's own +=80% pinned scroll distance before
- * it. `StripeCurtainReveal`'s doc comment still describes its original
- * "seam between StoryHero and HeritageBeat" placement; it now transitions
- * into `LiveALittleStatement` instead, same mechanics.
- *
- * The torn-edge product-photo duo (bar + bonbons) that briefly lived
- * inside `HeritageBeat`, then in its own `ProductPhotoAccent` section
- * before this CTA, is gone as of 2026-09-16 — it was always the brand
- * guide's generic product photography standing in for real heritage
- * photography before `HeritageBeat`'s actual family photo was sourced,
- * so once that photo landed it stopped earning its place anywhere on
- * this page. `ScrapbookPhoto` (the shared torn-edge-clip-path component
- * that rendered it) was deleted too — nothing else used it.
+ * Content change requested by Garrett (owner): everything that used to sit
+ * between the heritage block and the closing CTA (`StripeCurtainReveal`,
+ * `LiveALittleStatement`, `BrandCompass`, `ClosingPhotoGrid`) was removed
+ * from this page. Those components still exist in `components/sections/`;
+ * `BrandCompass` is still used on the homepage.
  */
 export default function StoryPage() {
   return (
     <main id="main-content">
       <StoryHero preheader="Tom's Take" lines={STORY_HERO_LINES} signOff="—Tom" />
       <HeritageBeat />
-      <StripeCurtainReveal />
-      <LiveALittleStatement />
-      <BrandCompass />
-      <ClosingPhotoGrid />
       <StoryClosingCta />
     </main>
   );

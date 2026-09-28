@@ -119,3 +119,12 @@ body {
     opacity: 0;
   }
 }
+
+/* Story page heritage beat — same pre-paint pattern as the hero blocks
+ * above (gated on html.js + no-preference; GSAP fromTo mirrors these). */
+@media (prefers-reduced-motion: no-preference) {
+  html.js [data-story-reveal] {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
