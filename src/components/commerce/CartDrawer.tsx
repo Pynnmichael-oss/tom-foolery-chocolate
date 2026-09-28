@@ -148,6 +148,17 @@ export function CartDrawer() {
                   <div className="flex flex-1 flex-col gap-1">
                     <p className="font-display text-base leading-tight">{line.product.title}</p>
                     <p className="font-sans text-sm text-tf-white/60">{line.variantTitle}</p>
+                    {line.sellingPlanName ? (
+                      // tf-turmeric, not the muted white/60 variantTitle
+                      // uses — this is the one thing on the line that
+                      // isn't just "which variant," it's "how it's being
+                      // purchased," worth its own accent color to stand
+                      // out at a glance in a cart with mixed one-time and
+                      // subscription lines.
+                      <p className="font-sans text-sm font-semibold text-tf-turmeric">
+                        {line.sellingPlanName}
+                      </p>
+                    ) : null}
                     <p className="font-sans text-sm">{formatMoney(line.price)}</p>
 
                     <div className="mt-1 flex items-center gap-fluid-sm">
