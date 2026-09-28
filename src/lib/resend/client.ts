@@ -37,7 +37,14 @@ interface ResendErrorBody {
   name?: string;
 }
 
-export async function sendEmail(input: SendEmailInput): Promise<void> {
+interface SendEmailResult {
+  /** Resend's own message id for this send — useful to log server-side
+   * for support/debugging ("did this actually send, and which one"),
+   * not currently surfaced to the submitter. */
+  id: string;
+}
+
+export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     throw new ResendApiError("Resend is not configured — missing RESEND_API_KEY.");
@@ -76,4 +83,6 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
       body
     );
   }
+
+  return (await response.json()) as SendEmailResult;
 }

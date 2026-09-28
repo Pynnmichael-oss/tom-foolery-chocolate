@@ -24,6 +24,10 @@ export function ContactForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  // Honeypot — a real visitor never sees or fills this (see the hidden
+  // `website` input below), so it's plain state read straight off the
+  // form at submit time, same as the other fields.
+  const [website, setWebsite] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -51,7 +55,7 @@ export function ContactForm() {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message }),
+        body: JSON.stringify({ name, email, message, website }),
       });
       const data = await response.json().catch(() => null);
 
@@ -81,6 +85,28 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-fluid-md text-left" noValidate>
+      {/* Honeypot — invisible and unreachable to a real visitor (sr-only
+       * + aria-hidden, so it doesn't confuse a screen reader either;
+       * tabIndex={-1} takes it out of tab order entirely), but a naive
+       * bot that fills every field it finds in the DOM will fill this
+       * one too. /api/contact checks it server-side and silently no-ops
+       * instead of ever sending an email. Same pattern as
+       * /api/subscribe/route.ts's own honeypot. */}
+      <label htmlFor="tf-contact-website" className="sr-only" aria-hidden="true">
+        Leave this field blank
+      </label>
+      <input
+        id="tf-contact-website"
+        name="website"
+        type="text"
+        value={website}
+        onChange={(e) => setWebsite(e.target.value)}
+        className="sr-only"
+        aria-hidden="true"
+        tabIndex={-1}
+        autoComplete="off"
+      />
+
       <div className="flex flex-col gap-fluid-xs">
         <label htmlFor="tf-contact-name" className="font-sans text-sm font-black uppercase tracking-[0.075em] text-fg/70">
           Name

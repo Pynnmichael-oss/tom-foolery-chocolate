@@ -9,6 +9,35 @@ export const dynamic = "force-dynamic";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_MESSAGE_LENGTH = 5000;
 
+// Same shape as /api/subscribe/route.ts's rate limiter — see that file's
+// own TODO, which applies here too: in-memory, keyed by IP, module-
+// scoped, resets on every cold start and isn't shared across concurrent
+// serverless instances. A rough abuse deterrent, not a real limit under
+// load or behind a multi-instance deploy — move to Upstash/Vercel KV (or
+// similar shared store) before this needs to actually hold up.
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  const bucket = rateLimitBuckets.get(key);
+  if (!bucket || now > bucket.resetAt) {
+    rateLimitBuckets.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  if (bucket.count >= RATE_LIMIT_MAX) return false;
+  bucket.count += 1;
+  return true;
+}
+
+function getClientIp(request: Request): string {
+  // First entry in x-forwarded-for is the original client — everything
+  // after it is proxies/load balancers the request passed through.
+  const forwarded = request.headers.get("x-forwarded-for");
+  return forwarded?.split(",")[0]?.trim() ?? "";
+}
+
 // Overridable once a verified sending domain exists — see .env.example.
 // `onboarding@resend.dev` is Resend's own shared sandbox sender, usable
 // with any API key before a domain is verified, but only deliverable to
@@ -28,6 +57,10 @@ interface ContactPayload {
   name?: unknown;
   email?: unknown;
   message?: unknown;
+  /** Honeypot — see ContactForm.tsx's hidden `website` input. A real
+   * visitor never sees or fills this field; anything in it means a bot
+   * that fills every field it finds. */
+  website?: unknown;
 }
 
 function escapeHtml(value: string): string {
@@ -45,6 +78,13 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     return Response.json({ error: "Invalid request body." }, { status: 400 });
+  }
+
+  // Bot caught by the honeypot: fake success, no email sent, no hint it
+  // was caught (a real error response would just teach the bot to leave
+  // the field blank next time) — same as /api/subscribe/route.ts.
+  if (typeof body.website === "string" && body.website.trim() !== "") {
+    return Response.json({ success: true });
   }
 
   const name = typeof body.name === "string" ? body.name.trim() : "";
@@ -69,6 +109,14 @@ export async function POST(request: Request) {
     );
   }
 
+  const ip = getClientIp(request);
+  if (!checkRateLimit(ip || "unknown")) {
+    return Response.json(
+      { error: "Too many requests. Please try again in a few minutes." },
+      { status: 429 }
+    );
+  }
+
   if (!isResendConfigured()) {
     // Deliberately not thrown-and-caught below — this is a config problem
     // for the site owner, not a delivery failure, so it gets its own clear
@@ -81,7 +129,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    await sendEmail({
+    const sent = await sendEmail({
       to: process.env.CONTACT_TO_EMAIL || DEFAULT_TO,
       from: process.env.CONTACT_FROM_EMAIL || DEFAULT_FROM,
       replyTo: email,
@@ -91,6 +139,10 @@ export async function POST(request: Request) {
         `<p><strong>From:</strong> ${escapeHtml(name)} &lt;${escapeHtml(email)}&gt;</p>` +
         `<p style="white-space:pre-wrap">${escapeHtml(message)}</p>`,
     });
+    // Resend's own message id — logged, not returned to the submitter;
+    // useful for looking a specific send up in the Resend dashboard if
+    // someone reports never receiving a reply.
+    console.log(`[contact] sent, Resend message id: ${sent.id}`);
     return Response.json({ success: true });
   } catch (error) {
     // Real cause (bad/expired API key, unverified domain, rate limit,
