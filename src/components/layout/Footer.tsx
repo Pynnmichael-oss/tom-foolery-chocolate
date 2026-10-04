@@ -7,7 +7,7 @@ const FOOTER_LINKS = [
   { href: "/faq", label: "FAQ" },
   { href: "/wholesale", label: "Wholesale" },
   { href: "/find-us", label: "Where to Find Us" },
-  { href: "/gifting", label: "Corporate Gifting" },
+  { href: "/gifting", label: "Gifting" },
   { href: "/contact", label: "Contact" },
 ];
 

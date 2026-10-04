@@ -10,7 +10,7 @@ export interface ComingSoonPageProps {
 
 /**
  * Shared shell for the four footer nav placeholder routes (FAQ,
- * Wholesale, Where to Find Us, Corporate Gifting) — real content lands
+ * Wholesale, Where to Find Us, Gifting) — real content lands
  * page-by-page later without touching this shell. No GSAP: these are
  * low-traffic placeholder pages, same "static and light, on purpose"
  * call as `not-found.tsx`. Unlike `not-found.tsx` this isn't an error

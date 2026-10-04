@@ -63,7 +63,7 @@ const CTA_BASE =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-black focus-visible:ring-offset-2 focus-visible:ring-offset-transparent";
 
 /**
- * Graphic variant of the Corporate Gifting hero: brand-ground text panel +
+ * Graphic variant of the Gifting hero: brand-ground text panel +
  * black/white stripe field (pure CSS) with the product cutout straddling
  * the seam. Desktop (≥1024px) is a ~61/39 side-by-side split with the seam
  * vertical; below that it stacks, text on top and a ~330px stripe band
@@ -162,7 +162,7 @@ export function GiftingHeroGraphic({ groundColor = "var(--tf-rose)" }: GiftingHe
             data-hero="pre"
             className="font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em]"
           >
-            Corporate Gifting
+            Gifting
           </p>
           <h1
             data-hero="title"
@@ -175,19 +175,19 @@ export function GiftingHeroGraphic({ groundColor = "var(--tf-rose)" }: GiftingHe
             Stand out from the crowd with a unique, personalized gift for any occasion.
           </p>
           <div data-hero="cta" className="mt-fluid-xs flex flex-wrap gap-fluid-sm">
-            <a
-              href="#gifting-form"
-              onClick={scrollToForm}
-              className={`${CTA_BASE} bg-tf-black text-tf-white`}
-            >
-              Corporate Orders
-            </a>
             <Link
-              href="/shop"
-              className={`${CTA_BASE} bg-transparent text-tf-black hover:bg-tf-black/10`}
+              href="/collections/gifts"
+              className={`${CTA_BASE} bg-tf-black text-tf-white`}
             >
               Shop Gifts
             </Link>
+            <a
+              href="#custom-gift"
+              onClick={scrollToForm}
+              className={`${CTA_BASE} bg-transparent text-tf-black hover:bg-tf-black/10`}
+            >
+              Make It Custom
+            </a>
           </div>
         </div>
       </div>

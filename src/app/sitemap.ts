@@ -1,9 +1,9 @@
 import type { MetadataRoute } from "next";
-import { getProducts } from "@/lib/shopify/queries";
+import { getCollectionHandles, getProducts } from "@/lib/shopify/queries";
 import { SITE_URL } from "@/lib/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const products = await getProducts();
+  const [products, collectionHandles] = await Promise.all([getProducts(), getCollectionHandles()]);
   const now = new Date();
 
   return [
@@ -12,6 +12,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/shop`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     ...products.map((product) => ({
       url: `${SITE_URL}/shop/${product.handle}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    })),
+    ...collectionHandles.map((handle) => ({
+      url: `${SITE_URL}/collections/${handle}`,
       lastModified: now,
       changeFrequency: "weekly" as const,
       priority: 0.7,

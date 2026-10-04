@@ -28,6 +28,7 @@ import type {
   Cart,
   CartLine,
   CartLineInput,
+  Collection,
   FeaturedProduct,
   Money,
   Product,
@@ -309,6 +310,38 @@ export function getMockFeaturedProducts(): FeaturedProduct[] {
       price: product.priceRange.min,
     };
   });
+}
+
+// ---------------------------------------------------------------------
+// Collections (/collections/[handle]) — same projection-from-
+// MOCK_PRODUCTS approach as getMockFeaturedProducts above, so handles
+// always resolve to real (mock) products.
+// ---------------------------------------------------------------------
+
+const MOCK_COLLECTIONS: Record<string, { title: string; description: string; handles: string[] }> = {
+  gifts: {
+    title: "Gifts",
+    description:
+      "Whether you're saying thank you, happy holidays, or just simply I'm thinking of you, these chocolates are the perfect way to say it.",
+    handles: ["golden-turmeric-truffle", "rosewater-rascal", "caramel-conspiracy"],
+  },
+};
+
+export function getMockCollection(handle: string): Collection | null {
+  const collection = MOCK_COLLECTIONS[handle];
+  if (!collection) return null;
+  return {
+    handle,
+    title: collection.title,
+    description: collection.description,
+    products: collection.handles
+      .map((h) => MOCK_PRODUCTS.find((p) => p.handle === h))
+      .filter((p): p is Product => p !== undefined),
+  };
+}
+
+export function getMockCollectionHandles(): string[] {
+  return Object.keys(MOCK_COLLECTIONS);
 }
 
 // ---------------------------------------------------------------------

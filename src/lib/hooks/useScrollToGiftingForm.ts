@@ -26,9 +26,9 @@ export function useScrollToGiftingForm() {
 
   return useCallback(
     (event: MouseEvent<HTMLAnchorElement>) => {
-      const form = document.getElementById("gifting-form");
+      const form = document.getElementById("custom-gift");
       // No target on the page this ran on — fall back to the plain
-      // `href="#gifting-form"` anchor jump instead of no-op'ing.
+      // `href="#custom-gift"` anchor jump instead of no-op'ing.
       if (!form) return;
 
       event.preventDefault();
