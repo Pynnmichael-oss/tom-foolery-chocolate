@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { BrandVideo } from "@/components/media/BrandVideo";
 import { useHoverCapableDevice } from "@/lib/hooks/useHoverCapableDevice";
-import { formatMoney } from "@/lib/shopify/format";
+import { priceRangeLabel } from "@/lib/shopify/format";
 import type { Product } from "@/lib/shopify/types";
 
 export interface ProductCardProps {
@@ -25,8 +25,7 @@ export interface ProductCardProps {
  * an optional hover-video crossfade (see `hoverVideo`). */
 export function ProductCard({ product, className = "", hoverVideo }: ProductCardProps) {
   const image = product.images[0];
-  const { min, max } = product.priceRange;
-  const price = min.amount === max.amount ? formatMoney(min) : `From ${formatMoney(min)}`;
+  const price = priceRangeLabel(product.priceRange);
 
   const isHoverCapable = useHoverCapableDevice();
   // `isHovering` drives opacity (the crossfade); `showVideoLayer` gates

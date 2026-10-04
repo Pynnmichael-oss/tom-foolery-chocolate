@@ -128,3 +128,19 @@ body {
     transform: translateY(24px);
   }
 }
+
+/* Collection page (/collections/[handle]) — header band text and the
+ * single-/two-product layouts rise in on scroll, same pre-paint pattern
+ * as the blocks above. The 3+ product grid keeps its own existing
+ * ProductGridReveal animation instead (not gated here). */
+@media (prefers-reduced-motion: no-preference) {
+  html.js [data-collection-reveal="pre"],
+  html.js [data-collection-reveal="desc"],
+  html.js [data-collection-reveal="products"] {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  html.js [data-collection-reveal="title"] {
+    transform: translateY(28px);
+  }
+}
