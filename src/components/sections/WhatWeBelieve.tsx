@@ -74,7 +74,15 @@ export function WhatWeBelieve() {
   return (
     <PinnedSection
       className="relative flex min-h-dvh w-full items-center bg-bg px-fluid-md py-fluid-2xl text-fg"
-      style={{ "--bg": "var(--tf-white)", "--fg": "var(--tf-black)" } as React.CSSProperties}
+      // Rose, not white — this is now the only section between
+      // FeaturedProducts and TomPeek/the footer (heritage + the
+      // BrandCompass carousel were removed), and a white section on a
+      // white page read as a gap rather than a section. Rose instead of
+      // one of the three card accents (cinnamon/turmeric/juniper) so the
+      // section background doesn't match — and wash out against — any one
+      // card; same rose/black-text pairing already verified for contrast
+      // elsewhere (GiftingHeroGraphic).
+      style={{ "--bg": "var(--tf-rose)", "--fg": "var(--tf-black)" } as React.CSSProperties}
       pinDistance="+=100%"
       scrub={true}
       onTimeline={(tl, { reducedMotion }) => {
