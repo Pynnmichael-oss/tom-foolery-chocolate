@@ -325,6 +325,24 @@ const MOCK_COLLECTIONS: Record<string, { title: string; description: string; han
       "Whether you're saying thank you, happy holidays, or just simply I'm thinking of you, these chocolates are the perfect way to say it.",
     handles: ["golden-turmeric-truffle", "rosewater-rascal", "caramel-conspiracy"],
   },
+  // Dev-only fixtures exercising /collections/[handle]'s other
+  // product-count layouts (featured single-product, two-card, empty) —
+  // the real "Gifts" collection only ever covers the 3+ grid case.
+  "single-origin": {
+    title: "Single Origin",
+    description: "One bar, done right — our purest single-origin dark chocolate.",
+    handles: ["midnight-jester"],
+  },
+  truffles: {
+    title: "Truffles",
+    description: "Small-batch truffles, rolled by hand.",
+    handles: ["golden-turmeric-truffle", "rosewater-rascal"],
+  },
+  seasonal: {
+    title: "Seasonal",
+    description: "Nothing here right now — new flavors drop soon.",
+    handles: [],
+  },
 };
 
 export function getMockCollection(handle: string): Collection | null {

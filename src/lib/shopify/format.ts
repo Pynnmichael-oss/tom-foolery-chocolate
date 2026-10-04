@@ -13,6 +13,17 @@ export function formatMoney({ amount, currencyCode }: Money): string {
 }
 
 /**
+ * "$9.00" when every variant shares one price, "From $9.00" when they
+ * don't — shared between ProductCard.tsx (grid cards) and
+ * FeaturedProductPanel.tsx (single-product collection layout), both of
+ * which show this as the static, pre-selection headline price.
+ */
+export function priceRangeLabel(priceRange: { min: Money; max: Money }): string {
+  const { min, max } = priceRange;
+  return min.amount === max.amount ? formatMoney(min) : `From ${formatMoney(min)}`;
+}
+
+/**
  * Applies a selling plan's price adjustment to a base price. Shared
  * between ProductDetail.tsx (showing the discounted price for each
  * purchase option before it's ever added to a cart) and mock-data.ts
