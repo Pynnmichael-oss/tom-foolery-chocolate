@@ -1,10 +1,21 @@
 "use client";
 
 import { useRef } from "react";
+import Link from "next/link";
 import { PinnedSection } from "@/components/motion/PinnedSection";
 import { Preheader, Headline, BodyText } from "@/components/ui/typography";
 import { TextureBackground } from "@/components/ui/TextureBackground";
 import type { TfColorToken } from "@/lib/theme";
+
+// Same CTA recipe as GiftingHeroGraphic's "Shop Gifts" button (rounded
+// pill, solid brand-black fill) — reused verbatim here rather than
+// buttonClasses("primary"), which fills cinnamon-strong, not #25382A.
+const SHOP_CTA_CLASS =
+  "inline-flex items-center justify-center rounded-full border-2 border-tf-black bg-tf-black px-fluid-md py-fluid-sm " +
+  "font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-white cursor-pointer " +
+  "transition-transform duration-200 ease-out " +
+  "motion-safe:hover:-rotate-1 motion-safe:hover:scale-[1.03] motion-safe:active:scale-[0.97] " +
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-black focus-visible:ring-offset-2";
 
 interface BeliefCardData {
   accent: TfColorToken;
@@ -58,6 +69,7 @@ export function WhatWeBelieve() {
   const preheaderRef = useRef<HTMLParagraphElement>(null);
   const headlineRef = useRef<HTMLHeadingElement>(null);
   const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const ctaRef = useRef<HTMLAnchorElement>(null);
 
   return (
     <PinnedSection
@@ -69,7 +81,7 @@ export function WhatWeBelieve() {
         const cards = cardRefs.current.filter((el): el is HTMLDivElement => el !== null);
 
         if (reducedMotion) {
-          tl.set([preheaderRef.current, headlineRef.current, ...cards], {
+          tl.set([preheaderRef.current, headlineRef.current, ...cards, ctaRef.current], {
             opacity: 1,
             y: 0,
           });
@@ -92,6 +104,12 @@ export function WhatWeBelieve() {
             { opacity: 0, y: 32 },
             { opacity: 1, y: 0, duration: 0.6, ease: "power2.out", stagger: 0.12 },
             "-=0.3"
+          )
+          .fromTo(
+            ctaRef.current,
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
+            "-=0.2"
           );
       }}
     >
@@ -134,6 +152,16 @@ export function WhatWeBelieve() {
               <BodyText>{card.body}</BodyText>
             </TextureBackground>
           ))}
+        </div>
+
+        {/* This is now the homepage's last section before the footer
+         * (heritage StorySection + BrandCompass carousel removed) — a
+         * forward CTA here is what used to be missing until you scrolled
+         * past both of those. */}
+        <div className="flex justify-center">
+          <Link ref={ctaRef} href="/shop" className={SHOP_CTA_CLASS}>
+            Shop the Chocolate
+          </Link>
         </div>
       </div>
     </PinnedSection>

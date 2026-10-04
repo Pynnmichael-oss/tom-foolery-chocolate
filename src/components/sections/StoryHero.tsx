@@ -86,7 +86,7 @@ export function StoryHero({ preheader, lines, signOff }: StoryHeroProps) {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden px-fluid-md py-fluid-3xl"
+      className="relative overflow-hidden px-fluid-md py-fluid-lg"
       aria-label="Tom's Story"
     >
       {/* Vintage texture-wash backdrop — brand guide Graphic Elements >
@@ -95,10 +95,10 @@ export function StoryHero({ preheader, lines, signOff }: StoryHeroProps) {
        * context on top. */}
       <TextureBackground color="turmeric" className="absolute inset-0" />
 
-      <div className="relative z-10 mx-auto flex max-w-4xl flex-col gap-fluid-2xl">
+      <div className="relative z-10 mx-auto flex max-w-4xl flex-col gap-fluid-lg">
         <Preheader>{preheader}</Preheader>
 
-        <div className="flex flex-col gap-fluid-xl">
+        <div className="flex flex-col gap-fluid-sm">
           {lines.map((line, i) =>
             i === 0 ? (
               <h1
@@ -106,7 +106,7 @@ export function StoryHero({ preheader, lines, signOff }: StoryHeroProps) {
                 data-story-hero-line
                 className="font-display font-semibold text-fg"
                 style={{
-                  fontSize: "clamp(1.75rem, 1.2rem + 2.75vw, 3.5rem)",
+                  fontSize: "clamp(1.375rem, 1rem + 1.8vw, 2.5rem)",
                   lineHeight: "calc(1em + 16px)",
                 }}
               >
@@ -118,7 +118,7 @@ export function StoryHero({ preheader, lines, signOff }: StoryHeroProps) {
                 data-story-hero-line
                 className="font-display font-semibold text-fg"
                 style={{
-                  fontSize: "clamp(1.75rem, 1.2rem + 2.75vw, 3.5rem)",
+                  fontSize: "clamp(1.375rem, 1rem + 1.8vw, 2.5rem)",
                   lineHeight: "calc(1em + 16px)",
                 }}
               >
