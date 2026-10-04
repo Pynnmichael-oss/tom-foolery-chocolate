@@ -16,19 +16,27 @@ export interface GiftingHeroGraphicProps {
 }
 
 /**
- * Cutout of the Coffee & Cookies bar, derived from the studio original on
- * Shopify (already a photographer-supplied transparent cutout — see
- * public/photos/source/, git-ignored). Baked-in shadow stripped; the drop
- * shadow below is a CSS filter so it follows the rotated silhouette.
- *
- * TODO(assets): swap for a proper studio cutout of whichever product the
- * page should feature — same filename keeps this call site untouched.
+ * Cutout of the Waffle Cone Crunch bar (Shopify product 12566966731070,
+ * image 3 of 3 — RCS_Tom_Foolery_26Sep2026_0401), derived from the studio
+ * original pulled from Shopify's CDN (full-res source kept at
+ * public/photos/source/waffle-cone-crunch-original.jpg, git-ignored).
+ * Background/baked shadow removed via a border-connected flood-fill on a
+ * saturation+value mask (not a plain color-distance threshold — the
+ * wrapper's own white stripes and pale mint label are too close to the
+ * white backdrop for that to work cleanly), with a 1px erosion + light
+ * feather + white-background un-mix (decontamination) on the resulting
+ * edge band to avoid fringing — see git history on this file's companion
+ * script notes if this ever needs redoing for a different product shot.
+ * Wider aspect than the previous cutout (this shot's bar + broken-off
+ * piece spans further horizontally), which is why the positioning below
+ * differs from a simple src swap. The drop shadow is a CSS filter so it
+ * follows the rotated silhouette.
  */
 const PRODUCT = {
   src: "/photos/gifting-bar-cutout.png",
-  alt: "Tom Foolery Coffee & Cookies chocolate bar in its black-and-white striped wrapper",
+  alt: "Waffle Cone Crunch bar, half unwrapped with a piece broken off.",
   width: 1600,
-  height: 950,
+  height: 826,
 } as const;
 
 // 55px stripes, brand black/white only (BRAND_REFERENCE §5: stripes are
@@ -225,10 +233,14 @@ export function GiftingHeroGraphic({ groundColor = "var(--tf-rose)" }: GiftingHe
             </div>
           </div>
           {/* Badge: its own element so it pops in on its own timing rather
-           * than riding the product's slide. */}
+           * than riding the product's slide. Pushed up to -top-[30%] (was
+           * -14%) for the wider Waffle Cone Crunch shot — the broken-off
+           * piece sits further right/up in frame than the previous
+           * product's crumbs did, and at the old offset the badge
+           * overlapped it. */}
           <div
             data-hero="badge"
-            className="absolute -right-[4%] -top-[14%] size-[clamp(5.5rem,9vw,8.25rem)]"
+            className="absolute -right-[2%] -top-[30%] size-[clamp(5.5rem,9vw,8.25rem)]"
           >
             <div className="flex size-full rotate-12 items-center justify-center rounded-full bg-tf-turmeric text-center">
               <span className="font-display text-[clamp(1.05rem,1.7vw,1.6rem)] font-semibold leading-[1.02]">
