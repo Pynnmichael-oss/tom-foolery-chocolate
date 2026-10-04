@@ -24,18 +24,28 @@ export function ProductGridReveal({ products }: { products: Product[] }) {
       });
 
       mm.add(breakpoints.motionOK, () => {
-        gsap.set(cards, { opacity: 0, y: 32 });
-        const tween = gsap.to(cards, {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          ease: "power2.out",
-          stagger: 0.08,
-          scrollTrigger: {
-            trigger: gridRef.current,
-            start: "top 85%",
-          },
-        });
+        // `fromTo`, not `set` + `to`: the hidden starting state below
+        // mirrors the pre-paint CSS in globals.css
+        // (`html.js [data-product-card]`), already in place before first
+        // paint. A runtime `gsap.set(..., {opacity:0})` here would instead
+        // hide cards the server already painted visible — a flash for
+        // whichever row is already in view at load (this grid starts
+        // right below a short header, so usually the first row).
+        const tween = gsap.fromTo(
+          cards,
+          { opacity: 0, y: 32 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            ease: "power2.out",
+            stagger: 0.08,
+            scrollTrigger: {
+              trigger: gridRef.current,
+              start: "top 85%",
+            },
+          }
+        );
         return () => {
           tween.scrollTrigger?.kill();
           tween.kill();
@@ -49,9 +59,13 @@ export function ProductGridReveal({ products }: { products: Product[] }) {
 
   return (
     <div ref={gridRef} className="grid grid-cols-2 gap-fluid-md lg:grid-cols-3">
-      {products.map((product) => (
+      {products.map((product, i) => (
         <div key={product.id} data-product-card>
-          <ProductCard product={product} />
+          {/* First 3 = the first row at this grid's widest column count
+           * (lg:grid-cols-3), so this covers the first row at every
+           * breakpoint (2 or 3 cols) — the likely LCP candidate for this
+           * page. */}
+          <ProductCard product={product} priority={i < 3} />
         </div>
       ))}
     </div>

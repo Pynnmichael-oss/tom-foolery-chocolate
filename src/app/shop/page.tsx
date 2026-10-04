@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
 import { Preheader, Headline } from "@/components/ui/typography";
 import { ProductGrid } from "@/components/commerce/ProductGrid";
-import { POWER_STATEMENTS } from "@/lib/site";
+import { DEFAULT_OG_IMAGE, POWER_STATEMENTS } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Shop",
   description: POWER_STATEMENTS.funTastesBetter,
   alternates: { canonical: "/shop" },
-  openGraph: { title: "Shop", description: POWER_STATEMENTS.funTastesBetter },
+  // images: DEFAULT_OG_IMAGE — see that constant's own comment on why an
+  // openGraph override needs this explicitly, not just title/description.
+  openGraph: {
+    title: "Shop",
+    description: POWER_STATEMENTS.funTastesBetter,
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
 
 export default function ShopPage() {

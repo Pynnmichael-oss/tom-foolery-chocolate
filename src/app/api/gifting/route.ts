@@ -1,28 +1,26 @@
 import { isResendConfigured, sendEmail } from "@/lib/resend/client";
+import { resolveFormEmail } from "@/lib/forms/email-config";
+import {
+  EMAIL_RE,
+  escapeHtml,
+  getClientIp,
+  isHoneypotTriggered,
+  createRateLimiter,
+} from "@/lib/forms/shared";
 import { ORDER_SIZE_VALUES, PRODUCT_OPTIONS } from "@/lib/gifting/constants";
 import type { ProductOption } from "@/lib/gifting/constants";
 
 // Never cache/prerender — same as /api/contact, see that route's comment.
 export const dynamic = "force-dynamic";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^[0-9+()\-.\s]{7,20}$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_MESSAGE_LENGTH = 5000;
 
-// Same no-domain-yet flow as /api/contact — see that file's own comment
-// for the full explanation. Separate GIFTING_* env vars (rather than
-// reusing CONTACT_TO_EMAIL/CONTACT_FROM_EMAIL) so this form's routing can
-// diverge from the Contact page's later (e.g. gifting inquiries to a
-// sales inbox, general questions elsewhere) without the two entangling.
-const DEFAULT_FROM = "Tom Foolery Website <onboarding@resend.dev>";
-// TODO(garrett): this is TEMPORARY — pointed at Michael's inbox for testing
-// while onboarding@resend.dev (no verified domain yet) can only deliver to
-// the Resend account's own verified email, not garrett@tomfoolerychocolate.com.
-// Switch this back to "garrett@tomfoolerychocolate.com" once
-// tomfoolerychocolate.com (or a subdomain) is verified in Resend — see the
-// setup notes in .env.example.
-const DEFAULT_TO = "pynnmichael@outlook.com";
+// Same shared limiter shape as /api/contact, but its own independent
+// bucket map/instance — a burst on one form doesn't spend the other's
+// budget.
+const checkRateLimit = createRateLimiter({ max: 5, windowMs: 10 * 60 * 1000 });
 
 interface GiftingPayload {
   firstName?: unknown;
@@ -34,15 +32,9 @@ interface GiftingPayload {
   products?: unknown;
   timeline?: unknown;
   message?: unknown;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+  /** Honeypot — see GiftingForm.tsx's hidden `website` input, same
+   * pattern as ContactForm.tsx/`/api/contact`. */
+  website?: unknown;
 }
 
 /** Drops anything that isn't one of the known product options rather than
@@ -61,6 +53,12 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     return Response.json({ error: "Invalid request body." }, { status: 400 });
+  }
+
+  // Bot caught by the honeypot: fake success, no email sent — see
+  // isHoneypotTriggered's own comment on why this isn't a real error.
+  if (isHoneypotTriggered(body.website)) {
+    return Response.json({ success: true });
   }
 
   const firstName = typeof body.firstName === "string" ? body.firstName.trim() : "";
@@ -108,6 +106,14 @@ export async function POST(request: Request) {
     );
   }
 
+  const ip = getClientIp(request);
+  if (!checkRateLimit(ip || "unknown")) {
+    return Response.json(
+      { error: "Too many requests. Please try again in a few minutes." },
+      { status: 429 }
+    );
+  }
+
   if (!isResendConfigured()) {
     console.error("[gifting] RESEND_API_KEY is not set — see .env.example.");
     return Response.json(
@@ -115,6 +121,12 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+
+  const emailConfig = resolveFormEmail("gifting", {
+    to: "GIFTING_TO_EMAIL",
+    from: "GIFTING_FROM_EMAIL",
+  });
+  if ("errorResponse" in emailConfig) return emailConfig.errorResponse;
 
   const fullName = `${firstName} ${lastName}`;
   const rows: Array<[string, string]> = [
@@ -128,9 +140,9 @@ export async function POST(request: Request) {
   ];
 
   try {
-    await sendEmail({
-      to: process.env.GIFTING_TO_EMAIL || DEFAULT_TO,
-      from: process.env.GIFTING_FROM_EMAIL || DEFAULT_FROM,
+    const sent = await sendEmail({
+      to: emailConfig.to,
+      from: emailConfig.from,
       replyTo: email,
       subject: `New gifting inquiry from ${fullName}`,
       text:
@@ -147,6 +159,9 @@ export async function POST(request: Request) {
         `</table>` +
         `<p style="white-space:pre-wrap">${escapeHtml(message)}</p>`,
     });
+    // Resend's own message id — logged, not returned to the submitter;
+    // matches /api/contact's own logging.
+    console.log(`[gifting] sent, Resend message id: ${sent.id}`);
     return Response.json({ success: true });
   } catch (error) {
     // Real cause (bad/expired API key, unverified domain, rate limit,

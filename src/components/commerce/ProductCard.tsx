@@ -18,12 +18,17 @@ export interface ProductCardProps {
    * looping `BrandVideo`, and resets (unmounts, so it plays from frame one
    * next time) on mouse leave. Touch devices always just see the image. */
   hoverVideo?: string;
+  /** Skips lazy-loading for this card's image — pass for cards in the
+   * first visible row (see `ProductGridReveal`), so the grid's likely LCP
+   * candidate fetches immediately instead of waiting on the browser's own
+   * lazy-load viewport heuristics. */
+  priority?: boolean;
 }
 
 /** Photography-forward product card. Whole card is the link; the only
  * motion is a subtle, motion-safe tilt/scale on the image on hover, plus
  * an optional hover-video crossfade (see `hoverVideo`). */
-export function ProductCard({ product, className = "", hoverVideo }: ProductCardProps) {
+export function ProductCard({ product, className = "", hoverVideo, priority = false }: ProductCardProps) {
   const image = product.images[0];
   const price = priceRangeLabel(product.priceRange);
 
@@ -94,6 +99,7 @@ export function ProductCard({ product, className = "", hoverVideo }: ProductCard
             height={image.height ?? 800}
             className="h-full w-full object-contain"
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 45vw, 90vw"
+            priority={priority}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-tf-juniper text-tf-black">
