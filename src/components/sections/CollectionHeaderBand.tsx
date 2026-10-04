@@ -57,7 +57,7 @@ export function CollectionHeaderBand({ title, description }: CollectionHeaderBan
     <section ref={sectionRef} className="relative w-full overflow-hidden" style={{ backgroundColor: "var(--tf-rose)" }}>
       <div className="mx-auto flex max-w-6xl flex-col gap-fluid-sm px-fluid-md py-fluid-xl text-tf-black">
         <div data-collection-reveal="pre">
-          <Preheader>Gifting</Preheader>
+          <Preheader>Collection</Preheader>
         </div>
         <div data-collection-reveal="title">
           <Headline as="h1" size="md">
