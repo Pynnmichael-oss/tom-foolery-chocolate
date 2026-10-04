@@ -4,6 +4,7 @@ import type {
   Cart,
   CartLine,
   CartLineInput,
+  Collection,
   FeaturedProduct,
   Money,
   Product,
@@ -145,6 +146,33 @@ const FEATURED_PRODUCTS_QUERY = `#graphql
   }
 `;
 
+// Full product fragment (not the trimmed FeaturedProduct shape) — a
+// collection page reuses /shop's grid/card components, which need the
+// complete Product (variants, selling plans) for AddToCartButton.
+const COLLECTION_QUERY = `#graphql
+  ${PRODUCT_FRAGMENT}
+  query CollectionByHandle($handle: String!, $first: Int!) {
+    collection(handle: $handle) {
+      handle
+      title
+      description
+      products(first: $first) {
+        nodes { ...ProductFields }
+      }
+    }
+  }
+`;
+
+// Handles only — feeds generateStaticParams() and the sitemap, neither of
+// which needs more than that per collection.
+const COLLECTION_HANDLES_QUERY = `#graphql
+  query CollectionHandles {
+    collections(first: 100) {
+      nodes { handle }
+    }
+  }
+`;
+
 const CART_QUERY = `#graphql
   ${CART_FRAGMENT}
   query CartByID($cartId: ID!) {
@@ -247,6 +275,13 @@ interface RawProduct {
   requiresSellingPlan: boolean;
   sellingPlanGroups: { nodes: RawSellingPlanGroup[] };
   variants: { nodes: RawVariant[] };
+}
+
+interface RawCollection {
+  handle: string;
+  title: string;
+  description: string;
+  products: { nodes: RawProduct[] };
 }
 
 interface RawFeaturedProduct {
@@ -366,6 +401,15 @@ function normalizeProduct(product: RawProduct): Product {
   };
 }
 
+function normalizeCollection(collection: RawCollection): Collection {
+  return {
+    handle: collection.handle,
+    title: collection.title,
+    description: collection.description,
+    products: collection.products.nodes.map(normalizeProduct),
+  };
+}
+
 function normalizeFeaturedProduct(product: RawFeaturedProduct): FeaturedProduct {
   return {
     id: product.id,
@@ -481,6 +525,44 @@ export async function getProduct(handle: string): Promise<Product | null> {
     return data.product ? normalizeProduct(data.product) : null;
   } catch (error) {
     return handleReadFailure(error, `getProduct(${handle})`, () => mock.getMockProduct(handle));
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Collections (/collections/[handle])                                  */
+/* ------------------------------------------------------------------ */
+
+export async function getCollection(handle: string, first = 24): Promise<Collection | null> {
+  if (!isShopifyConfigured()) return mock.getMockCollection(handle);
+
+  try {
+    const data = await shopifyFetch<{ collection: RawCollection | null }>({
+      query: COLLECTION_QUERY,
+      variables: { handle, first },
+      revalidate: 3600,
+      tags: ["products", `collection:${handle}`],
+    });
+    return data.collection ? normalizeCollection(data.collection) : null;
+  } catch (error) {
+    return handleReadFailure(error, `getCollection(${handle})`, () => mock.getMockCollection(handle));
+  }
+}
+
+/** Every collection handle — feeds generateStaticParams() and the sitemap.
+ * Not filtered by product count: an empty collection still gets a static
+ * page (real 404 is reserved for a handle that doesn't exist at all). */
+export async function getCollectionHandles(): Promise<string[]> {
+  if (!isShopifyConfigured()) return mock.getMockCollectionHandles();
+
+  try {
+    const data = await shopifyFetch<{ collections: { nodes: { handle: string }[] } }>({
+      query: COLLECTION_HANDLES_QUERY,
+      revalidate: 3600,
+      tags: ["products"],
+    });
+    return data.collections.nodes.map((n) => n.handle);
+  } catch (error) {
+    return handleReadFailure(error, "getCollectionHandles", () => mock.getMockCollectionHandles());
   }
 }
 

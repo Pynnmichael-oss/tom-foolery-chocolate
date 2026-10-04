@@ -107,7 +107,7 @@ export interface GiftingHeroProps {
 }
 
 /**
- * Corporate Gifting hero — a static full-bleed photo (no pin/scrub; this
+ * Gifting hero — a static full-bleed photo (no pin/scrub; this
  * is a straightforward landing page, not the flagship homepage/story
  * treatment) with a one-time fade-up on mount — fires immediately, no
  * ScrollTrigger needed since this is always in view at load.
@@ -212,7 +212,7 @@ function GiftingHeroPhoto({
         ref={contentRef}
         className="relative z-10 flex max-w-2xl flex-col items-center gap-fluid-md"
       >
-        <Preheader className="text-tf-white/80">Corporate Gifting</Preheader>
+        <Preheader className="text-tf-white/80">Gifting</Preheader>
         <Headline as="h1" size="md" className="text-tf-white">
           Clever &amp; curious gifts for clients, guests, &amp; more
         </Headline>
@@ -220,7 +220,7 @@ function GiftingHeroPhoto({
           Stand out from the crowd with a unique, personalized gift for any occasion.
         </BodyText>
         <a
-          href="#gifting-form"
+          href="#custom-gift"
           onClick={scrollToForm}
           className={buttonClasses("primary", "mt-fluid-sm")}
         >

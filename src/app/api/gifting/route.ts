@@ -132,7 +132,7 @@ export async function POST(request: Request) {
       to: process.env.GIFTING_TO_EMAIL || DEFAULT_TO,
       from: process.env.GIFTING_FROM_EMAIL || DEFAULT_FROM,
       replyTo: email,
-      subject: `New corporate gifting inquiry from ${fullName}`,
+      subject: `New gifting inquiry from ${fullName}`,
       text:
         rows.map(([label, value]) => `${label}: ${value}`).join("\n") +
         `\n\nMessage:\n${message}`,

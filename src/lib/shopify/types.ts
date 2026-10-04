@@ -95,6 +95,19 @@ export interface FeaturedProduct {
   price: Money;
 }
 
+/**
+ * A Storefront collection page's worth of data — full `Product` shape per
+ * item (not the trimmed `FeaturedProduct`) since `/collections/[handle]`
+ * reuses the same grid/card components as `/shop`, which need the full
+ * product (variants, selling plans) for `AddToCartButton`.
+ */
+export interface Collection {
+  handle: string;
+  title: string;
+  description: string;
+  products: Product[];
+}
+
 export interface CartLine {
   id: string;
   quantity: number;

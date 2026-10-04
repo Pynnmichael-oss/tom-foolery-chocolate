@@ -135,7 +135,7 @@ export function GiftingPanels() {
             </h2>
             <BodyText className="flex-1 text-fg/80">{panel.copy}</BodyText>
             <a
-              href="#gifting-form"
+              href="#custom-gift"
               onClick={scrollToForm}
               className={buttonClasses("secondary", "self-start")}
             >

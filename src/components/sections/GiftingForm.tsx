@@ -64,7 +64,7 @@ function clientError(form: FormState): string | null {
 }
 
 /**
- * Corporate Gifting inquiry form — posts to `/api/gifting` (same
+ * Gifting inquiry form — posts to `/api/gifting` (same
  * Resend-backed pattern as `ContactForm`/`/api/contact`). Grouped into two
  * `<fieldset>`s (Your Info / Your Gift) so nine fields read as two
  * digestible chunks instead of one long flat list — the brief's own
