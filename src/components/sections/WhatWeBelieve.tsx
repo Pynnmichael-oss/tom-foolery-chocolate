@@ -74,15 +74,14 @@ export function WhatWeBelieve() {
   return (
     <PinnedSection
       className="relative flex min-h-dvh w-full items-center bg-bg px-fluid-md py-fluid-2xl text-fg"
-      // Rose, not white — this is now the only section between
-      // FeaturedProducts and TomPeek/the footer (heritage + the
-      // BrandCompass carousel were removed), and a white section on a
-      // white page read as a gap rather than a section. Rose instead of
-      // one of the three card accents (cinnamon/turmeric/juniper) so the
-      // section background doesn't match — and wash out against — any one
-      // card; same rose/black-text pairing already verified for contrast
-      // elsewhere (GiftingHeroGraphic).
-      style={{ "--bg": "var(--tf-rose)", "--fg": "var(--tf-black)" } as React.CSSProperties}
+      // Juniper, not rose — variant A of the bottom-section color swap
+      // (see /story redesign request): juniper + ink reads calmer and more
+      // premium against the cinnamon/turmeric/juniper card row than rose
+      // did, and it's still clearly its own section against both
+      // FeaturedProducts above and the pure-black footer below. Ink
+      // (--tf-black is already #25382A) on juniper is well past WCAG AA
+      // (contrast ratio ≈7.7:1).
+      style={{ "--bg": "var(--tf-juniper)", "--fg": "var(--tf-black)" } as React.CSSProperties}
       pinDistance="+=100%"
       scrub={true}
       onTimeline={(tl, { reducedMotion }) => {

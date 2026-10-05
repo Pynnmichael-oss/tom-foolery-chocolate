@@ -134,6 +134,18 @@ body {
     transform: translateY(24px);
   }
 
+  /* TomMeldrumStory (/story) — opening headline is transform-only, same
+   * LCP rule as the hero title blocks above (paints visible immediately,
+   * just offset). The photo's zoom wrapper starts scaled up so GSAP's
+   * scroll-scrubbed zoom-out has a matching pre-paint state if the photo
+   * is already in view at load (it's the first thing on the page). */
+  html.js [data-tom-meldrum="headline"] {
+    transform: translateY(32px);
+  }
+  html.js [data-tom-meldrum="zoom"] {
+    transform: scale(1.12);
+  }
+
   html.js [data-product-card] {
     opacity: 0;
     transform: translateY(32px);
