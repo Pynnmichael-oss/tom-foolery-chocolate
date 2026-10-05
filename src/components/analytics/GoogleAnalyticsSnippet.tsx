@@ -1,16 +1,38 @@
-import { GoogleAnalytics } from "@next/third-parties/google";
+import Script from "next/script";
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 /**
- * GA4 via `@next/third-parties/google`'s `<GoogleAnalytics>` (loads
- * `gtag.js` after hydration, same deferred-load approach as every other
- * third-party snippet in this codebase). Reads the measurement ID from
- * `NEXT_PUBLIC_GA_MEASUREMENT_ID` (see `.env.example`) instead of
- * hardcoding it — set in Vercel **Production only**, so Preview deploys
- * and local dev never load it. Renders nothing when that env var is
- * unset, same "unconfigured → skip silently" pattern as
- * `OmnisendSnippet.tsx`.
+ * Manual gtag.js setup — replaces an earlier version that used
+ * `@next/third-parties/google`'s `<GoogleAnalytics>` (see git history).
+ * That component hardcodes `strategy="afterInteractive"` with no way to
+ * defer further; measured against this hand-rolled `lazyOnload` version
+ * (Lighthouse mobile, home, 3 runs each — see the PR this shipped in for
+ * the numbers), lazyOnload won on LCP by enough to justify owning this
+ * ourselves instead of using the library.
+ *
+ * Reads the measurement ID from `NEXT_PUBLIC_GA_MEASUREMENT_ID` (see
+ * `.env.example`) — set in Vercel **Production only**, so Preview deploys
+ * and local dev never load it. Renders nothing when unset, same
+ * "unconfigured → skip silently" pattern as `OmnisendSnippet.tsx`.
+ *
+ * Two pieces, in order:
+ *
+ * 1. A plain inline `<script>` (not `next/script` — this one needs to run
+ *    immediately during HTML parsing, same as layout.tsx's own
+ *    `JS_CLASS_SCRIPT`), Google's own canonical gtag snippet shape:
+ *    defines `window.dataLayer`/`window.gtag` and queues the initial `js`/
+ *    `config` calls. This is what makes "fire-before-load" safe —
+ *    `src/lib/analytics/ga.ts`'s event functions push to this same
+ *    `dataLayer` array directly, so an event fired before step 2 below
+ *    has finished loading just sits in the array until gtag.js arrives
+ *    and replays everything queued, in order. Negligible cost (a few
+ *    bytes of inline JS, no network request) — this is the part that has
+ *    to be early, not the part that's expensive.
+ * 2. The actual `gtag.js` script tag, loaded via `next/script`'s
+ *    `strategy="lazyOnload"` — the most deferred strategy Next offers
+ *    (window load + idle), lower cost than the `afterInteractive` the
+ *    library component was locked into.
  *
  * Pageviews: deliberately NOT sending manual `page_view` events on
  * client-side route changes. GA4's own Enhanced Measurement already
@@ -31,5 +53,21 @@ const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 export function GoogleAnalyticsSnippet() {
   if (!GA_MEASUREMENT_ID) return null;
 
-  return <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />;
+  return (
+    <>
+      <script
+        dangerouslySetInnerHTML={{
+          __html:
+            "window.dataLayer=window.dataLayer||[];" +
+            "function gtag(){dataLayer.push(arguments);}" +
+            "gtag('js',new Date());" +
+            `gtag('config','${GA_MEASUREMENT_ID}');`,
+        }}
+      />
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        strategy="lazyOnload"
+      />
+    </>
+  );
 }
