@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Preheader, Headline, BodyText } from "@/components/ui/typography";
 import { AddToCartButton } from "./AddToCartButton";
 import { PurchaseOptionsFields } from "./PurchaseOptionsFields";
 import { formatMoney } from "@/lib/shopify/format";
 import { useProductPurchaseOptions } from "@/lib/hooks/useProductPurchaseOptions";
+import { trackViewItem } from "@/lib/analytics/ga";
 import type { Product } from "@/lib/shopify/types";
 
 /** Client half of the PDP: gallery, variant selection, purchase-option
@@ -21,6 +22,19 @@ export function ProductDetail({ product }: { product: Product }) {
   const { selectedVariant, selectedSellingPlan, basePrice, price } = options;
 
   const activeImage = product.images[activeImageIndex];
+
+  // Fires once per PDP view (the initial selected variant), not again on
+  // every variant/selling-plan change the purchase-options selector makes
+  // — that's a different event, not requested here. Deliberately only
+  // depends on product.id: this component doesn't remount between two
+  // different products' PDPs (same client-side nav, same tree position),
+  // so a dependency on selectedVariant would double-fire this on the
+  // reconciliation effect inside useProductPurchaseOptions that runs
+  // right after mount too.
+  useEffect(() => {
+    if (selectedVariant) trackViewItem(product, selectedVariant);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id]);
 
   return (
     <main id="main-content" className="px-fluid-md py-fluid-xl">
