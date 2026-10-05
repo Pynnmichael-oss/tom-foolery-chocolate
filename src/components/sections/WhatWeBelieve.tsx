@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PinnedSection } from "@/components/motion/PinnedSection";
 import { Preheader, Headline, BodyText } from "@/components/ui/typography";
 import { TextureBackground } from "@/components/ui/TextureBackground";
+import { StripeDivider } from "@/components/ui/StripeDivider";
 import type { TfColorToken } from "@/lib/theme";
 
 // Same CTA recipe as GiftingHeroGraphic's "Shop Gifts" button (rounded
@@ -73,15 +74,15 @@ export function WhatWeBelieve() {
 
   return (
     <PinnedSection
-      className="relative flex min-h-dvh w-full items-center bg-bg px-fluid-md py-fluid-2xl text-fg"
-      // Juniper, not rose — variant A of the bottom-section color swap
-      // (see /story redesign request): juniper + ink reads calmer and more
-      // premium against the cinnamon/turmeric/juniper card row than rose
-      // did, and it's still clearly its own section against both
-      // FeaturedProducts above and the pure-black footer below. Ink
-      // (--tf-black is already #25382A) on juniper is well past WCAG AA
-      // (contrast ratio ≈7.7:1).
-      style={{ "--bg": "var(--tf-juniper)", "--fg": "var(--tf-black)" } as React.CSSProperties}
+      className="relative flex min-h-dvh w-full flex-col items-center justify-center bg-bg px-fluid-md py-fluid-2xl text-fg"
+      // White, not rose — variant B of the bottom-section color swap (see
+      // /story redesign request): a `StripeDivider` above the content does
+      // the work rose's color used to (separating this section from
+      // FeaturedProducts above), so the section itself can go back to
+      // white/ink — the cinnamon/turmeric/juniper card row supplies all
+      // the color here instead of the section background competing with
+      // it. Still distinct from the pure-black footer below.
+      style={{ "--bg": "var(--tf-white)", "--fg": "var(--tf-black)" } as React.CSSProperties}
       pinDistance="+=100%"
       scrub={true}
       onTimeline={(tl, { reducedMotion }) => {
@@ -120,6 +121,12 @@ export function WhatWeBelieve() {
           );
       }}
     >
+      {/* Marks the section boundary against FeaturedProducts above — the
+       * job rose's background color used to do in variant A. Pinned to the
+       * section's own top edge (this element is `relative`'s positioning
+       * context), not the viewport, so it stays put through the pin/scrub. */}
+      <StripeDivider className="absolute inset-x-0 top-0" />
+
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-fluid-xl">
         <div className="flex flex-col items-center gap-fluid-sm text-center">
           <Preheader ref={preheaderRef}>Our Philosophy</Preheader>
