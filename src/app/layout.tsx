@@ -59,6 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-full bg-bg font-sans text-fg">
         <OrganizationJsonLd />
+        <GoogleAnalyticsSnippet />
         <OmnisendSnippet />
         {/* useSearchParams (inside OmnisendPageView) opts its subtree out
          * of static rendering unless wrapped in Suspense — see that
@@ -85,11 +86,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </CartProvider>
         </SmoothScroll>
       </body>
-      {/* Sibling of `<body>`, not inside it — this is `@next/third-
-       * parties/google`'s own documented placement for `<GoogleAnalytics>`,
-       * not an accident. Renders nothing when the env var is unset — see
-       * that component's own comment. */}
-      <GoogleAnalyticsSnippet />
     </html>
   );
 }
