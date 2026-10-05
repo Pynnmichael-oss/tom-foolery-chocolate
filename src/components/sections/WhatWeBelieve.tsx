@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PinnedSection } from "@/components/motion/PinnedSection";
 import { Preheader, Headline, BodyText } from "@/components/ui/typography";
 import { TextureBackground } from "@/components/ui/TextureBackground";
+import { StripeDivider } from "@/components/ui/StripeDivider";
 import type { TfColorToken } from "@/lib/theme";
 
 // Same CTA recipe as GiftingHeroGraphic's "Shop Gifts" button (rounded
@@ -72,56 +73,64 @@ export function WhatWeBelieve() {
   const ctaRef = useRef<HTMLAnchorElement>(null);
 
   return (
-    <PinnedSection
-      className="relative flex min-h-dvh w-full items-center bg-bg px-fluid-md py-fluid-2xl text-fg"
-      // Rose, not white — this is now the only section between
-      // FeaturedProducts and TomPeek/the footer (heritage + the
-      // BrandCompass carousel were removed), and a white section on a
-      // white page read as a gap rather than a section. Rose instead of
-      // one of the three card accents (cinnamon/turmeric/juniper) so the
-      // section background doesn't match — and wash out against — any one
-      // card; same rose/black-text pairing already verified for contrast
-      // elsewhere (GiftingHeroGraphic).
-      style={{ "--bg": "var(--tf-rose)", "--fg": "var(--tf-black)" } as React.CSSProperties}
-      pinDistance="+=100%"
-      scrub={true}
-      onTimeline={(tl, { reducedMotion }) => {
-        const cards = cardRefs.current.filter((el): el is HTMLDivElement => el !== null);
+    <>
+      {/* Marks the section boundary against FeaturedProducts above — the
+       * job rose's background color used to do before this swap. A
+       * normal-flow sibling, not pinned inside the section below:
+       * `PinnedSection` glues that section's own top to the viewport top
+       * for the whole scrub, which sits directly under the sticky nav — a
+       * stripe placed there would render fully drawn but permanently
+       * hidden behind it. */}
+      <StripeDivider />
 
-        if (reducedMotion) {
-          tl.set([preheaderRef.current, headlineRef.current, ...cards, ctaRef.current], {
-            opacity: 1,
-            y: 0,
-          });
-          return;
-        }
+      <PinnedSection
+        className="relative flex min-h-dvh w-full flex-col items-center justify-center bg-bg px-fluid-md py-fluid-2xl text-fg"
+        // White, not rose — the StripeDivider above does the work rose's
+        // color used to (separating this section from FeaturedProducts
+        // above), so the section itself goes back to white/ink — the
+        // cinnamon/turmeric/juniper card row supplies all the color here
+        // instead of the section background competing with it. Still
+        // distinct from the pure-black footer below.
+        style={{ "--bg": "var(--tf-white)", "--fg": "var(--tf-black)" } as React.CSSProperties}
+        pinDistance="+=100%"
+        scrub={true}
+        onTimeline={(tl, { reducedMotion }) => {
+          const cards = cardRefs.current.filter((el): el is HTMLDivElement => el !== null);
 
-        tl.fromTo(
-          preheaderRef.current,
-          { opacity: 0, y: 16 },
-          { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }
-        )
-          .fromTo(
-            headlineRef.current,
-            { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
-            "-=0.3"
+          if (reducedMotion) {
+            tl.set([preheaderRef.current, headlineRef.current, ...cards, ctaRef.current], {
+              opacity: 1,
+              y: 0,
+            });
+            return;
+          }
+
+          tl.fromTo(
+            preheaderRef.current,
+            { opacity: 0, y: 16 },
+            { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }
           )
-          .fromTo(
-            cards,
-            { opacity: 0, y: 32 },
-            { opacity: 1, y: 0, duration: 0.6, ease: "power2.out", stagger: 0.12 },
-            "-=0.3"
-          )
-          .fromTo(
-            ctaRef.current,
-            { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
-            "-=0.2"
-          );
-      }}
-    >
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-fluid-xl">
+            .fromTo(
+              headlineRef.current,
+              { opacity: 0, y: 20 },
+              { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
+              "-=0.3"
+            )
+            .fromTo(
+              cards,
+              { opacity: 0, y: 32 },
+              { opacity: 1, y: 0, duration: 0.6, ease: "power2.out", stagger: 0.12 },
+              "-=0.3"
+            )
+            .fromTo(
+              ctaRef.current,
+              { opacity: 0, y: 20 },
+              { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
+              "-=0.2"
+            );
+        }}
+      >
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-fluid-xl">
         <div className="flex flex-col items-center gap-fluid-sm text-center">
           <Preheader ref={preheaderRef}>Our Philosophy</Preheader>
           <Headline ref={headlineRef} size="md">
@@ -172,6 +181,7 @@ export function WhatWeBelieve() {
           </Link>
         </div>
       </div>
-    </PinnedSection>
+      </PinnedSection>
+    </>
   );
 }
