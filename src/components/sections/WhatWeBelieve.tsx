@@ -75,22 +75,22 @@ export function WhatWeBelieve() {
   return (
     <>
       {/* Marks the section boundary against FeaturedProducts above — the
-       * job rose's background color used to do in variant A. A normal-flow
-       * sibling, not pinned inside the section below: `PinnedSection`
-       * glues that section's own top to the viewport top for the whole
-       * scrub, which sits directly under the sticky nav — a stripe placed
-       * there would render fully drawn but permanently hidden behind it. */}
+       * job rose's background color used to do before this swap. A
+       * normal-flow sibling, not pinned inside the section below:
+       * `PinnedSection` glues that section's own top to the viewport top
+       * for the whole scrub, which sits directly under the sticky nav — a
+       * stripe placed there would render fully drawn but permanently
+       * hidden behind it. */}
       <StripeDivider />
 
       <PinnedSection
         className="relative flex min-h-dvh w-full flex-col items-center justify-center bg-bg px-fluid-md py-fluid-2xl text-fg"
-        // White, not rose — variant B of the bottom-section color swap (see
-        // /story redesign request): the StripeDivider above does the work
-        // rose's color used to (separating this section from
-        // FeaturedProducts above), so the section itself can go back to
-        // white/ink — the cinnamon/turmeric/juniper card row supplies all
-        // the color here instead of the section background competing with
-        // it. Still distinct from the pure-black footer below.
+        // White, not rose — the StripeDivider above does the work rose's
+        // color used to (separating this section from FeaturedProducts
+        // above), so the section itself goes back to white/ink — the
+        // cinnamon/turmeric/juniper card row supplies all the color here
+        // instead of the section background competing with it. Still
+        // distinct from the pure-black footer below.
         style={{ "--bg": "var(--tf-white)", "--fg": "var(--tf-black)" } as React.CSSProperties}
         pinDistance="+=100%"
         scrub={true}
