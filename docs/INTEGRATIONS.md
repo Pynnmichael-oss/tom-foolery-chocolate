@@ -318,38 +318,71 @@ A theme update (including a Shopify-pushed Horizon/base-theme update) or
 switching themes removes it silently — nothing here will catch that.
 Check it's still present after any theme change.
 
+Lives in `<head>`, inside `{%- unless request.design_mode -%} ... {%-
+endunless -%}` (so it never fires while editing the theme in Shopify's
+theme editor — only for real visitor traffic):
+
 ```liquid
-<!-- TODO: paste the actual script from theme.liquid here -->
+<script>
+(function () {
+  var NEW = "https://tomfoolerychocolate.com";
+  var p = location.pathname;
+  // Never touch checkout, cart handoff, accounts, orders, or Shopify system paths
+  if (/^\/(checkouts?|cart|account|orders|apps|tools|services|policies|password|challenge|\d+\/)/.test(p)) return;
+  var dest = "/";
+  var m;
+  if ((m = p.match(/^\/products\/([^\/?#]+)/))) dest = "/shop/" + m[1];
+  else if (/^\/collections\/all\/?$/.test(p)) dest = "/shop";
+  else if ((m = p.match(/^\/collections\/([^\/?#]+)/))) dest = "/collections/" + m[1];
+  else if (/^\/pages\/(about|our-story|story)/.test(p)) dest = "/story";
+  else if (/^\/pages\/contact/.test(p)) dest = "/contact";
+  else if (/^\/blogs\//.test(p)) dest = "/story";
+  location.replace(NEW + dest);
+})();
+</script>
 ```
 
-*(Placeholder — the script above needs to be pasted in from Shopify
-admin → Online Store → Themes → Edit code → `layout/theme.liquid`. This
-doc isn't accurate until that's filled in.)*
+Note this is a blunt client-side safety net, not a precise mirror of
+`next.config.ts` below — anything it doesn't explicitly match (including
+`/pages/frequently-asked-questions`, which `next.config.ts` *does*
+redirect precisely) falls through to its own `dest = "/"` default, i.e.
+sends stray Shopify-side traffic home rather than 404ing there. That's
+an intentional, looser fallback for a domain this app no longer controls
+the full routing table on — don't try to make the two byte-for-byte
+identical.
 
 ### Old-URL → new-URL redirect mapping (`next.config.ts`)
 
 `next.config.ts`'s `redirects()` covers the old theme's URL patterns,
-cross-checked against the old theme's own sitemap (still reachable at
-`checkout.tomfoolerychocolate.com/sitemap*.xml` post-cutover, since that
-subdomain stays on Shopify):
+cross-checked against both the old theme's own sitemap (still reachable
+at `checkout.tomfoolerychocolate.com/sitemap*.xml` post-cutover, since
+that subdomain stays on Shopify) and the `theme.liquid` script above —
+the two needed to agree on where each old pattern goes:
 
 - `/products/:handle*` → `/shop/:handle*`
+- `/collections/all` → `/shop` — a Shopify-implicit "all products"
+  collection, never appears in the sitemap, 404s here otherwise.
 - `/pages/contact` → `/contact`
 - `/pages/frequently-asked-questions` → `/faq`
-- `/collections/*` needs **no redirect** — this app already serves that
-  same path structure (`/collections/[handle]`), confirmed against every
-  handle in the old sitemap (`frontpage`, `chocolate-bars`, `bon-bons`,
-  `featured`, `gifts`).
+- `/pages/about`, `/pages/our-story`, `/pages/story` → `/story` —
+  mirrors `theme.liquid`; none are in the current sitemap.
+- `/blogs/*` → `/story` — this app has no blog section; mirrors
+  `theme.liquid` sending all old blog traffic there.
+- `/collections/:handle` (a real, sitemap-listed collection) needs **no
+  redirect** — this app already serves that same path structure
+  (`/collections/[handle]`), confirmed against every handle in the old
+  sitemap (`frontpage`, `chocolate-bars`, `bon-bons`, `featured`,
+  `gifts`).
 
-**Three old URLs have no equivalent page on this app yet — not
-redirected, pending a content decision:**
+**Two old URLs still have no equivalent page on this app — not
+redirected, pending a content decision.** `theme.liquid` doesn't
+special-case either one, so it just sends that stray traffic home:
 
 - `/pages/data-sharing-opt-out` — CCPA/privacy-choices page. This app has
   no opt-out/do-not-sell mechanism built yet; redirecting it to `/privacy`
   would be misleading (that page doesn't offer the same opt-out action).
 - `/pages/free-chocolate-for-a-year-terms-conditions` — a specific past
   promo's terms, not the same thing as this app's general `/terms`.
-- `/blogs/news` — this app has no blog section.
 
 If any of these still get real traffic (check Search Console/analytics
 for the old paths after launch), decide where each should point and add
