@@ -179,14 +179,14 @@ returns the same "not set up yet" message it always has
 
 ### Domain verification status
 
-As of 2026-09-28, **not done**: `tomfoolerychocolate.com`'s DNS (at
-Namecheap) has no Resend records at all — no `resend._domainkey` TXT, no
-SPF/DKIM. Until that's done, Resend's shared sandbox sender
-(`onboarding@resend.dev`) only delivers to the Resend account's own
-registered email, not a real `@tomfoolerychocolate.com` inbox — see
-`.env.example`'s Resend section for the exact setup steps. This blocks
-both forms from actually reaching Garrett in production, independent of
-whether the env vars above are set correctly.
+As of 2026-10-04, **done**: `tomfoolerychocolate.com`'s DNS (at
+Namecheap) carries `resend._domainkey` (DKIM TXT) plus the `send` and
+`rsend` CNAMEs Resend's domain verification asked for (both →
+`*.forge.rmta.net`). Confirmed via `dig` against the authoritative
+nameserver during the 2026-10-04 domain cutover (see "Domain & DNS" below)
+— see that section for the exact record values. Both forms send from
+real `@tomfoolerychocolate.com` addresses in production now, not the
+shared Resend sandbox sender.
 
 ### Honeypot + rate limiting
 
@@ -262,3 +262,96 @@ every product for Shopify's `requiresSellingPlan` flag (subscription-only
 purchase) — run it after adding or editing products, so a
 subscription-only product doesn't show up unexpectedly in
 `ProductDetail.tsx`'s purchase-options UI.
+
+## Domain & DNS — tomfoolerychocolate.com
+
+**2026-10-04: live cutover from the old Shopify theme to this app.**
+`tomfoolerychocolate.com` and `www.tomfoolerychocolate.com` now point at
+Vercel; Shopify keeps only `checkout.tomfoolerychocolate.com` (for cart/
+checkout — this app's `cart.checkoutUrl` comes straight from the
+Storefront API's `Cart` object, so it automatically uses whatever domain
+Shopify is configured to issue checkout URLs from) and the underlying
+`*.myshopify.com` domain. DNS is still hosted at Namecheap throughout —
+nameservers were **not** delegated to Vercel; Vercel's dashboard defaults
+to suggesting nameserver delegation, but the records below (added via
+Vercel's "DNS Records" tab, not its "Vercel DNS" tab) keep Namecheap
+authoritative, which is what every other record on this domain (email,
+checkout) depends on.
+
+### Current records (Namecheap → Advanced DNS → Host Records)
+
+| Host | Type | Value | Purpose |
+| --- | --- | --- | --- |
+| `@` | A | `216.198.79.1` | Vercel apex (Production) |
+| `www` | CNAME | `ff0569313a6e9c39.vercel-dns-017.com` | Vercel; 308 redirects to apex |
+| `checkout` | CNAME | `shops.myshopify.com` | Shopify Primary domain — cart/checkout only |
+| `send` | CNAME | `send.forge.rmta.net` | Resend domain verification |
+| `rsend` | CNAME | `rsend.forge.rmta.net` | Resend domain verification |
+| `resend._domainkey` | TXT | (DKIM public key) | Resend DKIM |
+| `@` | TXT | `v=spf1 include:_spf.google.com ~all` | SPF — exactly one record; adding a second breaks SPF |
+| `_dmarc` | TXT | `v=DMARC1; p=none; rua=mailto:garrett@tomfoolerychocolate.com` | DMARC, monitoring mode |
+| `@` | MX | `1 smtp.google.com` | Google Workspace mail |
+
+### Rollback (only if something's actually broken — ask before reverting)
+
+Restores the pre-cutover state, Shopify theme serving the apex again:
+
+1. Namecheap: change `@` A → `23.227.38.65`; change `www` CNAME →
+   `shops.myshopify.com`.
+2. Shopify → Settings → Domains: re-add `tomfoolerychocolate.com` and
+   `www.tomfoolerychocolate.com`, reconnect, set the apex back to
+   Primary.
+3. Leave `checkout.tomfoolerychocolate.com` and all email records alone
+   either way — neither one changes between the live and rolled-back
+   states.
+
+### Old-theme redirect script (Shopify `theme.liquid`)
+
+A snippet in the old Shopify theme's `layout/theme.liquid` redirects any
+remaining traffic that still lands on a Shopify-served page (crawler
+cache, old bookmark, external backlink, etc. — anything that resolves
+through `checkout.tomfoolerychocolate.com` or a cached `*.myshopify.com`
+URL rather than the real apex) over to the matching page on this app.
+
+**⚠️ Fragile by nature**: this lives in the Shopify theme, not this repo.
+A theme update (including a Shopify-pushed Horizon/base-theme update) or
+switching themes removes it silently — nothing here will catch that.
+Check it's still present after any theme change.
+
+```liquid
+<!-- TODO: paste the actual script from theme.liquid here -->
+```
+
+*(Placeholder — the script above needs to be pasted in from Shopify
+admin → Online Store → Themes → Edit code → `layout/theme.liquid`. This
+doc isn't accurate until that's filled in.)*
+
+### Old-URL → new-URL redirect mapping (`next.config.ts`)
+
+`next.config.ts`'s `redirects()` covers the old theme's URL patterns,
+cross-checked against the old theme's own sitemap (still reachable at
+`checkout.tomfoolerychocolate.com/sitemap*.xml` post-cutover, since that
+subdomain stays on Shopify):
+
+- `/products/:handle*` → `/shop/:handle*`
+- `/pages/contact` → `/contact`
+- `/pages/frequently-asked-questions` → `/faq`
+- `/collections/*` needs **no redirect** — this app already serves that
+  same path structure (`/collections/[handle]`), confirmed against every
+  handle in the old sitemap (`frontpage`, `chocolate-bars`, `bon-bons`,
+  `featured`, `gifts`).
+
+**Three old URLs have no equivalent page on this app yet — not
+redirected, pending a content decision:**
+
+- `/pages/data-sharing-opt-out` — CCPA/privacy-choices page. This app has
+  no opt-out/do-not-sell mechanism built yet; redirecting it to `/privacy`
+  would be misleading (that page doesn't offer the same opt-out action).
+- `/pages/free-chocolate-for-a-year-terms-conditions` — a specific past
+  promo's terms, not the same thing as this app's general `/terms`.
+- `/blogs/news` — this app has no blog section.
+
+If any of these still get real traffic (check Search Console/analytics
+for the old paths after launch), decide where each should point and add
+it to `redirects()` — don't guess at the destination without checking
+whether the old content needs to be preserved somewhere first.
