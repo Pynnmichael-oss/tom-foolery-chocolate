@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { useCart } from "./CartProvider";
+import { trackAddToCart } from "@/lib/analytics/ga";
 import type { Product, ProductVariant } from "@/lib/shopify/types";
 
 export interface AddToCartButtonProps {
@@ -49,6 +50,7 @@ export function AddToCartButton({
       setError(result.error);
       return;
     }
+    trackAddToCart(product, variant, quantity);
     setJustAdded(true);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => setJustAdded(false), 1400);

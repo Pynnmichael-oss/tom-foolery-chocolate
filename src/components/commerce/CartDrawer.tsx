@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { buttonClasses } from "@/components/ui/buttonClasses";
@@ -8,6 +8,7 @@ import { EyesHatIcon } from "@/components/ui/logos";
 import { useCart } from "./CartProvider";
 import { formatMoney } from "@/lib/shopify/format";
 import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
+import { trackBeginCheckout, trackViewCart } from "@/lib/analytics/ga";
 
 /** Right-side slide-in cart drawer. Focus-trapped while open (see
  * useFocusTrap — also used by MobileNav), closes on ESC or overlay click,
@@ -23,6 +24,17 @@ export function CartDrawer() {
   // as out of stock mid-session); surfaced here as a small banner rather
   // than silently leaving the drawer showing stale-looking quantities.
   const [error, setError] = useState<string | null>(null);
+  // Tracks the drawer's previous open state so view_cart fires exactly
+  // once per closed→open transition — not on every cart line mutation
+  // made while it's already open (quantity +/-, remove).
+  const wasOpenRef = useRef(false);
+
+  useEffect(() => {
+    if (isDrawerOpen && !wasOpenRef.current && cart) {
+      trackViewCart(cart);
+    }
+    wasOpenRef.current = isDrawerOpen;
+  }, [isDrawerOpen, cart]);
 
   useFocusTrap({
     isOpen: isDrawerOpen,
@@ -176,7 +188,11 @@ export function CartDrawer() {
           </div>
 
           {cart?.checkoutUrl && lines.length > 0 ? (
-            <a href={cart.checkoutUrl} className={buttonClasses("primary", "w-full")}>
+            <a
+              href={cart.checkoutUrl}
+              onClick={() => trackBeginCheckout(cart)}
+              className={buttonClasses("primary", "w-full")}
+            >
               Checkout
             </a>
           ) : (

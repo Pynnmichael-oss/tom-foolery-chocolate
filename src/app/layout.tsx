@@ -9,6 +9,7 @@ import { CartProvider } from "@/components/commerce/CartProvider";
 import { CartDrawer } from "@/components/commerce/CartDrawer";
 import { OmnisendSnippet } from "@/components/analytics/OmnisendSnippet";
 import { OmnisendPageView } from "@/components/analytics/OmnisendPageView";
+import { GoogleAnalyticsSnippet } from "@/components/analytics/GoogleAnalyticsSnippet";
 import { OrganizationJsonLd } from "@/components/seo/OrganizationJsonLd";
 import { POWER_STATEMENTS, SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -84,6 +85,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </CartProvider>
         </SmoothScroll>
       </body>
+      {/* Sibling of `<body>`, not inside it — this is `@next/third-
+       * parties/google`'s own documented placement for `<GoogleAnalytics>`,
+       * not an accident. Renders nothing when the env var is unset — see
+       * that component's own comment. */}
+      <GoogleAnalyticsSnippet />
     </html>
   );
 }
