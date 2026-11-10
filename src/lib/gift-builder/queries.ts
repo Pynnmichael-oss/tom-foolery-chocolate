@@ -20,6 +20,7 @@ import { isShopifyConfigured, shopifyFetch } from "@/lib/shopify/client";
 import { isProductionRuntime } from "@/lib/env";
 import { MOCK_GIFT_SET_PRODUCTS, MOCK_PRODUCTS } from "@/lib/shopify/mock-data";
 import type { Money } from "@/lib/shopify/types";
+import { GIFT_SETS } from "./sets";
 
 const GIFT_BUILDER_PRODUCT_QUERY = `#graphql
   query GiftBuilderProduct($handle: String!) {
@@ -74,13 +75,7 @@ const GIFT_BUILDER_PRODUCT_QUERY = `#graphql
   }
 `;
 
-/** The two builder products, keyed by the `?set=` value in the URL. */
-export const GIFT_SETS = {
-  bars: "build-your-own-bar-gift-set",
-  caramels: "malort-caramel-gift-set",
-} as const;
-
-export type GiftSetKey = keyof typeof GIFT_SETS;
+export { GIFT_SETS, type GiftSetKey } from "./sets";
 
 export const GIFT_WRAP_OPTION = "Gift Wrap";
 
