@@ -366,20 +366,6 @@ export function GiftSetBuilder({
               ))}
             </div>
           ) : null}
-
-          {band?.image ? (
-            <figure className="mx-auto mt-fluid-md flex w-full max-w-md flex-col items-center gap-2">
-              <Image
-                src={band.image.url}
-                alt={band.image.altText ?? `${band.name} band`}
-                width={band.image.width ?? 800}
-                height={band.image.height ?? 600}
-                sizes="(min-width: 480px) 448px, 90vw"
-                className="h-auto w-full rounded-2xl"
-              />
-              <figcaption className="font-sans text-sm text-fg/70">{band.name}</figcaption>
-            </figure>
-          ) : null}
         </fieldset>
       ) : null}
 
