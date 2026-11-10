@@ -20,7 +20,7 @@
  */
 import { ShopifyApiError } from "./client";
 import { addLines, createCart, getCart, removeLine, updateLine } from "./queries";
-import type { Cart, CartResult } from "./types";
+import type { Cart, CartAttribute, CartLineInput, CartResult } from "./types";
 
 const GENERIC_CART_ERROR = "We couldn't update your cart. Please try again in a moment.";
 
@@ -81,16 +81,26 @@ export async function addToCartAction(
   cartId: string | null,
   merchandiseId: string,
   quantity: number,
-  sellingPlanId?: string
+  sellingPlanId?: string,
+  attributes?: CartAttribute[]
 ): Promise<CartResult> {
+  // Gift set lines carry their choices (flavors, band, note) as
+  // attributes — see lib/gift-builder/cart-line.ts. Dropped from the
+  // payload entirely when empty, same as sellingPlanId.
+  const line: CartLineInput = {
+    merchandiseId,
+    quantity,
+    sellingPlanId,
+    ...(attributes?.length ? { attributes } : {}),
+  };
   try {
     if (!cartId) {
-      return { success: true, cart: await createCart([{ merchandiseId, quantity, sellingPlanId }]) };
+      return { success: true, cart: await createCart([line]) };
     }
     try {
       return {
         success: true,
-        cart: await addLines(cartId, [{ merchandiseId, quantity, sellingPlanId }]),
+        cart: await addLines(cartId, [line]),
       };
     } catch (error) {
       // Cart may have expired or been completed at checkout — start fresh
@@ -98,7 +108,7 @@ export async function addToCartAction(
       // variant requiring a selling plan, etc.) will fail createCart the
       // same way, and the outer catch below reports that once.
       console.error("[cart] addLines failed, starting a new cart:", error);
-      return { success: true, cart: await createCart([{ merchandiseId, quantity, sellingPlanId }]) };
+      return { success: true, cart: await createCart([line]) };
     }
   } catch (error) {
     return { success: false, error: toCartError(error, "addToCartAction failed") };

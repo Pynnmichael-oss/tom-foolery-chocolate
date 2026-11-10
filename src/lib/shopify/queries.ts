@@ -106,6 +106,7 @@ const CART_FRAGMENT = `#graphql
         sellingPlanAllocation {
           sellingPlan { name }
         }
+        attributes { key value }
       }
     }
   }
@@ -317,6 +318,7 @@ interface RawCartLine {
     product: { title: string; handle: string; images: { nodes: RawImage[] } };
   };
   sellingPlanAllocation: { sellingPlan: { name: string } } | null;
+  attributes: Array<{ key: string; value: string | null }>;
 }
 
 interface RawCart {
@@ -469,6 +471,7 @@ function normalizeCartLine(line: RawCartLine): CartLine {
       image: image ? normalizeImage(image) : null,
     },
     sellingPlanName: line.sellingPlanAllocation?.sellingPlan.name ?? null,
+    attributes: (line.attributes ?? []).map((a) => ({ key: a.key, value: a.value ?? "" })),
   };
 }
 

@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { gsap, useGSAP, breakpoints } from "@/components/motion/gsap";
 import { buttonClasses } from "@/components/ui/buttonClasses";
 import { BodyText } from "@/components/ui/typography";
@@ -72,7 +73,15 @@ const PANELS = [
  * someone to that form, so every panel gets its own way in, not just the
  * hero.
  */
-export function GiftingPanels() {
+export function GiftingPanels({
+  giftBuilderAvailable = false,
+}: {
+  /** True once the build-your-own gift set product is live on the
+   * Storefront — the "Ready to Ship" panel then links to /gifts/build
+   * instead of the inquiry form. Checked server-side by app/gifting/page.tsx
+   * so this never links to a 404 while the product is still a Draft. */
+  giftBuilderAvailable?: boolean;
+} = {}) {
   const sectionRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const scrollToForm = useScrollToGiftingForm();
@@ -134,13 +143,19 @@ export function GiftingPanels() {
               {panel.title}
             </h2>
             <BodyText className="flex-1 text-fg/80">{panel.copy}</BodyText>
-            <a
-              href="#custom-gift"
-              onClick={scrollToForm}
-              className={buttonClasses("secondary", "self-start")}
-            >
-              Learn More
-            </a>
+            {panel.title === "Ready to Ship" && giftBuilderAvailable ? (
+              <Link href="/gifts/build" className={buttonClasses("secondary", "self-start")}>
+                Build a Gift Set
+              </Link>
+            ) : (
+              <a
+                href="#custom-gift"
+                onClick={scrollToForm}
+                className={buttonClasses("secondary", "self-start")}
+              >
+                Learn More
+              </a>
+            )}
           </div>
         ))}
       </div>

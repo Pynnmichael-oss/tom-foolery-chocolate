@@ -4,6 +4,7 @@ import { GiftingPanels } from "@/components/sections/GiftingPanels";
 import { GiftingStats } from "@/components/sections/GiftingStats";
 import { GiftingForm } from "@/components/sections/GiftingForm";
 import { Preheader, Headline, BodyText } from "@/components/ui/typography";
+import { GIFT_SETS, getGiftBuilderConfig } from "@/lib/gift-builder/queries";
 import { DEFAULT_OG_IMAGE } from "@/lib/site";
 
 const DESCRIPTION =
@@ -43,11 +44,22 @@ export const metadata: Metadata = {
  * sticky nav, and gives `/gifting#custom-gift` the same margin when
  * linked to directly from another page.
  */
-export default function GiftingPage() {
+/** Whether /gifts/build has a live product behind it — never throws, so a
+ * Shopify hiccup only hides the builder link rather than breaking /gifting. */
+async function isGiftBuilderAvailable(): Promise<boolean> {
+  try {
+    return (await getGiftBuilderConfig(GIFT_SETS.bars)) !== null;
+  } catch {
+    return false;
+  }
+}
+
+export default async function GiftingPage() {
+  const giftBuilderAvailable = await isGiftBuilderAvailable();
   return (
     <main id="main-content">
       <GiftingHero variant="graphic" />
-      <GiftingPanels />
+      <GiftingPanels giftBuilderAvailable={giftBuilderAvailable} />
       <GiftingStats />
 
       <section id="custom-gift" className="scroll-mt-24 px-fluid-md py-fluid-2xl">

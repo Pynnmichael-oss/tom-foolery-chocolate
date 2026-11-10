@@ -7,6 +7,7 @@ import { buttonClasses } from "@/components/ui/buttonClasses";
 import { EyesHatIcon } from "@/components/ui/logos";
 import { useCart } from "./CartProvider";
 import { formatMoney } from "@/lib/shopify/format";
+import { visibleAttributes } from "@/lib/shopify/cart-attributes";
 import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 import { trackBeginCheckout, trackViewCart } from "@/lib/analytics/ga";
 
@@ -135,6 +136,19 @@ export function CartDrawer() {
                       <p className="font-sans text-sm font-semibold text-tf-turmeric">
                         {line.sellingPlanName}
                       </p>
+                    ) : null}
+                    {visibleAttributes(line.attributes).length > 0 ? (
+                      // Gift set contents (flavors, band, note) — see
+                      // lib/gift-builder/cart-line.ts. `_`-prefixed keys
+                      // are internal and skipped.
+                      <dl className="font-sans text-xs text-tf-white/70">
+                        {visibleAttributes(line.attributes).map((attr) => (
+                          <div key={attr.key} className="flex gap-1">
+                            <dt className="shrink-0 font-semibold text-tf-white/90">{attr.key}:</dt>
+                            <dd className="whitespace-pre-line break-words">{attr.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
                     ) : null}
                     <p className="font-sans text-sm">{formatMoney(line.price)}</p>
 

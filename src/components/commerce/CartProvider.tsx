@@ -15,7 +15,15 @@ import {
   removeCartLineAction,
   updateCartLineAction,
 } from "@/lib/shopify/actions";
-import type { Cart, CartLine, CartResult, Product, ProductVariant } from "@/lib/shopify/types";
+import { sameAttributes } from "@/lib/shopify/cart-attributes";
+import type {
+  Cart,
+  CartAttribute,
+  CartLine,
+  CartResult,
+  Product,
+  ProductVariant,
+} from "@/lib/shopify/types";
 
 const CART_COOKIE = "tf_cart_id";
 const CART_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
@@ -48,6 +56,7 @@ type OptimisticAction =
       quantity: number;
       sellingPlanId?: string;
       sellingPlanName?: string;
+      attributes?: CartAttribute[];
     }
   | { type: "update"; lineId: string; quantity: number }
   | { type: "remove"; lineId: string };
@@ -74,8 +83,14 @@ function cartReducer(cart: Cart | null, action: OptimisticAction): Cart | null {
       // matching on merchandiseId alone would incorrectly merge a
       // one-time purchase and a subscription of the same product into a
       // single quantity.
+      // Likewise for attributes: two gift sets on the same variant but
+      // with different flavors/band/note stay separate lines.
+      const attributes = action.attributes ?? [];
       const existing = base.lines.find(
-        (l) => l.merchandiseId === action.variant.id && l.sellingPlanName === (action.sellingPlanName ?? null)
+        (l) =>
+          l.merchandiseId === action.variant.id &&
+          l.sellingPlanName === (action.sellingPlanName ?? null) &&
+          sameAttributes(l.attributes, attributes)
       );
       const lines: CartLine[] = existing
         ? base.lines.map((l) =>
@@ -97,7 +112,7 @@ function cartReducer(cart: Cart | null, action: OptimisticAction): Cart | null {
               // simultaneous optimistic adds of the same variant under
               // different plans don't collide on this key before the
               // real cart mutation returns and replaces it.
-              id: `optimistic-${action.variant.id}-${action.sellingPlanId ?? "one-time"}`,
+              id: `optimistic-${action.variant.id}-${action.sellingPlanId ?? "one-time"}-${base.lines.length}`,
               quantity: action.quantity,
               merchandiseId: action.variant.id,
               variantTitle: action.variant.title,
@@ -112,6 +127,7 @@ function cartReducer(cart: Cart | null, action: OptimisticAction): Cart | null {
                 image: action.product.images[0] ?? null,
               },
               sellingPlanName: action.sellingPlanName ?? null,
+              attributes,
             },
           ];
       return recomputeTotals({ ...base, lines });
@@ -160,7 +176,9 @@ interface CartContextValue {
     variant: ProductVariant,
     product: Pick<Product, "title" | "handle" | "images">,
     quantity?: number,
-    sellingPlan?: { id: string; name: string }
+    sellingPlan?: { id: string; name: string },
+    /** Line item properties — see lib/gift-builder/cart-line.ts. */
+    attributes?: CartAttribute[]
   ) => Promise<CartResult>;
   updateItem: (lineId: string, quantity: number) => Promise<CartResult>;
   removeItem: (lineId: string) => Promise<CartResult>;
@@ -200,7 +218,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     variant: ProductVariant,
     product: Pick<Product, "title" | "handle" | "images">,
     quantity = 1,
-    sellingPlan?: { id: string; name: string }
+    sellingPlan?: { id: string; name: string },
+    attributes?: CartAttribute[]
   ): Promise<CartResult> {
     let settle!: (result: CartResult) => void;
     const promise = new Promise<CartResult>((resolve) => {
@@ -215,12 +234,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         quantity,
         sellingPlanId: sellingPlan?.id,
         sellingPlanName: sellingPlan?.name,
+        attributes,
       });
       const result = await addToCartAction(
         cart?.id || readCartIdCookie(),
         variant.id,
         quantity,
-        sellingPlan?.id
+        sellingPlan?.id,
+        attributes
       );
       if (result.success) {
         writeCartIdCookie(result.cart.id);
