@@ -24,8 +24,10 @@
  * downstream needs to know mock data is in play.
  */
 import { applySellingPlanAdjustment } from "./format";
+import { sameAttributes } from "./cart-attributes";
 import type {
   Cart,
+  CartAttribute,
   CartLine,
   CartLineInput,
   Collection,
@@ -381,6 +383,58 @@ export function getMockCollectionHandles(): string[] {
 }
 
 // ---------------------------------------------------------------------
+// Gift set builder products (/gifts/build) — mirror the real Shopify
+// setup (Box Size/Count × Gift Wrap, wrap = +$1) so the builder and its
+// cart lines can be clicked through locally. Kept out of MOCK_PRODUCTS so
+// they don't show up in the shop grid, same as the real ones (which
+// aren't in any collection). The rest of the builder's mock config
+// (bands, flavors) lives in lib/gift-builder/queries.ts.
+// ---------------------------------------------------------------------
+
+function giftSetVariants(idBase: number, sizeOption: string, sizes: Array<[string, number]>) {
+  return sizes.flatMap(([size, price], i) =>
+    (["No Wrap", "Gift Wrapped"] as const).map((wrap, j) => ({
+      id: `gid://mock/ProductVariant/${idBase + i * 2 + j}`,
+      title: `${size} / ${wrap}`,
+      availableForSale: true,
+      price: money(price + j),
+      selectedOptions: [
+        { name: sizeOption, value: size },
+        { name: "Gift Wrap", value: wrap },
+      ],
+      sellingPlanIds: [],
+    }))
+  );
+}
+
+export const MOCK_GIFT_SET_PRODUCTS: Product[] = [
+  makeProduct({
+    id: "gid://mock/Product/90",
+    handle: "build-your-own-bar-gift-set",
+    title: "Build Your Own Bar Gift Set",
+    description: "Pick the bars, pick the band, add a note. We'll do the rest.",
+    bg: "E8BC5C",
+    fg: "25382A",
+    variants: giftSetVariants(9000, "Box Size", [
+      ["3 Bars", 28],
+      ["6 Bars", 55],
+    ]),
+  }),
+  makeProduct({
+    id: "gid://mock/Product/91",
+    handle: "malort-caramel-gift-set",
+    title: "Malört Caramel Gift Set",
+    description: "Chicago's most divisive spirit, folded into a caramel.",
+    bg: "EFADB2",
+    fg: "25382A",
+    variants: giftSetVariants(9100, "Count", [
+      ["4 Caramels", 16],
+      ["8 Caramels", 32],
+    ]),
+  }),
+];
+
+// ---------------------------------------------------------------------
 // Cart — a tiny in-memory store, good enough to demo the full flow.
 // ---------------------------------------------------------------------
 
@@ -389,7 +443,7 @@ let cartCounter = 0;
 let lineCounter = 0;
 
 function findVariant(variantId: string): { variant: ProductVariant; product: Product } | null {
-  for (const product of MOCK_PRODUCTS) {
+  for (const product of [...MOCK_PRODUCTS, ...MOCK_GIFT_SET_PRODUCTS]) {
     const variant = product.variants.find((v) => v.id === variantId);
     if (variant) return { variant, product };
   }
@@ -408,7 +462,12 @@ function lineTotal(price: Money, quantity: number): Money {
   return { amount: (Number(price.amount) * quantity).toFixed(2), currencyCode: price.currencyCode };
 }
 
-function buildLine(merchandiseId: string, quantity: number, sellingPlanId?: string): CartLine | null {
+function buildLine(
+  merchandiseId: string,
+  quantity: number,
+  sellingPlanId?: string,
+  attributes: CartAttribute[] = []
+): CartLine | null {
   const found = findVariant(merchandiseId);
   if (!found) return null;
   const { variant, product } = found;
@@ -431,6 +490,7 @@ function buildLine(merchandiseId: string, quantity: number, sellingPlanId?: stri
       image: product.images[0] ?? null,
     },
     sellingPlanName: plan?.name ?? null,
+    attributes,
   };
 }
 
@@ -448,7 +508,7 @@ export function getMockCart(cartId: string): Cart | null {
 export function createMockCart(lines: CartLineInput[] = []): Cart {
   const id = `mock-cart-${++cartCounter}`;
   const builtLines = lines
-    .map((l) => buildLine(l.merchandiseId, l.quantity, l.sellingPlanId))
+    .map((l) => buildLine(l.merchandiseId, l.quantity, l.sellingPlanId, l.attributes))
     .filter((l): l is CartLine => l !== null);
 
   const cart = recomputeTotals({
@@ -467,20 +527,23 @@ export function addMockLines(cartId: string, lines: CartLineInput[]): Cart {
   if (!cart) return createMockCart(lines);
 
   const nextLines = [...cart.lines];
-  for (const { merchandiseId, quantity, sellingPlanId } of lines) {
+  for (const { merchandiseId, quantity, sellingPlanId, attributes = [] } of lines) {
     const found = findVariant(merchandiseId);
     const plan = sellingPlanId && found ? findSellingPlan(found.product, sellingPlanId) : null;
     // Same variant on a different selling plan (or one-time vs. any
     // plan) is a distinct line — matches CartProvider's optimistic
     // reducer and real Shopify cart behavior, see that file's comment.
     const existing = nextLines.find(
-      (l) => l.merchandiseId === merchandiseId && l.sellingPlanName === (plan?.name ?? null)
+      (l) =>
+        l.merchandiseId === merchandiseId &&
+        l.sellingPlanName === (plan?.name ?? null) &&
+        sameAttributes(l.attributes, attributes)
     );
     if (existing) {
       existing.quantity += quantity;
       existing.lineTotal = lineTotal(existing.price, existing.quantity);
     } else {
-      const built = buildLine(merchandiseId, quantity, sellingPlanId);
+      const built = buildLine(merchandiseId, quantity, sellingPlanId, attributes);
       if (built) nextLines.push(built);
     }
   }

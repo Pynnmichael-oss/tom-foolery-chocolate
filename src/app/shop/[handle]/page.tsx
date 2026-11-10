@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { giftSetKeyForHandle } from "@/lib/gift-builder/sets";
 import { getProduct, getProducts } from "@/lib/shopify/queries";
 import { ProductDetail } from "@/components/commerce/ProductDetail";
 import { ProductJsonLd } from "@/components/seo/ProductJsonLd";
@@ -49,6 +50,12 @@ export async function generateMetadata(
 
 export default async function ProductPage(props: PageProps<"/shop/[handle]">) {
   const { handle } = await props.params;
+
+  // Gift sets are only purchasable through the builder — a plain PDP
+  // would let them be bought with no flavors/band on the order.
+  const giftSet = giftSetKeyForHandle(handle);
+  if (giftSet) redirect(`/gifts/build?set=${giftSet}`);
+
   const product = await getProduct(handle);
 
   if (!product) notFound();

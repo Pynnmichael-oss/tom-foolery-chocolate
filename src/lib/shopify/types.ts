@@ -108,6 +108,14 @@ export interface Collection {
   products: Product[];
 }
 
+/** A cart line attribute — becomes an order line item property in
+ * Shopify (and an item option in ShipStation). Keys starting with `_`
+ * are hidden from the shopper at checkout and in the cart drawer. */
+export interface CartAttribute {
+  key: string;
+  value: string;
+}
+
 export interface CartLine {
   id: string;
   quantity: number;
@@ -126,6 +134,9 @@ export interface CartLine {
    * line item (the price shown is always the line's actual `price`,
    * already adjusted by Shopify). */
   sellingPlanName: string | null;
+  /** Line item properties (e.g. a gift set's flavors, band and note).
+   * Empty for an ordinary product line. */
+  attributes: CartAttribute[];
 }
 
 export interface Cart {
@@ -144,6 +155,8 @@ export interface CartLineInput {
    * that's what lets it drop out of the JSON body instead of sending an
    * explicit null Shopify would need to interpret). */
   sellingPlanId?: string;
+  /** Omit (or leave empty) for an ordinary product line. */
+  attributes?: CartAttribute[];
 }
 
 /**

@@ -1,6 +1,7 @@
 import { isShopifyConfigured, shopifyFetch, ShopifyApiError } from "./client";
 import { isProductionRuntime } from "@/lib/env";
 import * as mock from "./mock-data";
+import { giftSetKeyForHandle } from "@/lib/gift-builder/sets";
 import type {
   Cart,
   CartLine,
@@ -106,6 +107,7 @@ const CART_FRAGMENT = `#graphql
         sellingPlanAllocation {
           sellingPlan { name }
         }
+        attributes { key value }
       }
     }
   }
@@ -317,6 +319,7 @@ interface RawCartLine {
     product: { title: string; handle: string; images: { nodes: RawImage[] } };
   };
   sellingPlanAllocation: { sellingPlan: { name: string } } | null;
+  attributes: Array<{ key: string; value: string | null }>;
 }
 
 interface RawCart {
@@ -434,7 +437,11 @@ function normalizeCollection(collection: RawCollection): Collection {
     handle: collection.handle,
     title: collection.title,
     description: collection.description,
-    products: collection.products.nodes.map(normalizeProduct),
+    // Same gift set exclusion as getProducts — an automated collection
+    // (e.g. "all products") would otherwise pick them up.
+    products: collection.products.nodes
+      .filter((p) => giftSetKeyForHandle(p.handle) === null)
+      .map(normalizeProduct),
   };
 }
 
@@ -469,6 +476,7 @@ function normalizeCartLine(line: RawCartLine): CartLine {
       image: image ? normalizeImage(image) : null,
     },
     sellingPlanName: line.sellingPlanAllocation?.sellingPlan.name ?? null,
+    attributes: (line.attributes ?? []).map((a) => ({ key: a.key, value: a.value ?? "" })),
   };
 }
 
@@ -556,7 +564,12 @@ export async function getProducts(first = 24): Promise<Product[]> {
       revalidate: 3600,
       tags: ["products"],
     });
-    return data.products.nodes.map(normalizeProduct);
+    // Gift set builder products are only sold through /gifts/build (see
+    // lib/gift-builder/sets.ts) — keep them out of the grid, sitemap and
+    // static product pages.
+    return data.products.nodes
+      .filter((p) => giftSetKeyForHandle(p.handle) === null)
+      .map(normalizeProduct);
   } catch (error) {
     return handleReadFailure(error, "getProducts", () => mock.getMockProducts());
   }
