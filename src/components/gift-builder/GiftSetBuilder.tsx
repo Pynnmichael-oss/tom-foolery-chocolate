@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useCart } from "@/components/commerce/CartProvider";
 import { trackAddToCart } from "@/lib/analytics/ga";
 import { formatMoney } from "@/lib/shopify/format";
+import { sameAttributes } from "@/lib/shopify/cart-attributes";
 import type { GiftBuilderConfig } from "@/lib/gift-builder/queries";
 import {
   buildCartLine,
@@ -161,6 +162,19 @@ export function GiftSetBuilder({
     setAdding(false);
     if (!cartResult.success) {
       setError(cartResult.error);
+      return;
+    }
+    // Shopify reports an out-of-stock variant as a *warning*, not a
+    // userError — the add "succeeds" but the line comes back at quantity
+    // 0. Check the real cart rather than trusting success alone.
+    const added = cartResult.cart.lines.some(
+      (l) =>
+        l.merchandiseId === productVariant.id &&
+        l.quantity > 0 &&
+        sameAttributes(l.attributes, result.line.attributes)
+    );
+    if (!added) {
+      setError("Sorry — that box can't be ordered right now. Please try another size or check back soon.");
       return;
     }
     trackAddToCart({ title: config.title }, productVariant, 1);
