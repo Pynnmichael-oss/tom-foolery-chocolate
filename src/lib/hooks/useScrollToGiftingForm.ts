@@ -21,12 +21,17 @@ import { useMediaPreferences } from "@/lib/hooks/useMediaPreferences";
  * every other motion-aware component in this codebase already uses (see
  * `BrandVideo.tsx`), not a one-off `matchMedia` snapshot.
  */
-export function useScrollToGiftingForm() {
+export function useScrollToGiftingForm(
+  /** Section to scroll to — /wholesale passes its own form's ids. */
+  targetId: string = "custom-gift",
+  /** Field to focus once there. */
+  focusId: string = "tf-gifting-first-name"
+) {
   const { prefersReducedMotion } = useMediaPreferences();
 
   return useCallback(
     (event: MouseEvent<HTMLAnchorElement>) => {
-      const form = document.getElementById("custom-gift");
+      const form = document.getElementById(targetId);
       // No target on the page this ran on — fall back to the plain
       // `href="#custom-gift"` anchor jump instead of no-op'ing.
       if (!form) return;
@@ -37,8 +42,8 @@ export function useScrollToGiftingForm() {
       // `preventScroll` matters here: `scrollIntoView` above already owns
       // the visual scroll — without it, focusing the input would trigger
       // its own (instant) scroll-into-view and fight the smooth one.
-      document.getElementById("tf-gifting-first-name")?.focus({ preventScroll: true });
+      document.getElementById(focusId)?.focus({ preventScroll: true });
     },
-    [prefersReducedMotion]
+    [prefersReducedMotion, targetId, focusId]
   );
 }
