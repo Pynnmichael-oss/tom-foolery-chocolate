@@ -434,6 +434,45 @@ export const MOCK_GIFT_SET_PRODUCTS: Product[] = [
   }),
 ];
 
+/** $0 "(Gift Set)" component products — the set's contents as real-SKU
+ * cart lines (see lib/gift-builder/cart-line.ts). Mirror the real ones:
+ * one variant per bar flavor, and a 4/8 Count caramel product. */
+function componentVariant(id: string, title: string, sku: string): ProductVariant & { sku: string } {
+  return {
+    id,
+    title,
+    sku,
+    availableForSale: true,
+    price: money(0),
+    selectedOptions: [{ name: "Title", value: title }],
+    sellingPlanIds: [],
+  };
+}
+
+export const MOCK_GIFT_COMPONENT_PRODUCTS: Product[] = [
+  ...MOCK_PRODUCTS.slice(0, 3).map((bar, i) =>
+    makeProduct({
+      id: `gid://mock/Product/8${i}`,
+      handle: `${bar.handle}-gift-set`,
+      title: `${bar.title} Bar (Gift Set)`,
+      description: "",
+      bg: "25382A",
+      variants: [componentVariant(`gid://mock/ProductVariant/880${i}`, "Default Title", `B00${i + 1}`)],
+    })
+  ).map((p, i) => ({ ...p, images: MOCK_PRODUCTS[i].images })),
+  makeProduct({
+    id: "gid://mock/Product/89",
+    handle: "malort-caramels-gift-set",
+    title: "Malört Caramels (Gift Set)",
+    description: "",
+    bg: "EFADB2",
+    variants: [
+      componentVariant("gid://mock/ProductVariant/8891", "4 Count", "F002"),
+      componentVariant("gid://mock/ProductVariant/8892", "8 Count", "F002A"),
+    ],
+  }),
+];
+
 // ---------------------------------------------------------------------
 // Cart — a tiny in-memory store, good enough to demo the full flow.
 // ---------------------------------------------------------------------
@@ -443,7 +482,7 @@ let cartCounter = 0;
 let lineCounter = 0;
 
 function findVariant(variantId: string): { variant: ProductVariant; product: Product } | null {
-  for (const product of [...MOCK_PRODUCTS, ...MOCK_GIFT_SET_PRODUCTS]) {
+  for (const product of [...MOCK_PRODUCTS, ...MOCK_GIFT_SET_PRODUCTS, ...MOCK_GIFT_COMPONENT_PRODUCTS]) {
     const variant = product.variants.find((v) => v.id === variantId);
     if (variant) return { variant, product };
   }
@@ -513,6 +552,7 @@ export function createMockCart(lines: CartLineInput[] = []): Cart {
 
   const cart = recomputeTotals({
     id,
+    note: null,
     checkoutUrl: `/shop/mock-checkout?cart=${id}`,
     totalQuantity: 0,
     subtotal: { amount: "0.00", currencyCode: "USD" },
@@ -562,6 +602,24 @@ export function updateMockLine(cartId: string, lineId: string, quantity: number)
     .filter((l) => l.quantity > 0);
 
   const updated = recomputeTotals({ ...cart, lines: nextLines });
+  mockCarts.set(cartId, updated);
+  return updated;
+}
+
+export function removeMockLines(cartId: string, lineIds: string[]): Cart {
+  const cart = mockCarts.get(cartId);
+  if (!cart) throw new Error(`Mock cart ${cartId} not found`);
+
+  const updated = recomputeTotals({ ...cart, lines: cart.lines.filter((l) => !lineIds.includes(l.id)) });
+  mockCarts.set(cartId, updated);
+  return updated;
+}
+
+export function updateMockNote(cartId: string, note: string): Cart {
+  const cart = mockCarts.get(cartId);
+  if (!cart) throw new Error(`Mock cart ${cartId} not found`);
+
+  const updated = { ...cart, note };
   mockCarts.set(cartId, updated);
   return updated;
 }

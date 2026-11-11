@@ -5,9 +5,11 @@ import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { buttonClasses } from "@/components/ui/buttonClasses";
 import { EyesHatIcon } from "@/components/ui/logos";
-import { useCart } from "./CartProvider";
+import { isGiftComponentLine, useCart } from "./CartProvider";
 import { formatMoney } from "@/lib/shopify/format";
-import { visibleAttributes } from "@/lib/shopify/cart-attributes";
+import { groupBySet, parseGiftNote } from "@/lib/gift-builder/gift-notes";
+import { shortFlavorName } from "@/lib/gift-builder/cart-line";
+import type { CartLine } from "@/lib/shopify/types";
 import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 import { trackBeginCheckout, trackViewCart } from "@/lib/analytics/ga";
 
@@ -17,7 +19,16 @@ import { trackBeginCheckout, trackViewCart } from "@/lib/analytics/ga";
  * disabled entirely under reduced motion (instant show/hide instead), so
  * no JS branching is needed for that part. */
 export function CartDrawer() {
-  const { cart, isDrawerOpen, closeDrawer, updateItem, removeItem, isPending } = useCart();
+  const {
+    cart,
+    isDrawerOpen,
+    closeDrawer,
+    updateItem,
+    removeItem,
+    removeGiftSet,
+    syncBeforeCheckout,
+    isPending,
+  } = useCart();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   // Line-level mutations (quantity +/-, remove) never throw — see
@@ -56,7 +67,17 @@ export function CartDrawer() {
     if (!result.success) setError(result.error);
   }
 
+  async function handleRemoveSet(setLabel: string) {
+    setError(null);
+    const result = await removeGiftSet(setLabel);
+    if (!result.success) setError(result.error);
+  }
+
   const lines = cart?.lines ?? [];
+  // Gift sets (lib/gift-builder) are several lines sharing a "Set" label —
+  // shown as one card each. Ordinary lines come under the `null` key.
+  const groups = [...groupBySet(lines).entries()];
+  const giftMessages = parseGiftNote(cart?.note).messages;
 
   return (
     // id: a stable hook for MobileNav to make this inert while the
@@ -109,86 +130,27 @@ export function CartDrawer() {
             <p className="font-sans text-tf-white/60">Your cart is empty.</p>
           ) : (
             <ul className="flex flex-col gap-fluid-md">
-              {lines.map((line) => (
-                <li key={line.id} className="flex gap-fluid-sm">
-                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-tf-white/10">
-                    {line.product.image ? (
-                      <Image
-                        src={line.product.image.url}
-                        alt={line.product.image.altText ?? line.product.title}
-                        width={80}
-                        height={80}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : null}
-                  </div>
-
-                  <div className="flex flex-1 flex-col gap-1">
-                    <p className="font-display text-base leading-tight">{line.product.title}</p>
-                    <p className="font-sans text-sm text-tf-white/60">{line.variantTitle}</p>
-                    {line.sellingPlanName ? (
-                      // tf-turmeric, not the muted white/60 variantTitle
-                      // uses — this is the one thing on the line that
-                      // isn't just "which variant," it's "how it's being
-                      // purchased," worth its own accent color to stand
-                      // out at a glance in a cart with mixed one-time and
-                      // subscription lines.
-                      <p className="font-sans text-sm font-semibold text-tf-turmeric">
-                        {line.sellingPlanName}
-                      </p>
-                    ) : null}
-                    {visibleAttributes(line.attributes).length > 0 ? (
-                      // Gift set contents (flavors, band, note) — see
-                      // lib/gift-builder/cart-line.ts. `_`-prefixed keys
-                      // are internal and skipped.
-                      <dl className="font-sans text-xs text-tf-white/70">
-                        {visibleAttributes(line.attributes).map((attr) => (
-                          <div key={attr.key} className="flex gap-1">
-                            <dt className="shrink-0 font-semibold text-tf-white/90">{attr.key}:</dt>
-                            <dd className="whitespace-pre-line break-words">{attr.value}</dd>
-                          </div>
-                        ))}
-                      </dl>
-                    ) : null}
-                    <p className="font-sans text-sm">{formatMoney(line.price)}</p>
-
-                    <div className="mt-1 flex items-center gap-fluid-sm">
-                      <div className="flex items-center gap-2 rounded-full border border-tf-white/20">
-                        <button
-                          type="button"
-                          disabled={isPending}
-                          aria-label={`Decrease quantity of ${line.product.title}`}
-                          onClick={() => handleUpdate(line.id, line.quantity - 1)}
-                          className="px-2 py-1 font-sans disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-turmeric"
-                        >
-                          −
-                        </button>
-                        <span className="min-w-[1.5ch] text-center font-sans text-sm">
-                          {line.quantity}
-                        </span>
-                        <button
-                          type="button"
-                          disabled={isPending}
-                          aria-label={`Increase quantity of ${line.product.title}`}
-                          onClick={() => handleUpdate(line.id, line.quantity + 1)}
-                          className="px-2 py-1 font-sans disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-turmeric"
-                        >
-                          +
-                        </button>
-                      </div>
-
-                      <button
-                        type="button"
+              {groups.flatMap(([setLabel, groupLines]) =>
+                setLabel === null
+                  ? groupLines.map((line) => (
+                      <ProductLineItem
+                        key={line.id}
+                        line={line}
                         disabled={isPending}
-                        onClick={() => handleRemove(line.id)}
-                        className="font-sans text-sm text-tf-white/60 underline-offset-2 hover:text-tf-cinnamon hover:underline disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-turmeric"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              ))}
+                        onUpdate={handleUpdate}
+                        onRemove={handleRemove}
+                      />
+                    ))
+                  : [
+                      <GiftSetLineItem
+                        key={`set-${setLabel}`}
+                        lines={groupLines}
+                        message={giftMessages.get(setLabel) ?? null}
+                        disabled={isPending}
+                        onRemove={() => handleRemoveSet(setLabel)}
+                      />,
+                    ]
+              )}
             </ul>
           )}
         </div>
@@ -204,7 +166,16 @@ export function CartDrawer() {
           {cart?.checkoutUrl && lines.length > 0 ? (
             <a
               href={cart.checkoutUrl}
-              onClick={() => trackBeginCheckout(cart)}
+              onClick={async (e) => {
+                trackBeginCheckout(cart);
+                // Gift messages for sets removed since must not reach the
+                // gift card: re-sync the note, then continue to checkout.
+                if (!cart.note?.includes("GIFT MESSAGES")) return;
+                e.preventDefault();
+                const url = cart.checkoutUrl;
+                await syncBeforeCheckout().catch(() => {});
+                window.location.href = url;
+              }}
               className={buttonClasses("primary", "w-full")}
             >
               Checkout
@@ -217,5 +188,154 @@ export function CartDrawer() {
         </div>
       </div>
     </div>
+  );
+}
+
+const REMOVE_CLASS =
+  "font-sans text-sm text-tf-white/60 underline-offset-2 hover:text-tf-cinnamon hover:underline disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-turmeric";
+
+function LineImage({ line }: { line: CartLine }) {
+  return (
+    <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-tf-white/10">
+      {line.product.image ? (
+        <Image
+          src={line.product.image.url}
+          alt={line.product.image.altText ?? line.product.title}
+          width={80}
+          height={80}
+          className="h-full w-full object-cover"
+        />
+      ) : null}
+    </div>
+  );
+}
+
+/** An ordinary product line: title, variant, price, quantity stepper. */
+function ProductLineItem({
+  line,
+  disabled,
+  onUpdate,
+  onRemove,
+}: {
+  line: CartLine;
+  disabled: boolean;
+  onUpdate: (lineId: string, quantity: number) => void;
+  onRemove: (lineId: string) => void;
+}) {
+  return (
+    <li className="flex gap-fluid-sm">
+      <LineImage line={line} />
+
+      <div className="flex flex-1 flex-col gap-1">
+        <p className="font-display text-base leading-tight">{line.product.title}</p>
+        <p className="font-sans text-sm text-tf-white/60">{line.variantTitle}</p>
+        {line.sellingPlanName ? (
+          // tf-turmeric, not the muted white/60 variantTitle uses — this is
+          // the one thing on the line that isn't just "which variant," it's
+          // "how it's being purchased," worth its own accent color to stand
+          // out at a glance in a cart with mixed one-time and subscription
+          // lines.
+          <p className="font-sans text-sm font-semibold text-tf-turmeric">{line.sellingPlanName}</p>
+        ) : null}
+        <p className="font-sans text-sm">{formatMoney(line.price)}</p>
+
+        <div className="mt-1 flex items-center gap-fluid-sm">
+          <div className="flex items-center gap-2 rounded-full border border-tf-white/20">
+            <button
+              type="button"
+              disabled={disabled}
+              aria-label={`Decrease quantity of ${line.product.title}`}
+              onClick={() => onUpdate(line.id, line.quantity - 1)}
+              className="px-2 py-1 font-sans disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-turmeric"
+            >
+              −
+            </button>
+            <span className="min-w-[1.5ch] text-center font-sans text-sm">{line.quantity}</span>
+            <button
+              type="button"
+              disabled={disabled}
+              aria-label={`Increase quantity of ${line.product.title}`}
+              onClick={() => onUpdate(line.id, line.quantity + 1)}
+              className="px-2 py-1 font-sans disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-turmeric"
+            >
+              +
+            </button>
+          </div>
+
+          <button type="button" disabled={disabled} onClick={() => onRemove(line.id)} className={REMOVE_CLASS}>
+            Remove
+          </button>
+        </div>
+      </div>
+    </li>
+  );
+}
+
+/**
+ * One gift set = one card: the set line's title, size/wrap and price, its
+ * band, the $0 component lines listed as contents, and its gift message.
+ * One Remove for the whole set (all lines + its note entry). No quantity
+ * stepper — each set has its own label and message, so a second one is
+ * built again. The "Set" letter is for packers and isn't shown.
+ */
+function GiftSetLineItem({
+  lines,
+  message,
+  disabled,
+  onRemove,
+}: {
+  lines: CartLine[];
+  message: string | null;
+  disabled: boolean;
+  onRemove: () => void;
+}) {
+  const parent = lines.find((l) => !isGiftComponentLine(l)) ?? lines[0];
+  const contents = lines.filter((l) => l !== parent);
+  const band = parent.attributes.find((a) => a.key === "Band")?.value;
+
+  return (
+    <li className="flex gap-fluid-sm">
+      <LineImage line={parent} />
+
+      <div className="flex flex-1 flex-col gap-1">
+        <p className="font-display text-base leading-tight">{parent.product.title}</p>
+        <p className="font-sans text-sm text-tf-white/60">{parent.variantTitle}</p>
+        <dl className="flex flex-col gap-0.5 font-sans text-xs text-tf-white/70">
+          {contents.length > 0 ? (
+            <div className="flex gap-1">
+              <dt className="shrink-0 font-semibold text-tf-white/90">Inside:</dt>
+              <dd>
+                {contents
+                  .map((c) => {
+                    const name = shortFlavorName(c.product.title);
+                    const variant = c.variantTitle && c.variantTitle !== "Default Title" ? ` (${c.variantTitle})` : "";
+                    return `${c.quantity} × ${name}${variant}`;
+                  })
+                  .join(", ")}
+              </dd>
+            </div>
+          ) : null}
+          {band ? (
+            <div className="flex gap-1">
+              <dt className="shrink-0 font-semibold text-tf-white/90">Band:</dt>
+              <dd>{band}</dd>
+            </div>
+          ) : null}
+          {message ? (
+            <div className="flex gap-1">
+              <dt className="shrink-0 font-semibold text-tf-white/90">Card:</dt>
+              <dd className="break-words">&ldquo;{message}&rdquo;</dd>
+            </div>
+          ) : null}
+        </dl>
+        <p className="font-sans text-sm">{formatMoney(parent.price)}</p>
+
+        <div className="mt-1">
+          <button type="button" disabled={disabled} onClick={onRemove} className={REMOVE_CLASS}>
+            Remove set
+          </button>
+        </div>
+      </div>
+    </li>
   );
 }

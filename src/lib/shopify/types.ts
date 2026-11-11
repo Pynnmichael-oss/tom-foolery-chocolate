@@ -141,6 +141,9 @@ export interface CartLine {
 
 export interface Cart {
   id: string;
+  /** Cart note → order note → ShipStation "Notes from Buyer". Holds the
+   * gift messages block (lib/gift-builder/gift-notes.ts). */
+  note: string | null;
   checkoutUrl: string;
   totalQuantity: number;
   subtotal: Money;

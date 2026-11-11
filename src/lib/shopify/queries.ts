@@ -1,7 +1,7 @@
 import { isShopifyConfigured, shopifyFetch, ShopifyApiError } from "./client";
 import { isProductionRuntime } from "@/lib/env";
 import * as mock from "./mock-data";
-import { giftSetKeyForHandle } from "@/lib/gift-builder/sets";
+import { LISTING_QUERY_FILTER, isHiddenFromListings } from "@/lib/gift-builder/sets";
 import type {
   Cart,
   CartLine,
@@ -26,6 +26,7 @@ const PRODUCT_FRAGMENT = `#graphql
   fragment ProductFields on Product {
     id
     handle
+    tags
     title
     description
     descriptionHtml
@@ -78,6 +79,7 @@ const PRODUCT_FRAGMENT = `#graphql
 const CART_FRAGMENT = `#graphql
   fragment CartFields on Cart {
     id
+    note
     checkoutUrl
     totalQuantity
     cost {
@@ -115,8 +117,8 @@ const CART_FRAGMENT = `#graphql
 
 const PRODUCTS_QUERY = `#graphql
   ${PRODUCT_FRAGMENT}
-  query Products($first: Int!) {
-    products(first: $first) {
+  query Products($first: Int!, $query: String) {
+    products(first: $first, query: $query) {
       nodes { ...ProductFields }
     }
   }
@@ -142,6 +144,7 @@ const FEATURED_PRODUCTS_QUERY = `#graphql
         nodes {
           id
           handle
+          tags
           title
           featuredImage { url altText width height }
           priceRange { minVariantPrice { amount currencyCode } }
@@ -226,6 +229,16 @@ const CART_LINES_UPDATE_MUTATION = `#graphql
   }
 `;
 
+const CART_NOTE_UPDATE_MUTATION = `#graphql
+  ${CART_FRAGMENT}
+  mutation CartNoteUpdate($cartId: ID!, $note: String!) {
+    cartNoteUpdate(cartId: $cartId, note: $note) {
+      cart { ...CartFields }
+      userErrors { field message }
+    }
+  }
+`;
+
 const CART_LINES_REMOVE_MUTATION = `#graphql
   ${CART_FRAGMENT}
   mutation CartLinesRemove($cartId: ID!, $lineIds: [ID!]!) {
@@ -282,6 +295,7 @@ interface RawSellingPlanGroup {
 interface RawProduct {
   id: string;
   handle: string;
+  tags?: string[];
   title: string;
   description: string;
   descriptionHtml: string;
@@ -303,6 +317,7 @@ interface RawCollection {
 interface RawFeaturedProduct {
   id: string;
   handle: string;
+  tags?: string[];
   title: string;
   featuredImage: RawImage | null;
   priceRange: { minVariantPrice: Money };
@@ -324,6 +339,7 @@ interface RawCartLine {
 
 interface RawCart {
   id: string;
+  note: string | null;
   checkoutUrl: string;
   totalQuantity: number;
   cost: { subtotalAmount: Money };
@@ -440,7 +456,7 @@ function normalizeCollection(collection: RawCollection): Collection {
     // Same gift set exclusion as getProducts — an automated collection
     // (e.g. "all products") would otherwise pick them up.
     products: collection.products.nodes
-      .filter((p) => giftSetKeyForHandle(p.handle) === null)
+      .filter((p) => !isHiddenFromListings(p))
       .map(normalizeProduct),
   };
 }
@@ -483,6 +499,7 @@ function normalizeCartLine(line: RawCartLine): CartLine {
 function normalizeCart(cart: RawCart): Cart {
   return {
     id: cart.id,
+    note: cart.note ?? null,
     checkoutUrl: cart.checkoutUrl,
     totalQuantity: cart.totalQuantity,
     subtotal: cart.cost.subtotalAmount,
@@ -560,7 +577,10 @@ export async function getProducts(first = 24): Promise<Product[]> {
   try {
     const data = await shopifyFetch<{ products: { nodes: RawProduct[] } }>({
       query: PRODUCTS_QUERY,
-      variables: { first },
+      // Hidden-tag products (gift set components) filtered server-side so
+      // they don't use up `first`; isHiddenFromListings below is the
+      // belt-and-braces check (and also drops the builder products).
+      variables: { first, query: LISTING_QUERY_FILTER },
       revalidate: 3600,
       tags: ["products"],
     });
@@ -568,7 +588,7 @@ export async function getProducts(first = 24): Promise<Product[]> {
     // lib/gift-builder/sets.ts) — keep them out of the grid, sitemap and
     // static product pages.
     return data.products.nodes
-      .filter((p) => giftSetKeyForHandle(p.handle) === null)
+      .filter((p) => !isHiddenFromListings(p))
       .map(normalizeProduct);
   } catch (error) {
     return handleReadFailure(error, "getProducts", () => mock.getMockProducts());
@@ -585,7 +605,10 @@ export async function getProduct(handle: string): Promise<Product | null> {
       revalidate: 3600,
       tags: [`product:${handle}`],
     });
-    return data.product ? normalizeProduct(data.product) : null;
+    // $0 gift set component products are purchasable only as part of a
+    // set — never as their own product page.
+    if (!data.product || isHiddenFromListings({ handle: "", tags: data.product.tags })) return null;
+    return normalizeProduct(data.product);
   } catch (error) {
     return handleReadFailure(error, `getProduct(${handle})`, () => mock.getMockProduct(handle));
   }
@@ -652,8 +675,9 @@ export async function getFeaturedProducts(first = 3): Promise<FeaturedProduct[]>
     // one's untouched by handleReadFailure's production/non-production
     // split below — an empty "featured" collection is a legitimate
     // Shopify state, not a failure to recover from.
-    return nodes.length > 0
-      ? nodes.map(normalizeFeaturedProduct)
+    const visible = nodes.filter((p) => !isHiddenFromListings(p));
+    return visible.length > 0
+      ? visible.map(normalizeFeaturedProduct)
       : mock.getMockFeaturedProducts();
   } catch (error) {
     return handleReadFailure(error, "getFeaturedProducts", () => mock.getMockFeaturedProducts());
@@ -766,6 +790,38 @@ export async function updateLine(cartId: string, lineId: string, quantity: numbe
   });
   assertNoUserErrors(data.cartLinesUpdate.userErrors, "updateLine");
   return normalizeCart(data.cartLinesUpdate.cart);
+}
+
+/** Writes the cart note (→ order note → ShipStation "Notes from Buyer").
+ * Gift messages live here — see lib/gift-builder/gift-notes.ts. */
+export async function updateCartNote(cartId: string, note: string): Promise<Cart> {
+  if (!isShopifyConfigured()) return unconfiguredFallback(() => mock.updateMockNote(cartId, note));
+
+  const data = await shopifyFetch<{
+    cartNoteUpdate: { cart: RawCart; userErrors: UserError[] };
+  }>({
+    query: CART_NOTE_UPDATE_MUTATION,
+    variables: { cartId, note },
+    cache: "no-store",
+  });
+  assertNoUserErrors(data.cartNoteUpdate.userErrors, "updateCartNote");
+  return normalizeCart(data.cartNoteUpdate.cart);
+}
+
+/** Removes several lines in ONE mutation — a gift set's parent and
+ * component lines go together, never half-removed. */
+export async function removeLines(cartId: string, lineIds: string[]): Promise<Cart> {
+  if (!isShopifyConfigured()) return unconfiguredFallback(() => mock.removeMockLines(cartId, lineIds));
+
+  const data = await shopifyFetch<{
+    cartLinesRemove: { cart: RawCart; userErrors: UserError[] };
+  }>({
+    query: CART_LINES_REMOVE_MUTATION,
+    variables: { cartId, lineIds },
+    cache: "no-store",
+  });
+  assertNoUserErrors(data.cartLinesRemove.userErrors, "removeLines");
+  return normalizeCart(data.cartLinesRemove.cart);
 }
 
 export async function removeLine(cartId: string, lineId: string): Promise<Cart> {

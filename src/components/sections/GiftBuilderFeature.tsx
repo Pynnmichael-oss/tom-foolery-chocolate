@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Preheader, Headline, BodyText } from "@/components/ui/typography";
 import { buttonClasses } from "@/components/ui/buttonClasses";
 import { formatMoney } from "@/lib/shopify/format";
-import { flavorLabel } from "@/lib/gift-builder/cart-line";
+import { shortFlavorName } from "@/lib/gift-builder/cart-line";
 import type { GiftBand, GiftBuilderConfig } from "@/lib/gift-builder/queries";
 
 /** Cheapest variant price ("From $28") for a builder product. */
@@ -119,7 +119,7 @@ export function GiftBuilderFeature({
                       />
                     </span>
                     <figcaption className="font-sans text-[0.7rem] leading-tight text-tf-black/75">
-                      {flavorLabel(f.title)}
+                      {shortFlavorName(f.title)}
                     </figcaption>
                   </figure>
                 ))}

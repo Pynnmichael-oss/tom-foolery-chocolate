@@ -5,12 +5,12 @@ import Image from "next/image";
 import { useCart } from "@/components/commerce/CartProvider";
 import { trackAddToCart } from "@/lib/analytics/ga";
 import { formatMoney } from "@/lib/shopify/format";
-import { sameAttributes } from "@/lib/shopify/cart-attributes";
+import { labelOf, nextSetLabel } from "@/lib/gift-builder/gift-notes";
 import type { GiftBuilderConfig } from "@/lib/gift-builder/queries";
 import {
-  buildCartLine,
+  buildCartLines,
   findVariant,
-  flavorLabel,
+  shortFlavorName,
   slotCount,
 } from "@/lib/gift-builder/cart-line";
 
@@ -73,7 +73,7 @@ export function GiftSetBuilder({
    * link). Ignored unless it matches one of the band categories. */
   initialOccasion?: string;
 }) {
-  const { addItem } = useCart();
+  const { cart, addGiftSet, removeGiftSet } = useCart();
   const hasFlavors = config.flavors.length > 0;
   const hasBands = config.bands.length > 0;
 
@@ -151,46 +151,42 @@ export function GiftSetBuilder({
   }
 
   async function handleAdd() {
-    const result = buildCartLine(config, { size, wrap, slots, bandId, note });
+    // Next unused label for THIS cart (A, B, C…) — written on every line of
+    // the set and in front of its gift message, so packers can match them.
+    const setLabel = nextSetLabel(cart?.lines ?? [], cart?.note);
+    const result = buildCartLines(config, { size, wrap, slots, bandId, note }, setLabel);
     if (!result.ok) {
       setError(result.error);
       return;
     }
     setAdding(true);
     setError(null);
-    const productVariant = { ...result.line.variant, sellingPlanIds: [] };
-    const cartResult = await addItem(
-      productVariant,
-      {
-        title: config.title,
-        handle: config.handle,
-        images: config.image
-          ? [{ url: config.image.url, altText: config.image.altText }]
-          : [],
-      },
-      1,
-      undefined,
-      result.line.attributes
-    );
-    setAdding(false);
+    const cartResult = await addGiftSet({
+      lines: result.lines,
+      setLabel: result.setLabel,
+      giftNote: result.giftNote,
+    });
     if (!cartResult.success) {
+      setAdding(false);
       setError(cartResult.error);
       return;
     }
     // Shopify reports an out-of-stock variant as a *warning*, not a
-    // userError — the add "succeeds" but the line comes back at quantity
-    // 0. Check the real cart rather than trusting success alone.
-    const added = cartResult.cart.lines.some(
-      (l) =>
-        l.merchandiseId === productVariant.id &&
-        l.quantity > 0 &&
-        sameAttributes(l.attributes, result.line.attributes)
+    // userError — the add "succeeds" but that line comes back at quantity
+    // 0. Every line of the set must be there in full, or the order would
+    // be missing SKUs; if not, take the partial set back out.
+    const inCart = cartResult.cart.lines.filter((l) => labelOf(l) === result.setLabel);
+    const complete = result.lines.every((want) =>
+      inCart.some((l) => l.merchandiseId === want.merchandiseId && l.quantity >= want.quantity)
     );
-    if (!added) {
-      setError("Sorry — that box can't be ordered right now. Please try another size or check back soon.");
+    if (!complete) {
+      await removeGiftSet(result.setLabel);
+      setAdding(false);
+      setError("Sorry — part of that set can't be ordered right now. Please try a different mix or check back soon.");
       return;
     }
-    trackAddToCart({ title: config.title }, productVariant, 1);
+    setAdding(false);
+    trackAddToCart({ title: config.title }, { ...result.variant, sellingPlanIds: [] }, 1);
     setSlots(Array(slots.length).fill(null));
     setNote("");
     setAddedCount((n) => n + 1);
@@ -253,7 +249,7 @@ export function GiftSetBuilder({
                     <button
                       type="button"
                       onClick={() => removeSlot(i)}
-                      aria-label={`Remove ${flavorLabel(f.title)} from bar ${i + 1}`}
+                      aria-label={`Remove ${shortFlavorName(f.title)} from bar ${i + 1}`}
                       className="group grid h-full w-full scroll-mt-28 scroll-mb-36 cursor-pointer place-items-center gap-1 p-1.5 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-tf-cinnamon"
                     >
                       {f.featuredImage ? (
@@ -261,7 +257,7 @@ export function GiftSetBuilder({
                           <Image src={f.featuredImage.url} alt="" fill sizes="80px" className="object-cover" />
                         </span>
                       ) : null}
-                      <span className="font-sans text-xs font-semibold leading-tight">{flavorLabel(f.title)}</span>
+                      <span className="font-sans text-xs font-semibold leading-tight">{shortFlavorName(f.title)}</span>
                       <span
                         aria-hidden="true"
                         className="absolute right-1.5 top-0.5 font-sans text-base text-fg/50 group-hover:text-tf-cinnamon"
@@ -287,7 +283,7 @@ export function GiftSetBuilder({
                   className={`${SELECTABLE} grid gap-1.5 p-3`}
                   onClick={() => addFlavor(f.id)}
                   disabled={remaining === 0}
-                  aria-label={`Add ${flavorLabel(f.title)}${count ? ` (${count} in box)` : ""}`}
+                  aria-label={`Add ${shortFlavorName(f.title)}${count ? ` (${count} in box)` : ""}`}
                 >
                   {f.featuredImage ? (
                     <span className="relative aspect-square w-full overflow-hidden rounded-xl bg-tf-black/5">
@@ -300,7 +296,7 @@ export function GiftSetBuilder({
                       />
                     </span>
                   ) : null}
-                  <span className="font-sans font-black leading-tight">{flavorLabel(f.title)}</span>
+                  <span className="font-sans font-black leading-tight">{shortFlavorName(f.title)}</span>
                   <span className="font-sans text-sm text-fg/70">{count > 0 ? `In box: ${count}` : "Add"}</span>
                 </button>
               );
@@ -401,7 +397,7 @@ export function GiftSetBuilder({
 
         <label className="flex flex-col gap-2">
           <span className="font-sans text-sm font-semibold">
-            Gift note <span className="font-normal text-fg/60">(optional)</span>
+            Gift note <span className="font-normal text-fg/60">(optional, printed on a card in the box)</span>
           </span>
           <textarea
             value={note}
