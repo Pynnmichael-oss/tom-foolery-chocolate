@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { gsap, useGSAP, breakpoints } from "@/components/motion/gsap";
 import { EyesHatIcon } from "@/components/ui/logos";
-import { useScrollToGiftingForm } from "@/lib/hooks/useScrollToGiftingForm";
+import { CUSTOM_GIFT_CTA_LABEL, useCustomGiftLink } from "@/lib/gifting/custom-gift-link";
 
 export interface GiftingHeroGraphicProps {
   /** Ground color of the text panel — defaults to brand rose. Text on it
@@ -13,6 +13,11 @@ export interface GiftingHeroGraphicProps {
    * (WCAG AA, 4.5:1) before passing anything darker than the palette's
    * light accents (rose, juniper, turmeric all clear it). */
   groundColor?: string;
+  /** True when /gifts/build has a live product (checked server-side by
+   * app/gifting/page.tsx). The primary CTA goes to the builder then, and
+   * falls back to the gifts collection otherwise so it never links to a
+   * 404 while the builder product is still a Draft. */
+  giftBuilderAvailable?: boolean;
 }
 
 /**
@@ -87,9 +92,12 @@ const CTA_BASE =
  * static rotations on the product/badge sit on inner wrappers so the
  * animated outer elements only ever carry the entrance transform.
  */
-export function GiftingHeroGraphic({ groundColor = "var(--tf-rose)" }: GiftingHeroGraphicProps) {
+export function GiftingHeroGraphic({
+  groundColor = "var(--tf-rose)",
+  giftBuilderAvailable = false,
+}: GiftingHeroGraphicProps) {
   const rootRef = useRef<HTMLElement>(null);
-  const scrollToForm = useScrollToGiftingForm();
+  const customGiftLink = useCustomGiftLink();
 
   useGSAP(
     () => {
@@ -184,17 +192,16 @@ export function GiftingHeroGraphic({ groundColor = "var(--tf-rose)" }: GiftingHe
           </p>
           <div data-hero="cta" className="mt-fluid-xs flex flex-wrap gap-fluid-sm">
             <Link
-              href="/collections/gifts"
+              href={giftBuilderAvailable ? "/gifts/build" : "/collections/gifts"}
               className={`${CTA_BASE} bg-tf-black text-tf-white`}
             >
-              Shop Gifts
+              {giftBuilderAvailable ? "Build a Gift Set" : "Shop Gifts"}
             </Link>
             <a
-              href="#custom-gift"
-              onClick={scrollToForm}
+              {...customGiftLink}
               className={`${CTA_BASE} bg-transparent text-tf-black hover:bg-tf-black/10`}
             >
-              Make It Custom
+              {CUSTOM_GIFT_CTA_LABEL}
             </a>
           </div>
         </div>
