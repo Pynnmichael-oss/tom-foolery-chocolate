@@ -71,16 +71,19 @@ export function GiftBuilderFeature({
 
   return (
     <section aria-label="Build your own gift set" className="bg-tf-turmeric px-fluid-md py-fluid-xl text-tf-black">
-      <div className="mx-auto grid max-w-6xl items-center gap-fluid-lg lg:grid-cols-[5fr_7fr]">
+      <div className="mx-auto grid max-w-6xl items-center gap-fluid-lg lg:grid-cols-[6fr_7fr]">
         {/* Pitch + CTA */}
         <div className="flex flex-col items-start gap-fluid-sm">
           <Preheader>Build Your Own Gift Set</Preheader>
+          {/* Two deliberate lines — left to wrap freely it breaks as
+           * "One for / Them. Two / for You." on desktop. */}
           <Headline as="h2" size="md">
-            Make It Their Box
+            {["One for Them.", "Two for You."]}
           </Headline>
           <BodyText className="max-w-md text-tf-black/85">
-            Pick their favorite bars, wrap it in a band made for the occasion, and add a note in your own
-            words. We pack it by hand and ship it out.
+            You don&rsquo;t need an occasion. But the holidays are coming&hellip; Pick their favorite bars,
+            choose a band for the occasion, and add a note. We&rsquo;ll pack it by hand, in small batches,
+            right here in Chicago.
           </BodyText>
           <div className="mt-fluid-xs flex flex-wrap items-center gap-x-fluid-sm gap-y-3">
             <Link href="/gifts/build?set=bars" className={buttonClasses("primary")}>
@@ -100,7 +103,7 @@ export function GiftBuilderFeature({
         </div>
 
         {/* The three steps, with real photos */}
-        <ol className="grid gap-fluid-sm sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3" aria-label="How it works">
+        <ol className="grid gap-fluid-sm" aria-label="How it works">
           <Step n={1} title={`Pick ${boxSizes}`}>
             {flavors.length > 0 ? (
               <div className="grid grid-cols-3 gap-1.5">
@@ -111,7 +114,7 @@ export function GiftBuilderFeature({
                         src={f.featuredImage!.url}
                         alt={f.featuredImage!.altText ?? f.title}
                         fill
-                        sizes="(min-width: 1280px) 80px, (min-width: 640px) 12vw, 28vw"
+                        sizes="(min-width: 1024px) 180px, 30vw"
                         className="object-cover"
                       />
                     </span>
@@ -126,7 +129,7 @@ export function GiftBuilderFeature({
 
           <Step n={2} title="Choose a band for the occasion">
             {bands.length > 0 ? (
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                 {bands.map((b) => (
                   <figure key={b.id} className="flex flex-col gap-1">
                     <span className="relative aspect-[4/3] overflow-hidden rounded-xl bg-tf-black/5">
@@ -134,7 +137,7 @@ export function GiftBuilderFeature({
                         src={b.image!.url}
                         alt={b.image!.altText ?? `${b.name} band`}
                         fill
-                        sizes="(min-width: 1280px) 120px, (min-width: 640px) 16vw, 42vw"
+                        sizes="(min-width: 1024px) 140px, (min-width: 640px) 22vw, 45vw"
                         className="object-cover"
                       />
                     </span>
@@ -148,7 +151,7 @@ export function GiftBuilderFeature({
           <Step n={3} title="Add gift wrap & a note">
             {/* A sample gift note, shown the way it'd be written on the card. */}
             <div className="flex flex-1 flex-col justify-between gap-3 rounded-xl border-2 border-dashed border-tf-black/25 bg-tf-rose/30 p-3">
-              <p className="font-display text-lg italic leading-snug">&ldquo;Happy holidays, Mom! Save me a square.&rdquo;</p>
+              <p className="font-display text-lg italic leading-snug">&ldquo;One for you. (I&nbsp;already ate&nbsp;mine.)&rdquo;</p>
               <p className="font-sans text-[0.7rem] text-tf-black/75">
                 Up to {bars.noteMaxLength} characters · gift wrap +$1
               </p>
