@@ -5,7 +5,7 @@ import Link from "next/link";
 import { gsap, useGSAP, breakpoints } from "@/components/motion/gsap";
 import { Headline, BodyText } from "@/components/ui/typography";
 import { EyesHatIcon } from "@/components/ui/logos";
-import { useScrollToGiftingForm } from "@/lib/hooks/useScrollToGiftingForm";
+import { CUSTOM_GIFT_CTA_LABEL, useCustomGiftLink } from "@/lib/gifting/custom-gift-link";
 
 const CTA_CLASS =
   "inline-flex items-center justify-center rounded-full bg-tf-white px-fluid-md py-fluid-sm " +
@@ -16,18 +16,15 @@ const CTA_CLASS =
 
 /**
  * "Make it custom" band below a collection's products — brand-black
- * background, white text, pointing visitors at the gifting inquiry form
- * (`useScrollToGiftingForm` + href="/gifting#custom-gift": on THIS page
- * `#custom-gift` doesn't exist, so the hook's getElementById lookup finds
- * nothing and no-ops, leaving the plain link to navigate to /gifting and
- * land on the anchor there — same hook, same behavior, two different
- * pages). The eyes-and-hat mark peeks out of a turmeric badge straddling
+ * background, white text, pointing visitors at the custom gifting inquiry
+ * form: the HubSpot form when NEXT_PUBLIC_HUBSPOT_GIFTING_FORM_URL is set,
+ * otherwise /gifting#custom-gift (see lib/gifting/custom-gift-link.ts). The eyes-and-hat mark peeks out of a turmeric badge straddling
  * the band's top edge, echoing the "Live a Little" badge on the gifting
  * hero rather than inventing a new motif.
  */
 export function CollectionCustomGiftBand() {
   const sectionRef = useRef<HTMLElement>(null);
-  const scrollToForm = useScrollToGiftingForm();
+  const customGiftLink = useCustomGiftLink("/gifting#custom-gift");
 
   useGSAP(
     () => {
@@ -84,8 +81,8 @@ export function CollectionCustomGiftBand() {
           </BodyText>
         </div>
         <div data-custom-band-reveal>
-          <Link href="/gifting#custom-gift" onClick={scrollToForm} className={CTA_CLASS}>
-            Make It Custom
+          <Link {...customGiftLink} className={CTA_CLASS}>
+            {CUSTOM_GIFT_CTA_LABEL}
           </Link>
         </div>
       </div>

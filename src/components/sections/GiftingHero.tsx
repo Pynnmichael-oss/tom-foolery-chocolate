@@ -6,7 +6,7 @@ import { Preheader, Headline, BodyText } from "@/components/ui/typography";
 import { buttonClasses } from "@/components/ui/buttonClasses";
 import { gsap, useGSAP } from "@/components/motion/gsap";
 import { useMediaPreferences } from "@/lib/hooks/useMediaPreferences";
-import { useScrollToGiftingForm } from "@/lib/hooks/useScrollToGiftingForm";
+import { CUSTOM_GIFT_CTA_LABEL, useCustomGiftLink } from "@/lib/gifting/custom-gift-link";
 import { GiftingHeroGraphic } from "./GiftingHeroGraphic";
 
 export interface HeroImageSource {
@@ -91,6 +91,8 @@ export interface GiftingHeroProps {
   /** Graphic variant only — ground color of the text panel. Defaults to
    * brand rose. */
   groundColor?: string;
+  /** Graphic variant only — see GiftingHeroGraphicProps.giftBuilderAvailable. */
+  giftBuilderAvailable?: boolean;
   /** Desktop/tablet hero image — rendered at the `sm:` breakpoint (640px)
    * and up. Defaults to the current placeholder photo; see the TODO
    * above for the real swap-in plan. */
@@ -115,10 +117,12 @@ export interface GiftingHeroProps {
 export function GiftingHero({
   variant = "photo",
   groundColor,
+  giftBuilderAvailable,
   desktopImage,
   mobileImage,
 }: GiftingHeroProps = {}) {
-  if (variant === "graphic") return <GiftingHeroGraphic groundColor={groundColor} />;
+  if (variant === "graphic")
+    return <GiftingHeroGraphic groundColor={groundColor} giftBuilderAvailable={giftBuilderAvailable} />;
   return <GiftingHeroPhoto desktopImage={desktopImage} mobileImage={mobileImage} />;
 }
 
@@ -128,7 +132,7 @@ function GiftingHeroPhoto({
 }: Pick<GiftingHeroProps, "desktopImage" | "mobileImage">) {
   const contentRef = useRef<HTMLDivElement>(null);
   const { prefersReducedMotion } = useMediaPreferences();
-  const scrollToForm = useScrollToGiftingForm();
+  const customGiftLink = useCustomGiftLink();
 
   useGSAP(
     () => {
@@ -219,12 +223,8 @@ function GiftingHeroPhoto({
         <BodyText size="lg" className="text-tf-white/90">
           Stand out from the crowd with a unique, personalized gift for any occasion.
         </BodyText>
-        <a
-          href="#custom-gift"
-          onClick={scrollToForm}
-          className={buttonClasses("primary", "mt-fluid-sm")}
-        >
-          Learn More
+        <a {...customGiftLink} className={buttonClasses("primary", "mt-fluid-sm")}>
+          {CUSTOM_GIFT_CTA_LABEL}
         </a>
       </div>
     </section>

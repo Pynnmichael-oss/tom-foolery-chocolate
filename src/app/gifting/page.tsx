@@ -6,6 +6,7 @@ import { GiftingForm } from "@/components/sections/GiftingForm";
 import { Preheader, Headline, BodyText } from "@/components/ui/typography";
 import { GIFT_SETS, getGiftBuilderConfig } from "@/lib/gift-builder/queries";
 import { DEFAULT_OG_IMAGE } from "@/lib/site";
+import { HUBSPOT_GIFTING_FORM_URL } from "@/lib/gifting/hubspot";
 
 const DESCRIPTION =
   "Clever & curious gifts for any occasion — custom & branded, wedding/event, and ready-to-ship chocolate gifting from Tom Foolery.";
@@ -28,21 +29,16 @@ export const metadata: Metadata = {
 };
 
 /**
- * Gifting — replaces the `ComingSoonPage` placeholder that used
- * to live here (footer's "Gifting" link already pointed at
- * `/gifting`, so nothing there needed to change). Every CTA on the page
- * (hero's "Make It Custom" button, each of the three panel buttons) points
- * at the same `#custom-gift` anchor via `href="#custom-gift"` — a real
- * link, so it still works with JS disabled or before hydration — plus an
- * `onClick` (`useScrollToGiftingForm`) that smooth-scrolls there and
- * focuses the form's first field, so keyboard/screen-reader users land
- * ready to type, not just visually at the section. `globals.css` still
- * sets `scroll-behavior: auto` (Lenis drives smooth scroll for
- * wheel/touch elsewhere; see that file's own comment) — the CTA's smooth
- * scroll is native `scrollIntoView`, independent of both. `scroll-mt-24`
- * on the target section keeps the jump from landing underneath the
- * sticky nav, and gives `/gifting#custom-gift` the same margin when
- * linked to directly from another page.
+ * Gifting landing page. Two paths out of the hero:
+ *  - "Build a Gift Set" → /gifts/build (self-serve, ready to ship). Falls
+ *    back to /collections/gifts while the builder product isn't live.
+ *  - "Start a Custom Order" (and the Custom & Branded / Weddings & Events
+ *    panels) → the HubSpot gifting form at NEXT_PUBLIC_HUBSPOT_GIFTING_FORM_URL.
+ *
+ * Until that env var is set, the custom CTAs scroll to the on-page
+ * Resend-backed inquiry form below instead (useCustomGiftLink); once it's
+ * set, that on-page form is dropped so there's only one place inquiries
+ * land. `scroll-mt-24` keeps the anchor jump clear of the sticky nav.
  */
 /** Whether /gifts/build has a live product behind it — never throws, so a
  * Shopify hiccup only hides the builder link rather than breaking /gifting. */
@@ -58,22 +54,24 @@ export default async function GiftingPage() {
   const giftBuilderAvailable = await isGiftBuilderAvailable();
   return (
     <main id="main-content">
-      <GiftingHero variant="graphic" />
+      <GiftingHero variant="graphic" giftBuilderAvailable={giftBuilderAvailable} />
       <GiftingPanels giftBuilderAvailable={giftBuilderAvailable} />
       <GiftingStats />
 
-      <section id="custom-gift" className="scroll-mt-24 px-fluid-md py-fluid-2xl">
-        <div className="mx-auto flex w-full max-w-2xl flex-col gap-fluid-lg">
-          <div className="flex flex-col items-center gap-fluid-sm text-center">
-            <Preheader>Get Started</Preheader>
-            <Headline as="h2" size="md">
-              Let&rsquo;s Plan Your Gift
-            </Headline>
-            <BodyText className="max-w-md text-fg/80">{FORM_INTRO}</BodyText>
+      {!HUBSPOT_GIFTING_FORM_URL && (
+        <section id="custom-gift" className="scroll-mt-24 px-fluid-md py-fluid-2xl">
+          <div className="mx-auto flex w-full max-w-2xl flex-col gap-fluid-lg">
+            <div className="flex flex-col items-center gap-fluid-sm text-center">
+              <Preheader>Get Started</Preheader>
+              <Headline as="h2" size="md">
+                Let&rsquo;s Plan Your Gift
+              </Headline>
+              <BodyText className="max-w-md text-fg/80">{FORM_INTRO}</BodyText>
+            </div>
+            <GiftingForm />
           </div>
-          <GiftingForm />
-        </div>
-      </section>
+        </section>
+      )}
     </main>
   );
 }

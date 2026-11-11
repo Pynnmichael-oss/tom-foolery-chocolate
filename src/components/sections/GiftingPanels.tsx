@@ -6,7 +6,7 @@ import Link from "next/link";
 import { gsap, useGSAP, breakpoints } from "@/components/motion/gsap";
 import { buttonClasses } from "@/components/ui/buttonClasses";
 import { BodyText } from "@/components/ui/typography";
-import { useScrollToGiftingForm } from "@/lib/hooks/useScrollToGiftingForm";
+import { CUSTOM_GIFT_CTA_LABEL, useCustomGiftLink } from "@/lib/gifting/custom-gift-link";
 
 /**
  * TODO(garrett): placeholder panel photos — same situation as
@@ -35,6 +35,8 @@ import { useScrollToGiftingForm } from "@/lib/hooks/useScrollToGiftingForm";
 const PANELS = [
   {
     title: "Custom & Branded",
+    cta: "custom",
+    ctaLabel: CUSTOM_GIFT_CTA_LABEL,
     copy: "Truly personalize your gift & show off your brand with custom packaging, special chocolate assortments, and more",
     image: {
       src: "/photos/craft-hazelnut-bar-flatlay.jpg",
@@ -45,6 +47,8 @@ const PANELS = [
   },
   {
     title: "Weddings & Events",
+    cta: "custom",
+    ctaLabel: "Plan Your Event",
     copy: "Take your event to the next level with custom bon bon towers, personalized chocolate bars, and so much more",
     image: {
       src: "/photos/truffles-turmeric-background.jpg",
@@ -55,6 +59,7 @@ const PANELS = [
   },
   {
     title: "Ready to Ship",
+    cta: "ready",
     copy: "In a rush? We offer options that are ready to ship and are perfect for the last minute gift.",
     image: {
       src: "/photos/citrus-filled-bar-green.jpg",
@@ -69,22 +74,23 @@ const PANELS = [
  * Three-panel "what kind of gifting" grid — stacked mobile, 3-col desktop.
  * Same card shape and scroll-reveal recipe `FeaturedProductsReveal` uses
  * (image top, copy below, staggered fade-up), swapping its price line for
- * a CTA into the inquiry form — this page's whole point is getting
- * someone to that form, so every panel gets its own way in, not just the
- * hero.
+ * a CTA. The two custom panels go to the custom gifting inquiry (HubSpot
+ * form, or the on-page form until that's configured — see
+ * lib/gifting/custom-gift-link.ts); "Ready to Ship" goes to the gift set
+ * builder, or the gifts collection while the builder isn't live.
  */
 export function GiftingPanels({
   giftBuilderAvailable = false,
 }: {
   /** True once the build-your-own gift set product is live on the
    * Storefront — the "Ready to Ship" panel then links to /gifts/build
-   * instead of the inquiry form. Checked server-side by app/gifting/page.tsx
+   * instead of the gifts collection. Checked server-side by app/gifting/page.tsx
    * so this never links to a 404 while the product is still a Draft. */
   giftBuilderAvailable?: boolean;
 } = {}) {
   const sectionRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  const scrollToForm = useScrollToGiftingForm();
+  const customGiftLink = useCustomGiftLink();
 
   useGSAP(
     () => {
@@ -103,7 +109,13 @@ export function GiftingPanels({
         const tl = gsap.timeline({
           scrollTrigger: { trigger: sectionRef.current, start: "top 80%" },
         });
-        tl.to(cards, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out", stagger: 0.1 });
+        tl.to(cards, {
+          opacity: 1,
+          y: 0,
+          duration: 0.7,
+          ease: "power3.out",
+          stagger: 0.1,
+        });
 
         return () => {
           tl.scrollTrigger?.kill();
@@ -113,15 +125,12 @@ export function GiftingPanels({
 
       return () => mm.revert();
     },
-    { scope: sectionRef }
+    { scope: sectionRef },
   );
 
   return (
     <section ref={sectionRef} className="px-fluid-md py-fluid-2xl">
-      <div
-        ref={gridRef}
-        className="mx-auto grid max-w-6xl grid-cols-1 gap-fluid-xl sm:grid-cols-3"
-      >
+      <div ref={gridRef} className="mx-auto grid max-w-6xl grid-cols-1 gap-fluid-xl sm:grid-cols-3">
         {PANELS.map((panel) => (
           <div key={panel.title} data-gifting-panel className="flex flex-col gap-fluid-sm">
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-tf-black/5">
@@ -143,17 +152,16 @@ export function GiftingPanels({
               {panel.title}
             </h2>
             <BodyText className="flex-1 text-fg/80">{panel.copy}</BodyText>
-            {panel.title === "Ready to Ship" && giftBuilderAvailable ? (
-              <Link href="/gifts/build" className={buttonClasses("secondary", "self-start")}>
-                Build a Gift Set
-              </Link>
-            ) : (
-              <a
-                href="#custom-gift"
-                onClick={scrollToForm}
+            {panel.cta === "ready" ? (
+              <Link
+                href={giftBuilderAvailable ? "/gifts/build" : "/collections/gifts"}
                 className={buttonClasses("secondary", "self-start")}
               >
-                Learn More
+                {giftBuilderAvailable ? "Build a Gift Set" : "Shop Gifts"}
+              </Link>
+            ) : (
+              <a {...customGiftLink} className={buttonClasses("secondary", "self-start")}>
+                {panel.ctaLabel}
               </a>
             )}
           </div>
