@@ -28,8 +28,14 @@ import {
   updateCartNote,
   updateLine,
 } from "./queries";
-import { addGiftMessage, linesInSet, syncGiftNote } from "@/lib/gift-builder/gift-notes";
-import type { Cart, CartAttribute, CartLineInput, CartResult } from "./types";
+import {
+  addGiftMessage,
+  labelOf,
+  linesInSet,
+  orderedSetLines,
+  syncGiftNote,
+} from "@/lib/gift-builder/gift-notes";
+import type { Cart, CartAttribute, CartLine, CartLineInput, CartResult } from "./types";
 
 const GENERIC_CART_ERROR = "We couldn't update your cart. Please try again in a moment.";
 
@@ -161,17 +167,21 @@ export async function addGiftSetAction(
   setLabel: string,
   giftNote: string | null
 ): Promise<CartResult> {
+  // Shopify puts each added line at the TOP of the cart — even within one
+  // call — so send the set reversed: it then reads box line first, then
+  // its contents, at checkout and on the packing slip.
+  const ordered = [...lines].reverse();
   try {
     let cart: Cart;
     if (!cartId) {
-      cart = await createCart(lines);
+      cart = await createCart(ordered);
     } else {
       try {
-        cart = await addLines(cartId, lines);
+        cart = await addLines(cartId, ordered);
       } catch (error) {
         // Same expired/completed-cart recovery as addToCartAction.
         console.error("[cart] addLines (gift set) failed, starting a new cart:", error);
-        cart = await createCart(lines);
+        cart = await createCart(ordered);
       }
     }
     if (giftNote) {
@@ -199,15 +209,50 @@ export async function removeGiftSetAction(cartId: string, setLabel: string): Pro
   }
 }
 
-/** Safety net before checkout: drop gift messages for sets that are no
- * longer in the cart. No-op (no write) when the note already matches. */
-export async function syncGiftNoteAction(cartId: string): Promise<CartResult> {
+const isSetParent = (line: CartLine) => Number(line.price.amount) > 0;
+
+const sameOrder = (a: CartLine[], b: CartLine[]) => a.length === b.length && a.every((l, i) => l.id === b[i].id);
+
+/**
+ * Puts gift set lines in A → B → C order (box line first in each set) so
+ * checkout, the order and the ShipStation packing slip list each set's
+ * items together, in label order. Shopify has no "move line" mutation and
+ * shows the newest line first, so this removes the set lines and re-adds
+ * them reversed. Only runs when they're out of order. If the re-add fails,
+ * the original lines are put back.
+ */
+async function reorderGiftSets(cart: Cart): Promise<Cart> {
+  const setLines = cart.lines.filter((l) => labelOf(l) !== null);
+  const wanted = orderedSetLines(setLines, isSetParent);
+  if (setLines.length < 2 || sameOrder(setLines, wanted)) return cart;
+
+  const toInput = (l: CartLine): CartLineInput => ({
+    merchandiseId: l.merchandiseId,
+    quantity: l.quantity,
+    attributes: l.attributes,
+  });
+  const removed = await removeLines(cart.id, setLines.map((l) => l.id));
   try {
-    const cart = await getCart(cartId);
-    if (!cart) return { success: false, error: GENERIC_CART_ERROR };
-    const note = syncGiftNote(cart.note, cart.lines);
-    return { success: true, cart: note === (cart.note ?? "") ? cart : await updateCartNote(cartId, note) };
+    return await addLines(cart.id, [...wanted].reverse().map(toInput));
   } catch (error) {
-    return { success: false, error: toCartError(error, "syncGiftNoteAction failed") };
+    console.error("[cart] re-adding gift sets in order failed, restoring the original lines:", error);
+    await addLines(removed.id, [...setLines].reverse().map(toInput));
+    throw error;
+  }
+}
+
+/** Right before checkout: put gift set lines in A → B → C order and drop
+ * gift messages for sets no longer in the cart. Never blocks checkout —
+ * the caller continues either way. */
+export async function prepareCheckoutAction(cartId: string): Promise<CartResult> {
+  try {
+    let cart = await getCart(cartId);
+    if (!cart) return { success: false, error: GENERIC_CART_ERROR };
+    cart = await reorderGiftSets(cart);
+    const note = syncGiftNote(cart.note, cart.lines);
+    if (note !== (cart.note ?? "")) cart = await updateCartNote(cartId, note);
+    return { success: true, cart };
+  } catch (error) {
+    return { success: false, error: toCartError(error, "prepareCheckoutAction failed") };
   }
 }

@@ -280,16 +280,17 @@ export function GiftSetBuilder({
                 <button
                   key={f.id}
                   type="button"
-                  className={`${SELECTABLE} grid gap-1.5 p-3`}
+                  className={`${SELECTABLE} flex flex-col gap-1.5 p-3`}
                   onClick={() => addFlavor(f.id)}
                   disabled={remaining === 0}
                   aria-label={`Add ${shortFlavorName(f.title)}${count ? ` (${count} in box)` : ""}`}
+                  aria-describedby={f.description ? `flavor-desc-${f.handle}` : undefined}
                 >
                   {f.featuredImage ? (
                     <span className="relative aspect-square w-full overflow-hidden rounded-xl bg-tf-black/5">
                       <Image
                         src={f.featuredImage.url}
-                        alt={f.featuredImage.altText ?? f.title}
+                        alt={`${shortFlavorName(f.title)} bar`}
                         fill
                         sizes="(min-width: 640px) 220px, 45vw"
                         className="object-cover"
@@ -297,7 +298,18 @@ export function GiftSetBuilder({
                     </span>
                   ) : null}
                   <span className="font-sans font-black leading-tight">{shortFlavorName(f.title)}</span>
-                  <span className="font-sans text-sm text-fg/70">{count > 0 ? `In box: ${count}` : "Add"}</span>
+                  {/* Shown on the card itself, not on hover: most shoppers are
+                   * on phones, where there's no hover and a tap adds a bar.
+                   * flex-1 keeps the "Add" lines aligned across cards. */}
+                  <span
+                    id={f.description ? `flavor-desc-${f.handle}` : undefined}
+                    className="flex-1 font-sans text-xs leading-snug text-fg/75 sm:text-sm"
+                  >
+                    {f.description}
+                  </span>
+                  <span className="font-sans text-sm font-semibold text-fg/70">
+                    {count > 0 ? `In box: ${count}` : "+ Add"}
+                  </span>
                 </button>
               );
             })}

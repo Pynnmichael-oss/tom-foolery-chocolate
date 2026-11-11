@@ -18,7 +18,7 @@
  */
 import { isShopifyConfigured, shopifyFetch } from "@/lib/shopify/client";
 import { isProductionRuntime } from "@/lib/env";
-import { MOCK_GIFT_COMPONENT_PRODUCTS, MOCK_GIFT_SET_PRODUCTS } from "@/lib/shopify/mock-data";
+import { MOCK_GIFT_COMPONENT_PRODUCTS, MOCK_GIFT_SET_PRODUCTS, MOCK_PRODUCTS } from "@/lib/shopify/mock-data";
 import type { Money } from "@/lib/shopify/types";
 import { GIFT_COMPONENT_TAG, GIFT_SETS } from "./sets";
 
@@ -74,6 +74,12 @@ const GIFT_BUILDER_PRODUCT_QUERY = `#graphql
               tags
               featuredImage { url altText width height }
               variants(first: 1) { nodes { id sku availableForSale } }
+              # The regular product this component stands for — its
+              # description is shown on the flavor card. (The component's
+              # own description is an internal note; never shown.)
+              source: metafield(namespace: "gift_builder", key: "flavor_source") {
+                reference { ... on Product { description } }
+              }
             }
           }
         }
@@ -119,6 +125,9 @@ export type GiftBuilderFlavor = {
   title: string;
   handle: string;
   featuredImage: Image | null;
+  /** Shopper-facing description, from the regular product linked via the
+   * component's `gift_builder.flavor_source` metafield. Null if unlinked. */
+  description: string | null;
   /** The $0 component variant added to the cart for each bar of this flavor. */
   variantId: string;
   sku: string | null;
@@ -179,6 +188,7 @@ type RawFlavor =
       tags: string[];
       featuredImage: Image | null;
       variants: { nodes: { id: string; sku: string | null; availableForSale: boolean }[] };
+      source: { reference: { description?: string } | null } | null;
     }
   | Record<string, never>;
 
@@ -247,6 +257,7 @@ function toGiftBuilderConfig(p: RawProduct): GiftBuilderConfig | null {
       title: n.title,
       handle: n.handle,
       featuredImage: n.featuredImage,
+      description: n.source?.reference?.description?.trim() || null,
       variantId: n.variants.nodes[0].id,
       sku: n.variants.nodes[0].sku,
       availableForSale: n.variants.nodes[0].availableForSale,
@@ -391,6 +402,8 @@ function getMockGiftBuilderConfig(handle: string): GiftBuilderConfig | null {
             featuredImage: p.images[0]
               ? { url: p.images[0].url, altText: p.images[0].altText, width: 1000, height: 1000 }
               : null,
+            description:
+              MOCK_PRODUCTS.find((bar) => `${bar.title} Bar (Gift Set)` === p.title)?.description ?? null,
             variantId: p.variants[0].id,
             sku: (p.variants[0] as { sku?: string }).sku ?? null,
             availableForSale: true,

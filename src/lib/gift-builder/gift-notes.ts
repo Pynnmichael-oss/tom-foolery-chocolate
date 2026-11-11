@@ -106,3 +106,25 @@ export function groupBySet<T extends LineLike>(lines: T[]): Map<string | null, T
   }
   return groups;
 }
+
+/* ------------------------------------------------------------------ */
+/* Line order                                                           */
+/* ------------------------------------------------------------------ */
+
+/** Sort key for set labels: A < B < … < Z < AA. */
+export function compareSetLabels(a: string, b: string): number {
+  return labelToNumber(a) - labelToNumber(b);
+}
+
+/**
+ * The order set lines should appear in at checkout, on the order and on the
+ * ShipStation packing slip: set A (box line first, then its contents), then
+ * set B, and so on. `isParent` picks each set's box line (the priced one).
+ * Lines without a Set label are left out — they keep their own place.
+ */
+export function orderedSetLines<T extends LineLike>(lines: T[], isParent: (line: T) => boolean): T[] {
+  const groups = [...groupBySet(lines).entries()]
+    .filter((e): e is [string, T[]] => e[0] !== null)
+    .sort(([a], [b]) => compareSetLabels(a, b));
+  return groups.flatMap(([, group]) => [...group.filter(isParent), ...group.filter((l) => !isParent(l))]);
+}
