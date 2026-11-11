@@ -28,29 +28,29 @@ interface BeliefCardData {
   body: string;
 }
 
-// Approved homepage copy — see the "What We Believe" section of the
-// homepage copy brief. Accent assignment isn't guide-prescribed for this
-// content (brand/BRAND_REFERENCE.md §1's tenet↔accent pairing is a
-// different four-item list, used by `BrandCompass`); picked here for
-// visual variety across the row, same accent palette either way.
+// Copy from the "Section 3: Values" block of the homepage copy doc
+// ("Copy Explore - Tom Foolery"). Headers set in Title Case per the
+// Headline component's convention; "Malört" spelled the way the rest of
+// the site spells it. No subheads — the doc's headers carry each card on
+// their own. Accent assignment isn't
+// guide-prescribed for this content (brand/BRAND_REFERENCE.md §1's
+// tenet↔accent pairing is a different four-item list, used by
+// `BrandCompass`); picked here for visual variety across the row.
 const CARDS: BeliefCardData[] = [
   {
     accent: "cinnamon",
-    subhead: "Nothing But the Best",
-    header: "100% Real Chocolate 100% of the Time",
-    body: "We use 100% real chocolate in all of our bars, bon bons, & confections because life is too short to waste it on the fake stuff",
+    header: "We Keep It Real",
+    body: "No phonies, no fake stuff. 100% real chocolate and ingredients, 100% of the time. Because we might get up to mischief, but weird additives are too questionable, even for us.",
   },
   {
     accent: "turmeric",
-    subhead: "Simply Joyful",
-    header: "Chocolate crafted with a smile in mind",
-    body: "Our never precious, always fun, approach to chocolate is all about reinventing the flavors you know and love in a new, exciting, and full off chocolate format, guaranteed to bring a smile to your face.",
+    header: "Our Flavors Pass the Smile Test",
+    body: "Fun over fancy. We strive to capture simple joys with reinventions of familiar flavors: waffle cones, buttery popcorn, grandma\u2019s key lime pie \u2014 and yes, that rite-of-passage shot of Malört.",
   },
   {
     accent: "juniper",
-    subhead: "Proudly Handcrafted in Chicago",
-    header: "Local feel, wherever you call home",
-    body: "Handcrafted in the heart of Chicago, designed to make you feel at home, wherever that may be",
+    header: "We\u2019re Homegrown, Not Corporate Drones",
+    body: "We handcraft small batch confections in Chicago, the city we call home. Local love and labor go into each batch. (But no blood, sweat, or tears. That would be gross.)",
   },
 ];
 
@@ -134,11 +134,11 @@ export function WhatWeBelieve() {
         <div className="flex flex-col items-center gap-fluid-sm text-center">
           <Preheader ref={preheaderRef}>Our Philosophy</Preheader>
           <Headline ref={headlineRef} size="md">
-            What We Believe
+            What We&rsquo;re All About
           </Headline>
         </div>
 
-        <div className="grid grid-cols-1 gap-fluid-lg md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-fluid-lg lg:grid-cols-3">
           {CARDS.map((card, i) => (
             <TextureBackground
               key={card.header}
@@ -149,6 +149,12 @@ export function WhatWeBelieve() {
               className="flex flex-col gap-fluid-sm rounded-2xl p-fluid-lg"
             >
               {card.subhead && <Preheader size="sm">{card.subhead}</Preheader>}
+              {/* 3-up starts at `lg` (not `md`): with the longer values copy
+               * from the homepage copy doc, a 3-up row at 768px squeezed
+               * the bodies to a few words per line and pushed
+               * "Homegrown," past the card edge — tablets get the stacked
+               * layout instead. The note below predates that change; its
+               * reasoning still holds, now from the `lg` breakpoint. */}
               {/* `size="sm"`'s clamp is viewport-width-driven, but this
                * heading's available width is column-width-driven — at the
                * `md:grid-cols-3` breakpoint the column is much narrower
@@ -163,7 +169,7 @@ export function WhatWeBelieve() {
                * above stays intact) for the entire range this can't
                * safely track via vw alone; verified overflow-free from
                * 768px through 1920px. */}
-              <Headline as="h3" size="sm" className="md:text-[1.5rem]!">
+              <Headline as="h3" size="sm" className="lg:text-[1.5rem]!">
                 {card.header}
               </Headline>
               <BodyText>{card.body}</BodyText>

@@ -10,16 +10,21 @@ import {
 } from "react";
 import type { ReactNode } from "react";
 import {
+  addGiftSetAction,
   addToCartAction,
   getCartAction,
   removeCartLineAction,
+  removeGiftSetAction,
+  syncGiftNoteAction,
   updateCartLineAction,
 } from "@/lib/shopify/actions";
+import { labelOf } from "@/lib/gift-builder/gift-notes";
 import { sameAttributes } from "@/lib/shopify/cart-attributes";
 import type {
   Cart,
   CartAttribute,
   CartLine,
+  CartLineInput,
   CartResult,
   Product,
   ProductVariant,
@@ -73,6 +78,7 @@ function cartReducer(cart: Cart | null, action: OptimisticAction): Cart | null {
     case "add": {
       const base: Cart = cart ?? {
         id: "",
+        note: null,
         checkoutUrl: "",
         totalQuantity: 0,
         subtotal: { amount: "0", currencyCode: action.variant.price.currencyCode },
@@ -182,6 +188,20 @@ interface CartContextValue {
   ) => Promise<CartResult>;
   updateItem: (lineId: string, quantity: number) => Promise<CartResult>;
   removeItem: (lineId: string) => Promise<CartResult>;
+  /** Adds a gift set (parent + $0 SKU component lines, one mutation) and
+   * writes its message to the cart note. See lib/gift-builder. */
+  addGiftSet: (set: { lines: CartLineInput[]; setLabel: string; giftNote: string | null }) => Promise<CartResult>;
+  /** Removes every line of a gift set and drops its message from the note. */
+  removeGiftSet: (setLabel: string) => Promise<CartResult>;
+  /** Drops gift messages for sets no longer in the cart — call right
+   * before sending the shopper to checkout. */
+  syncBeforeCheckout: () => Promise<void>;
+}
+
+/** $0 component lines of a gift set — the set's parent line already
+ * stands for the whole box, so these don't count as separate items. */
+export function isGiftComponentLine(line: CartLine): boolean {
+  return labelOf(line) !== null && Number(line.price.amount) === 0;
 }
 
 /** Guard-clause fallback for `updateItem`/`removeItem` called with no cart
@@ -297,10 +317,72 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return promise;
   }
 
+  function addGiftSet(set: {
+    lines: CartLineInput[];
+    setLabel: string;
+    giftNote: string | null;
+  }): Promise<CartResult> {
+    let settle!: (result: CartResult) => void;
+    const promise = new Promise<CartResult>((resolve) => {
+      settle = resolve;
+    });
+
+    // No optimistic line here: a set is several lines plus a note, and the
+    // builder already shows "Adding…" until the real cart comes back.
+    startTransition(async () => {
+      const result = await addGiftSetAction(
+        cart?.id || readCartIdCookie(),
+        set.lines,
+        set.setLabel,
+        set.giftNote
+      );
+      if (result.success) {
+        writeCartIdCookie(result.cart.id);
+        setCart(result.cart);
+        setDrawerOpen(true);
+      }
+      settle(result);
+    });
+
+    return promise;
+  }
+
+  function removeGiftSet(setLabel: string): Promise<CartResult> {
+    // Cookie fallback: the builder may call this right after addGiftSet,
+    // before this render's `cart` has caught up with the new cart.
+    const cartId = cart?.id || readCartIdCookie();
+    if (!cartId) return Promise.resolve(CART_OUT_OF_SYNC);
+    let settle!: (result: CartResult) => void;
+    const promise = new Promise<CartResult>((resolve) => {
+      settle = resolve;
+    });
+
+    startTransition(async () => {
+      for (const line of cart?.lines ?? []) {
+        if (labelOf(line) === setLabel) applyOptimistic({ type: "remove", lineId: line.id });
+      }
+      const result = await removeGiftSetAction(cartId, setLabel);
+      if (result.success) setCart(result.cart);
+      settle(result);
+    });
+
+    return promise;
+  }
+
+  async function syncBeforeCheckout(): Promise<void> {
+    // Only carts with gift messages need it; never block checkout on it.
+    if (!cart?.id || !cart.note?.includes("GIFT MESSAGES")) return;
+    const result = await syncGiftNoteAction(cart.id);
+    if (result.success) setCart(result.cart);
+  }
+
   const value: CartContextValue = {
     cart: optimisticCart,
     isPending,
-    itemCount: optimisticCart?.totalQuantity ?? 0,
+    // A gift set counts as one item, not 1 + its $0 component lines.
+    itemCount: (optimisticCart?.lines ?? [])
+      .filter((l) => !isGiftComponentLine(l))
+      .reduce((n, l) => n + l.quantity, 0),
     checkoutUrl: optimisticCart?.checkoutUrl || null,
     isDrawerOpen,
     openDrawer: () => setDrawerOpen(true),
@@ -308,6 +390,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     addItem,
     updateItem,
     removeItem,
+    addGiftSet,
+    removeGiftSet,
+    syncBeforeCheckout,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

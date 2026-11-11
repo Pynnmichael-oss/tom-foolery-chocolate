@@ -19,7 +19,16 @@
  * value to branch on and show a real message from.
  */
 import { ShopifyApiError } from "./client";
-import { addLines, createCart, getCart, removeLine, updateLine } from "./queries";
+import {
+  addLines,
+  createCart,
+  getCart,
+  removeLine,
+  removeLines,
+  updateCartNote,
+  updateLine,
+} from "./queries";
+import { addGiftMessage, linesInSet, syncGiftNote } from "@/lib/gift-builder/gift-notes";
 import type { Cart, CartAttribute, CartLineInput, CartResult } from "./types";
 
 const GENERIC_CART_ERROR = "We couldn't update your cart. Please try again in a moment.";
@@ -132,5 +141,73 @@ export async function removeCartLineAction(cartId: string, lineId: string): Prom
     return { success: true, cart: await removeLine(cartId, lineId) };
   } catch (error) {
     return { success: false, error: toCartError(error, "removeCartLineAction failed") };
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Gift sets (lib/gift-builder) — a set is a GROUP of lines sharing a   */
+/* "Set" label, plus its message in the cart note.                      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Adds one gift set: parent + $0 SKU component lines in ONE cartLinesAdd
+ * (so a set never lands half-added), then — if there's a message — writes
+ * it into the cart note under the set's label. The note is built from the
+ * cart Shopify just returned, never from a possibly-stale client copy.
+ */
+export async function addGiftSetAction(
+  cartId: string | null,
+  lines: CartLineInput[],
+  setLabel: string,
+  giftNote: string | null
+): Promise<CartResult> {
+  try {
+    let cart: Cart;
+    if (!cartId) {
+      cart = await createCart(lines);
+    } else {
+      try {
+        cart = await addLines(cartId, lines);
+      } catch (error) {
+        // Same expired/completed-cart recovery as addToCartAction.
+        console.error("[cart] addLines (gift set) failed, starting a new cart:", error);
+        cart = await createCart(lines);
+      }
+    }
+    if (giftNote) {
+      cart = await updateCartNote(cart.id, addGiftMessage(cart.note, setLabel, giftNote));
+    }
+    return { success: true, cart };
+  } catch (error) {
+    return { success: false, error: toCartError(error, "addGiftSetAction failed") };
+  }
+}
+
+/** Removes every line of a set (parent + components) in one mutation,
+ * then drops its message from the cart note. */
+export async function removeGiftSetAction(cartId: string, setLabel: string): Promise<CartResult> {
+  try {
+    const current = await getCart(cartId);
+    if (!current) return { success: false, error: GENERIC_CART_ERROR };
+    const ids = linesInSet(current.lines, setLabel).map((l) => l.id);
+    let cart = ids.length ? await removeLines(cartId, ids) : current;
+    const note = syncGiftNote(cart.note, cart.lines);
+    if (note !== (cart.note ?? "")) cart = await updateCartNote(cartId, note);
+    return { success: true, cart };
+  } catch (error) {
+    return { success: false, error: toCartError(error, "removeGiftSetAction failed") };
+  }
+}
+
+/** Safety net before checkout: drop gift messages for sets that are no
+ * longer in the cart. No-op (no write) when the note already matches. */
+export async function syncGiftNoteAction(cartId: string): Promise<CartResult> {
+  try {
+    const cart = await getCart(cartId);
+    if (!cart) return { success: false, error: GENERIC_CART_ERROR };
+    const note = syncGiftNote(cart.note, cart.lines);
+    return { success: true, cart: note === (cart.note ?? "") ? cart : await updateCartNote(cartId, note) };
+  } catch (error) {
+    return { success: false, error: toCartError(error, "syncGiftNoteAction failed") };
   }
 }

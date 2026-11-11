@@ -20,3 +20,21 @@ export function giftSetKeyForHandle(handle: string): GiftSetKey | null {
   const entry = Object.entries(GIFT_SETS).find(([, h]) => h === handle);
   return entry ? (entry[0] as GiftSetKey) : null;
 }
+
+/** Tags on the $0 "(Gift Set)" component products (and anything else
+ * internal). They exist only so a set's contents land on the order with
+ * real SKUs, and must never show up on the site as products. */
+export const GIFT_COMPONENT_TAG = "gift-component";
+export const HIDDEN_PRODUCT_TAGS = [GIFT_COMPONENT_TAG, "internal"] as const;
+
+/** Storefront `products(query:)` filter that leaves those out. */
+export const LISTING_QUERY_FILTER = HIDDEN_PRODUCT_TAGS.map((t) => `-tag:${t}`).join(" ");
+
+/** True for products that must never appear in listings, collections,
+ * the sitemap or as their own product page: the gift set builder products
+ * (sold only through /gifts/build) and the hidden-tag component products. */
+export function isHiddenFromListings(p: { handle: string; tags?: string[] | null }): boolean {
+  if (giftSetKeyForHandle(p.handle)) return true;
+  const tags = (p.tags ?? []).map((t) => t.toLowerCase());
+  return HIDDEN_PRODUCT_TAGS.some((t) => tags.includes(t));
+}

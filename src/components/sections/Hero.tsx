@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef } from "react";
+import Link from "next/link";
+import { buttonClasses } from "@/components/ui/buttonClasses";
 import { PinnedSection } from "@/components/motion/PinnedSection";
 import { EyesHatIcon } from "@/components/ui/logos";
 import { BrandVideo } from "@/components/media/BrandVideo";
@@ -23,9 +25,13 @@ export interface HeroProps {
    * brand-black/stripe placeholder so the hero renders correctly even
    * before the real clip's own first-frame poster exists. */
   backgroundVideoPoster?: string;
+  /** Optional button under the headline — e.g. the seasonal "Build a
+   * Holiday Gift Set" link, switched on/off from Shopify admin (see
+   * GiftBuilderConfig.heroCta). Omit for the plain hero. */
+  cta?: { label: string; href: string };
 }
 
-export function Hero({ backgroundVideo, backgroundVideoPoster }: HeroProps = {}) {
+export function Hero({ backgroundVideo, backgroundVideoPoster, cta }: HeroProps = {}) {
   const logoRef = useRef<SVGSVGElement>(null);
   const preheaderRef = useRef<HTMLParagraphElement>(null);
   const headlineRef = useRef<HTMLHeadingElement>(null);
@@ -141,6 +147,14 @@ export function Hero({ backgroundVideo, backgroundVideoPoster }: HeroProps = {})
           className="absolute -bottom-2 left-1/2 h-[3px] w-24 origin-left -translate-x-1/2 bg-tf-turmeric sm:w-32"
         />
       </h1>
+
+      {cta ? (
+        // Outside the GSAP timeline on purpose: always visible and
+        // clickable from first paint, never hidden by the entrance.
+        <Link href={cta.href} className={buttonClasses("primary", "mt-fluid-lg")}>
+          {cta.label}
+        </Link>
+      ) : null}
 
       <div
         ref={cueRef}
