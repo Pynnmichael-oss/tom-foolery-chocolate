@@ -38,3 +38,12 @@ export function isHiddenFromListings(p: { handle: string; tags?: string[] | null
   const tags = (p.tags ?? []).map((t) => t.toLowerCase());
   return HIDDEN_PRODUCT_TAGS.some((t) => tags.includes(t));
 }
+
+/** Handles of the $0 band and wrap component products. Their lines are
+ * packaging, not contents: the cart drawer shows the band and wrap from
+ * the set line itself instead of listing these under "Inside". */
+export const PACKAGING_COMPONENT_HANDLES = ["gift-band-gift-set", "gift-wrap-gift-set"] as const;
+
+export function isPackagingComponent(handle: string): boolean {
+  return (PACKAGING_COMPONENT_HANDLES as readonly string[]).includes(handle);
+}
