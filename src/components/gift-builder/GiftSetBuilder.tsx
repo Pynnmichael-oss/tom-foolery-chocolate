@@ -28,15 +28,22 @@ import {
 
 // Shared look for every selectable card/pill — selected state is a solid
 // tf-black ring, matching the site's variant pills.
+// scroll-mt-28 / scroll-mb-36: when focus or the phone keyboard scrolls
+// one of these into view, stop it clear of the sticky site header (top)
+// and the sticky summary bar (bottom) instead of behind them.
+const SCROLL_CLEAR = "scroll-mt-28 scroll-mb-36";
+
 const SELECTABLE =
-  "cursor-pointer rounded-2xl border-2 border-tf-black/15 bg-tf-white text-left transition-[border-color,transform] duration-150 " +
+  SCROLL_CLEAR +
+  " cursor-pointer rounded-2xl border-2 border-tf-black/15 bg-tf-white text-left transition-[border-color,transform] duration-150 " +
   "hover:border-tf-black/40 motion-safe:active:scale-[0.98] " +
   "aria-pressed:border-tf-black aria-pressed:shadow-[inset_0_0_0_1px_var(--tf-black)] " +
   "disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-tf-black/15 " +
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-cinnamon focus-visible:ring-offset-2";
 
 const CHIP =
-  "cursor-pointer rounded-full border-2 border-tf-black/20 px-4 py-1.5 font-sans text-sm font-semibold transition-colors " +
+  SCROLL_CLEAR +
+  " cursor-pointer rounded-full border-2 border-tf-black/20 px-4 py-1.5 font-sans text-sm font-semibold transition-colors " +
   "hover:border-tf-black aria-pressed:border-tf-black aria-pressed:bg-tf-black aria-pressed:text-tf-white " +
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-cinnamon focus-visible:ring-offset-2";
 
@@ -247,7 +254,7 @@ export function GiftSetBuilder({
                       type="button"
                       onClick={() => removeSlot(i)}
                       aria-label={`Remove ${flavorLabel(f.title)} from bar ${i + 1}`}
-                      className="group grid h-full w-full cursor-pointer place-items-center gap-1 p-1.5 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-tf-cinnamon"
+                      className="group grid h-full w-full scroll-mt-28 scroll-mb-36 cursor-pointer place-items-center gap-1 p-1.5 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-tf-cinnamon"
                     >
                       {f.featuredImage ? (
                         <span className="relative h-3/5 w-3/5 overflow-hidden rounded-lg">
@@ -403,7 +410,7 @@ export function GiftSetBuilder({
             placeholder="Happy holidays! Save me a square."
             onChange={(e) => setNote(e.target.value)}
             aria-describedby="gift-note-count"
-            className="resize-y rounded-2xl border-2 border-tf-black/15 bg-tf-white px-4 py-3 font-sans text-base focus:border-tf-black focus:outline-none"
+            className="scroll-mt-28 scroll-mb-36 resize-y rounded-2xl border-2 border-tf-black/15 bg-tf-white px-4 py-3 font-sans text-base focus:border-tf-black focus:outline-none"
           />
           <span id="gift-note-count" className="self-end font-sans text-xs text-fg/60">
             {note.length}/{config.noteMaxLength}

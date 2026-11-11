@@ -61,6 +61,7 @@ const GIFT_BUILDER_PRODUCT_QUERY = `#graphql
       heroCtaLabel: metafield(namespace: "gift_builder", key: "hero_cta_label") { value }
       heroCtaOccasion: metafield(namespace: "gift_builder", key: "hero_cta_occasion") { value }
       flavors: metafield(namespace: "gift_builder", key: "flavors") {
+        value
         references(first: 20) {
           nodes {
             ... on Product {
@@ -152,12 +153,24 @@ type RawProduct = {
   noteMax: { value: string } | null;
   heroCtaLabel: { value: string } | null;
   heroCtaOccasion: { value: string } | null;
-  flavors: { references: { nodes: RawFlavor[] } | null } | null;
+  flavors: { value: string; references: { nodes: RawFlavor[] } | null } | null;
 };
 
 const DEFAULT_NOTE_MAX = 150;
 
-function toGiftBuilderConfig(p: RawProduct): GiftBuilderConfig {
+/** Number of products the `flavors` metafield lists, visible or not —
+ * `references.nodes` silently omits products the Storefront can't see
+ * (Draft / unpublished), so count from the raw JSON list instead. */
+function listedFlavorCount(p: RawProduct): number {
+  try {
+    const ids: unknown = JSON.parse(p.flavors?.value ?? "[]");
+    return Array.isArray(ids) ? ids.length : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function toGiftBuilderConfig(p: RawProduct): GiftBuilderConfig | null {
   const sizeOpt = p.options.find((o) => o.name !== GIFT_WRAP_OPTION) ?? p.options[0];
   const bands: GiftBand[] = (p.bands?.references?.nodes ?? [])
     .filter((n) => n.id && n.name?.value)
@@ -168,6 +181,22 @@ function toGiftBuilderConfig(p: RawProduct): GiftBuilderConfig {
       category: n.category?.value?.trim() || "Other",
       image: n.image?.reference?.image ?? null,
     }));
+  const flavors = (p.flavors?.references?.nodes ?? [])
+    .filter((n): n is GiftBuilderFlavor & { availableForSale: boolean } => "id" in n && n.availableForSale)
+    .map(({ id, title, handle, featuredImage }) => ({ id, title, handle, featuredImage }));
+
+  // A bar set whose flavor list points only at products the Storefront
+  // can't see would otherwise look like a fixed-flavor set: the flavor
+  // step disappears and sets sell with no flavors on the order. Happened
+  // once (flavors repointed at Draft component products) — take the
+  // builder offline instead, which 404s the page and hides its links.
+  if (listedFlavorCount(p) > 0 && flavors.length === 0) {
+    console.error(
+      `[gift-builder] ${p.handle}: gift_builder.flavors lists products, but none are visible on the Storefront (Draft, unpublished, or sold out). Builder disabled until fixed.`
+    );
+    return null;
+  }
+
   return {
     productId: p.id,
     title: p.title,
@@ -186,9 +215,7 @@ function toGiftBuilderConfig(p: RawProduct): GiftBuilderConfig {
       : null,
     // Unpublished/sold-out flavor products are left out rather than
     // offered and then rejected at checkout.
-    flavors: (p.flavors?.references?.nodes ?? [])
-      .filter((n): n is GiftBuilderFlavor & { availableForSale: boolean } => "id" in n && n.availableForSale)
-      .map(({ id, title, handle, featuredImage }) => ({ id, title, handle, featuredImage })),
+    flavors,
   };
 }
 
