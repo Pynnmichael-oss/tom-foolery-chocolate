@@ -471,6 +471,25 @@ export const MOCK_GIFT_COMPONENT_PRODUCTS: Product[] = [
       componentVariant("gid://mock/ProductVariant/8892", "8 Count", "F002A"),
     ],
   }),
+  // One variant per band (titles match the mock bands in lib/gift-builder/queries.ts).
+  makeProduct({
+    id: "gid://mock/Product/87",
+    handle: "gift-band-gift-set",
+    title: "Gift Band (Gift Set)",
+    description: "",
+    bg: "E8BC5C",
+    variants: ["Black & White Bow", "Merry Christmas", "Season's Treatings", "Have Your Cake", "Thanks a Bunch"].map(
+      (band, i) => componentVariant(`gid://mock/ProductVariant/887${i}`, band, `BAND-${i + 1}`)
+    ),
+  }),
+  makeProduct({
+    id: "gid://mock/Product/86",
+    handle: "gift-wrap-gift-set",
+    title: "Gift Wrap (Gift Set)",
+    description: "",
+    bg: "DE5C42",
+    variants: [componentVariant("gid://mock/ProductVariant/8861", "Default Title", "WRAP")],
+  }),
 ];
 
 // ---------------------------------------------------------------------
