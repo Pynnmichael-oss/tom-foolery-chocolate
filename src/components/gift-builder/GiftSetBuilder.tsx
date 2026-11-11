@@ -58,9 +58,13 @@ function StepLegend({ n, children, aside }: { n: number; children: React.ReactNo
 export function GiftSetBuilder({
   config,
   wrapPriceLabel = "+$1",
+  initialOccasion,
 }: {
   config: GiftBuilderConfig;
   wrapPriceLabel?: string;
+  /** Pre-selects an occasion (e.g. from `?occasion=Holiday` on a homepage
+   * link). Ignored unless it matches one of the band categories. */
+  initialOccasion?: string;
 }) {
   const { addItem } = useCart();
   const hasFlavors = config.flavors.length > 0;
@@ -71,9 +75,11 @@ export function GiftSetBuilder({
     Array(hasFlavors ? slotCount(config.sizes[0] ?? "") : 0).fill(null)
   );
   const [wrap, setWrap] = useState(false);
-  const [category, setCategory] = useState<string | null>(
-    config.bandCategories.length === 1 ? config.bandCategories[0] : null
-  );
+  const [category, setCategory] = useState<string | null>(() => {
+    if (config.bandCategories.length === 1) return config.bandCategories[0];
+    const wanted = initialOccasion?.toLowerCase();
+    return config.bandCategories.find((c) => c.toLowerCase() === wanted) ?? null;
+  });
   const [bandId, setBandId] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);

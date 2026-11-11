@@ -38,7 +38,9 @@ export const metadata: Metadata = {
  * 404s until the product is Active and published to the Headless channel.
  */
 export default async function GiftBuilderPage(props: PageProps<"/gifts/build">) {
-  const set = resolveSet((await props.searchParams).set);
+  const searchParams = await props.searchParams;
+  const set = resolveSet(searchParams.set);
+  const occasion = Array.isArray(searchParams.occasion) ? searchParams.occasion[0] : searchParams.occasion;
   const config = await getGiftBuilderConfig(GIFT_SETS[set]);
   if (!config) notFound();
 
@@ -68,7 +70,7 @@ export default async function GiftBuilderPage(props: PageProps<"/gifts/build">) 
 
         {/* key: remount on set switch so the builder's state (size, slots,
          * band) starts fresh for the new product. */}
-        <GiftSetBuilder key={config.handle} config={config} />
+        <GiftSetBuilder key={config.handle} config={config} initialOccasion={occasion} />
       </div>
     </main>
   );

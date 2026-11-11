@@ -58,6 +58,8 @@ const GIFT_BUILDER_PRODUCT_QUERY = `#graphql
         }
       }
       noteMax: metafield(namespace: "gift_builder", key: "note_max_length") { value }
+      heroCtaLabel: metafield(namespace: "gift_builder", key: "hero_cta_label") { value }
+      heroCtaOccasion: metafield(namespace: "gift_builder", key: "hero_cta_occasion") { value }
       flavors: metafield(namespace: "gift_builder", key: "flavors") {
         references(first: 20) {
           nodes {
@@ -122,6 +124,10 @@ export type GiftBuilderConfig = {
   noteMaxLength: number;
   /** Empty for sets with a single fixed flavor (e.g. Malört caramels). */
   flavors: GiftBuilderFlavor[];
+  /** Homepage hero button for this set, controlled from Shopify admin
+   * (`gift_builder.hero_cta_label` / `hero_cta_occasion` product
+   * metafields). `null` = no button — clear the label to turn it off. */
+  heroCta: { label: string; occasion: string | null } | null;
 };
 
 type RawBand = {
@@ -144,6 +150,8 @@ type RawProduct = {
   variants: { nodes: GiftBuilderVariant[] };
   bands: { references: { nodes: RawBand[] } | null } | null;
   noteMax: { value: string } | null;
+  heroCtaLabel: { value: string } | null;
+  heroCtaOccasion: { value: string } | null;
   flavors: { references: { nodes: RawFlavor[] } | null } | null;
 };
 
@@ -173,6 +181,9 @@ function toGiftBuilderConfig(p: RawProduct): GiftBuilderConfig {
     bands,
     bandCategories: [...new Set(bands.map((b) => b.category))],
     noteMaxLength: (p.noteMax && parseInt(p.noteMax.value, 10)) || DEFAULT_NOTE_MAX,
+    heroCta: p.heroCtaLabel?.value.trim()
+      ? { label: p.heroCtaLabel.value.trim(), occasion: p.heroCtaOccasion?.value.trim() || null }
+      : null,
     // Unpublished/sold-out flavor products are left out rather than
     // offered and then rejected at checkout.
     flavors: (p.flavors?.references?.nodes ?? [])
@@ -258,6 +269,7 @@ function getMockGiftBuilderConfig(handle: string): GiftBuilderConfig | null {
     bands,
     bandCategories: [...new Set(bands.map((b) => b.category))],
     noteMaxLength: DEFAULT_NOTE_MAX,
+    heroCta: handle === GIFT_SETS.bars ? { label: "Build a Holiday Gift Set", occasion: "Holiday" } : null,
     flavors:
       handle === GIFT_SETS.bars
         ? MOCK_PRODUCTS.slice(0, 3).map((p) => ({
