@@ -3,7 +3,7 @@ import { StackedSignature } from "@/components/ui/logos";
 import { SOCIAL_LINKS } from "@/lib/social-links";
 import { NewsletterTriggerButton } from "@/components/layout/NewsletterTriggerButton";
 
-// Flip to true once FAQ, Wholesale, and Where to Find Us have real
+// Flip to true once FAQ and Wholesale have real
 // content — the pages themselves stay live either way (direct links,
 // e.g. from the nav or a search result, still work); this only controls
 // whether the footer nav points at them.
@@ -14,7 +14,7 @@ const FOOTER_LINKS: Array<{ href: string; label: string; comingSoon?: boolean }>
   { href: "/story", label: "Story" },
   { href: "/faq", label: "FAQ", comingSoon: true },
   { href: "/wholesale", label: "Wholesale", comingSoon: true },
-  { href: "/find-us", label: "Where to Find Us", comingSoon: true },
+  { href: "/find-us", label: "Where to Find Us" },
   { href: "/gifting", label: "Gifting" },
   { href: "/contact", label: "Contact" },
 ];

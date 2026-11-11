@@ -388,3 +388,75 @@ If any of these still get real traffic (check Search Console/analytics
 for the old paths after launch), decide where each should point and add
 it to `redirects()` — don't guess at the destination without checking
 whether the old content needs to be preserved somewhere first.
+
+## HubSpot — store locator (`/find-us`)
+
+`/find-us` maps every retailer that has **placed a paid order in the last
+90 days**, searchable by ZIP code. All of the logic is in
+`src/lib/stockists/`; the UI is `src/components/stockists/`.
+
+### Who gets a pin
+
+1. **HubSpot query** (`hubspot.ts`): companies where `last_order_date` is
+   on or after today − 90 days. That property is "date of most recent
+   paid order", maintained by TF Ops Sync; samples never move it. Change
+   the window with `STOCKIST_WINDOW_DAYS` in `index.ts`.
+2. **Filter** (`normalize.ts`): must have `order_count > 0` *and*
+   `lifetime_revenue > 0` (drops comped $0 orders); must not be
+   `company_category` = `media` / `corporate_gifting` or `account_channel`
+   = `corporate` (they buy, but don't resell to the public); must have a
+   US city, state and 5-digit ZIP.
+3. **Per-store control**: an optional HubSpot **company** property,
+   internal name `store_locator_listing`, dropdown values `full` /
+   `city_only` / `hide`. `city_only` shows the name and "City, ST" with the
+   pin on the ZIP's centre — for accounts whose HubSpot address is a home
+   or warehouse rather than the shop. The property doesn't have to exist;
+   until it does, the same thing is done in code via `LISTING_OVERRIDES`
+   in `normalize.ts`.
+
+Only name, address, website, Instagram and phone are ever sent to the
+browser — never order counts, revenue, or contacts.
+
+**Addresses are ship-to addresses.** Most companies were created by TF
+Ops Sync from marketplace orders, so `address` is wherever the buyer had
+the box sent. `normalize.ts` tidies the common mess (street on line 2,
+delivery notes, PO boxes, SHOUTED cities) but can't know that an address
+is someone's house. Fix the address in HubSpot, or set the store to
+`city_only`.
+
+### Live vs. snapshot
+
+- **`HUBSPOT_ACCESS_TOKEN` set** (see `.env.example` for creating the
+  private app): the page is ISR — re-pulled from HubSpot about every 6
+  hours (`STOCKIST_REVALIDATE_SECONDS`), so stores appear after their
+  first paid order and drop off 90 days after their last, with no
+  deploy.
+- **Unset, or HubSpot errors**: serves `src/data/stockists.json`, a
+  committed snapshot. Refresh it with `npm run sync-stockists` (needs the
+  token in `.env.local`) or `npm run sync-stockists -- --input export.json`.
+  The script prints who was filtered out and who's pinned approximately.
+
+### Geocoding and ZIP search — no API keys
+
+- **Store address → pin**: US Census Bureau geocoder
+  (`geocoding.geo.census.gov`; free, keyless), called server-side and
+  cached per address indefinitely, so only new/changed addresses are ever
+  looked up. Coordinates already in the snapshot are reused first. No
+  match → the pin falls back to the ZIP's centre.
+- **Visitor ZIP → point**: `GET /api/zip/[zip]` reads a bundled table
+  (`src/data/zip-centroids.json`, ~42k ZIPs, built by `npm run
+  build-zip-centroids`). No third-party call; nothing is logged.
+- **"Use my location"**: the browser's own geolocation prompt; the
+  coordinates stay in the page and are never sent anywhere.
+
+### The map
+
+MapLibre GL JS (`maplibre-gl`, pinned to the v5 line — v6 ships its web
+worker as a separate file that Next's bundler doesn't resolve) over
+OpenFreeMap's hosted OpenStreetMap tiles: free, no key, no account.
+Switch providers with `NEXT_PUBLIC_MAP_STYLE_URL`. The attribution in the
+map's corner is required by the data licence — don't hide it.
+
+**If a CSP is ever added**: `connect-src` and `img-src` need the tile
+host (`tiles.openfreemap.org` by default), plus `worker-src blob:` and
+`child-src blob:` for MapLibre's worker.
