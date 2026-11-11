@@ -269,7 +269,7 @@ function getMockGiftBuilderConfig(handle: string): GiftBuilderConfig | null {
     bands,
     bandCategories: [...new Set(bands.map((b) => b.category))],
     noteMaxLength: DEFAULT_NOTE_MAX,
-    heroCta: handle === GIFT_SETS.bars ? { label: "Give Chocolate", occasion: "Holiday" } : null,
+    heroCta: handle === GIFT_SETS.bars ? { label: "Get in on the good stuff", occasion: "Holiday" } : null,
     flavors:
       handle === GIFT_SETS.bars
         ? MOCK_PRODUCTS.slice(0, 3).map((p) => ({
