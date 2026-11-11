@@ -289,7 +289,7 @@ export function GiftSetBuilder({
                     <span className="relative aspect-square w-full overflow-hidden rounded-xl bg-tf-black/5">
                       <Image
                         src={f.featuredImage.url}
-                        alt={f.featuredImage.altText ?? f.title}
+                        alt={`${shortFlavorName(f.title)} bar`}
                         fill
                         sizes="(min-width: 640px) 220px, 45vw"
                         className="object-cover"

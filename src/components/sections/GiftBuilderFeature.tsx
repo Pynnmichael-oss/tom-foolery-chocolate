@@ -112,7 +112,7 @@ export function GiftBuilderFeature({
                     <span className="relative aspect-square overflow-hidden rounded-xl bg-tf-black/5">
                       <Image
                         src={f.featuredImage!.url}
-                        alt={f.featuredImage!.altText ?? f.title}
+                        alt={`${shortFlavorName(f.title)} bar`}
                         fill
                         sizes="(min-width: 1024px) 180px, 30vw"
                         className="object-cover"
