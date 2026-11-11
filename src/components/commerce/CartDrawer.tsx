@@ -7,7 +7,7 @@ import { buttonClasses } from "@/components/ui/buttonClasses";
 import { EyesHatIcon } from "@/components/ui/logos";
 import { isGiftComponentLine, useCart } from "./CartProvider";
 import { formatMoney } from "@/lib/shopify/format";
-import { groupBySet, parseGiftNote } from "@/lib/gift-builder/gift-notes";
+import { compareSetLabels, groupBySet, labelOf, parseGiftNote } from "@/lib/gift-builder/gift-notes";
 import { shortFlavorName } from "@/lib/gift-builder/cart-line";
 import type { CartLine } from "@/lib/shopify/types";
 import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
@@ -76,7 +76,11 @@ export function CartDrawer() {
   const lines = cart?.lines ?? [];
   // Gift sets (lib/gift-builder) are several lines sharing a "Set" label —
   // shown as one card each. Ordinary lines come under the `null` key.
-  const groups = [...groupBySet(lines).entries()];
+  // Sets in A → B → C order (Shopify keeps newest first), then ordinary
+  // lines — the same order checkout and the packing slip use.
+  const groups = [...groupBySet(lines).entries()].sort(([a], [b]) =>
+    a === null ? (b === null ? 0 : 1) : b === null ? -1 : compareSetLabels(a, b)
+  );
   const giftMessages = parseGiftNote(cart?.note).messages;
 
   return (
@@ -168,9 +172,9 @@ export function CartDrawer() {
               href={cart.checkoutUrl}
               onClick={async (e) => {
                 trackBeginCheckout(cart);
-                // Gift messages for sets removed since must not reach the
-                // gift card: re-sync the note, then continue to checkout.
-                if (!cart.note?.includes("GIFT MESSAGES")) return;
+                // Gift sets: put their lines in A → B → C order and re-sync
+                // the gift messages, then continue to checkout.
+                if (!cart.lines.some((l) => labelOf(l) !== null)) return;
                 e.preventDefault();
                 const url = cart.checkoutUrl;
                 await syncBeforeCheckout().catch(() => {});

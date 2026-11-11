@@ -15,7 +15,7 @@ import {
   getCartAction,
   removeCartLineAction,
   removeGiftSetAction,
-  syncGiftNoteAction,
+  prepareCheckoutAction,
   updateCartLineAction,
 } from "@/lib/shopify/actions";
 import { labelOf } from "@/lib/gift-builder/gift-notes";
@@ -193,8 +193,9 @@ interface CartContextValue {
   addGiftSet: (set: { lines: CartLineInput[]; setLabel: string; giftNote: string | null }) => Promise<CartResult>;
   /** Removes every line of a gift set and drops its message from the note. */
   removeGiftSet: (setLabel: string) => Promise<CartResult>;
-  /** Drops gift messages for sets no longer in the cart — call right
-   * before sending the shopper to checkout. */
+  /** Puts gift set lines in A → B → C order and drops messages for sets
+   * no longer in the cart — call right before sending the shopper to
+   * checkout. */
   syncBeforeCheckout: () => Promise<void>;
 }
 
@@ -370,9 +371,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   async function syncBeforeCheckout(): Promise<void> {
-    // Only carts with gift messages need it; never block checkout on it.
-    if (!cart?.id || !cart.note?.includes("GIFT MESSAGES")) return;
-    const result = await syncGiftNoteAction(cart.id);
+    // Only carts with gift sets need it (line order + gift messages);
+    // never block checkout on it.
+    if (!cart?.id || !cart.lines.some((l) => labelOf(l) !== null)) return;
+    const result = await prepareCheckoutAction(cart.id);
     if (result.success) setCart(result.cart);
   }
 
