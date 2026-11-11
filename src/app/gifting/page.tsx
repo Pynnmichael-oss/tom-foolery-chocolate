@@ -5,7 +5,7 @@ import { GiftingStats } from "@/components/sections/GiftingStats";
 import { GiftingForm } from "@/components/sections/GiftingForm";
 import { Preheader, Headline, BodyText } from "@/components/ui/typography";
 import { GIFT_SETS, getGiftBuilderConfig } from "@/lib/gift-builder/queries";
-import { DEFAULT_OG_IMAGE } from "@/lib/site";
+import { BASE_OPEN_GRAPH, DEFAULT_OG_IMAGE } from "@/lib/site";
 import { HUBSPOT_GIFTING_FORM_URL } from "@/lib/gifting/hubspot";
 
 const DESCRIPTION =
@@ -13,8 +13,10 @@ const DESCRIPTION =
 const FORM_INTRO =
   "Tell us a bit about what you need and we'll follow up with options and pricing.";
 
+const TITLE = "Chocolate Gifts: Custom, Branded & Event Gifting";
+
 export const metadata: Metadata = {
-  title: "Gifting",
+  title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/gifting" },
   // Real content as of 2026-09-17 (was a robots:noindex placeholder
@@ -22,7 +24,9 @@ export const metadata: Metadata = {
   // images: DEFAULT_OG_IMAGE — see that constant's own comment on why an
   // openGraph override needs this explicitly, not just title/description.
   openGraph: {
-    title: "Gifting",
+    ...BASE_OPEN_GRAPH,
+    url: "/gifting",
+    title: TITLE,
     description: DESCRIPTION,
     images: [DEFAULT_OG_IMAGE],
   },

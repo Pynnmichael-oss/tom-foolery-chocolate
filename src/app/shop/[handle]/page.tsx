@@ -3,8 +3,10 @@ import { notFound, redirect } from "next/navigation";
 import { giftSetKeyForHandle } from "@/lib/gift-builder/sets";
 import { getProduct, getProducts } from "@/lib/shopify/queries";
 import { ProductDetail } from "@/components/commerce/ProductDetail";
+import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { ProductJsonLd } from "@/components/seo/ProductJsonLd";
-import { POWER_STATEMENTS } from "@/lib/site";
+import { shopifyImageAtWidth } from "@/lib/shopify/format";
+import { BASE_OPEN_GRAPH, POWER_STATEMENTS } from "@/lib/site";
 
 export async function generateStaticParams() {
   const products = await getProducts();
@@ -18,7 +20,7 @@ export async function generateMetadata(
   const product = await getProduct(handle);
 
   if (!product) {
-    return { title: "Product Not Found" };
+    return { title: "Product Not Found", robots: { index: false, follow: true } };
   }
 
   // Product-specific description first (unique per page, good SEO
@@ -33,17 +35,22 @@ export async function generateMetadata(
   const description = `${trimmedDescription}. ${POWER_STATEMENTS.liveALittle}.`.slice(0, 160);
 
   const image = product.images[0];
+  // Social cards don't need the ~3000px original — see shopifyImageAtWidth.
+  const shareImage = image ? shopifyImageAtWidth(image, 1200) : undefined;
 
   return {
     title: product.title,
     description,
     alternates: { canonical: `/shop/${handle}` },
     openGraph: {
+      ...BASE_OPEN_GRAPH,
+      url: `/shop/${handle}`,
       title: product.title,
       description,
-      images: image
-        ? [{ url: image.url, width: image.width, height: image.height, alt: image.altText ?? product.title }]
-        : undefined,
+      images:
+        image && shareImage
+          ? [{ ...shareImage, alt: image.altText || product.title }]
+          : undefined,
     },
   };
 }
@@ -63,6 +70,12 @@ export default async function ProductPage(props: PageProps<"/shop/[handle]">) {
   return (
     <>
       <ProductJsonLd product={product} />
+      <BreadcrumbJsonLd
+        crumbs={[
+          { name: "Shop", path: "/shop" },
+          { name: product.title, path: `/shop/${product.handle}` },
+        ]}
+      />
       <ProductDetail product={product} />
     </>
   );

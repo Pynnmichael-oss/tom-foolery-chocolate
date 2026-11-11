@@ -1,14 +1,31 @@
 import type { MetadataRoute } from "next";
-import { getCollectionHandles, getProducts, getShopPolicies } from "@/lib/shopify/queries";
+import { GIFT_SETS, getGiftBuilderConfig } from "@/lib/gift-builder/queries";
+import { getCollectionSummaries, getProducts, getShopPolicies } from "@/lib/shopify/queries";
 import { SITE_URL } from "@/lib/site";
 
+/** `null` while the builder product is a Draft/unpublished, or Shopify
+ * hiccups — /gifts/build 404s in that state, so it stays out. */
+async function giftSetIsLive(handle: string): Promise<boolean> {
+  try {
+    return (await getGiftBuilderConfig(handle)) !== null;
+  } catch {
+    return false;
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, collectionHandles, policies] = await Promise.all([
+  const [products, collections, policies, barsLive, caramelsLive] = await Promise.all([
     getProducts(),
-    getCollectionHandles(),
+    getCollectionSummaries(),
     getShopPolicies(),
+    giftSetIsLive(GIFT_SETS.bars),
+    giftSetIsLive(GIFT_SETS.caramels),
   ]);
-  const now = new Date();
+
+  // `lastModified` is only set where there's a real one (Shopify's
+  // `updatedAt`). Stamping every URL with "now" on each regeneration tells
+  // crawlers the field is meaningless, and they stop trusting it.
+  const lastModified = (iso: string | undefined) => (iso ? { lastModified: new Date(iso) } : {});
 
   // Deliberately excludes /faq, /wholesale, /find-us — each is a
   // ComingSoonPage with `robots: { index: false }` (placeholder copy, no
@@ -20,21 +37,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/terms", exists: Boolean(policies.termsOfService) },
   ];
 
+  const giftBuilderPages = [
+    { path: "/gifts/build", live: barsLive },
+    { path: "/gifts/build?set=caramels", live: caramelsLive },
+  ];
+
   return [
-    { url: SITE_URL, lastModified: now, changeFrequency: "weekly", priority: 1 },
-    { url: `${SITE_URL}/story`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${SITE_URL}/shop`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${SITE_URL}/gifting`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${SITE_URL}/contact`, lastModified: now, changeFrequency: "yearly", priority: 0.5 },
+    { url: SITE_URL, changeFrequency: "weekly", priority: 1 },
+    { url: `${SITE_URL}/story`, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${SITE_URL}/shop`, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${SITE_URL}/gifting`, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${SITE_URL}/contact`, changeFrequency: "yearly", priority: 0.5 },
+    ...giftBuilderPages
+      .filter((p) => p.live)
+      .map((p) => ({
+        url: `${SITE_URL}${p.path}`,
+        changeFrequency: "weekly" as const,
+        priority: 0.8,
+      })),
     ...products.map((product) => ({
       url: `${SITE_URL}/shop/${product.handle}`,
-      lastModified: now,
+      ...lastModified(product.updatedAt),
       changeFrequency: "weekly" as const,
       priority: 0.7,
     })),
-    ...collectionHandles.map((handle) => ({
-      url: `${SITE_URL}/collections/${handle}`,
-      lastModified: now,
+    // Admin-only collections are already filtered out by
+    // getCollectionSummaries (see lib/shopify/collections.ts).
+    ...collections.map((collection) => ({
+      url: `${SITE_URL}/collections/${collection.handle}`,
+      ...lastModified(collection.updatedAt),
       changeFrequency: "weekly" as const,
       priority: 0.7,
     })),
@@ -45,7 +76,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .filter((p) => p.exists)
       .map((p) => ({
         url: `${SITE_URL}${p.path}`,
-        lastModified: now,
         changeFrequency: "yearly" as const,
         priority: 0.3,
       })),

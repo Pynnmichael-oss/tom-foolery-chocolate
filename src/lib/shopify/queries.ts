@@ -2,11 +2,13 @@ import { isShopifyConfigured, shopifyFetch, ShopifyApiError } from "./client";
 import { isProductionRuntime } from "@/lib/env";
 import * as mock from "./mock-data";
 import { LISTING_QUERY_FILTER, isHiddenFromListings } from "@/lib/gift-builder/sets";
+import { isHiddenCollection } from "./collections";
 import type {
   Cart,
   CartLine,
   CartLineInput,
   Collection,
+  CollectionSummary,
   FeaturedProduct,
   Money,
   Product,
@@ -30,6 +32,7 @@ const PRODUCT_FRAGMENT = `#graphql
     title
     description
     descriptionHtml
+    updatedAt
     availableForSale
     images(first: 8) {
       nodes { url altText width height }
@@ -63,6 +66,7 @@ const PRODUCT_FRAGMENT = `#graphql
       nodes {
         id
         title
+        sku
         availableForSale
         price { amount currencyCode }
         selectedOptions { name value }
@@ -171,12 +175,12 @@ const COLLECTION_QUERY = `#graphql
   }
 `;
 
-// Handles only — feeds generateStaticParams() and the sitemap, neither of
-// which needs more than that per collection.
+// Handle + updatedAt only — feeds generateStaticParams() and the sitemap
+// (`updatedAt` becomes the sitemap's `lastmod`).
 const COLLECTION_HANDLES_QUERY = `#graphql
   query CollectionHandles {
     collections(first: 100) {
-      nodes { handle }
+      nodes { handle updatedAt }
     }
   }
 `;
@@ -263,6 +267,7 @@ interface RawImage {
 interface RawVariant {
   id: string;
   title: string;
+  sku?: string | null;
   availableForSale: boolean;
   price: Money;
   selectedOptions: { name: string; value: string }[];
@@ -299,6 +304,7 @@ interface RawProduct {
   title: string;
   description: string;
   descriptionHtml: string;
+  updatedAt?: string;
   availableForSale: boolean;
   images: { nodes: RawImage[] };
   priceRange: { minVariantPrice: Money; maxVariantPrice: Money };
@@ -382,6 +388,7 @@ function normalizeVariant(variant: RawVariant): ProductVariant {
   return {
     id: variant.id,
     title: variant.title,
+    sku: variant.sku ?? null,
     availableForSale: variant.availableForSale,
     price: variant.price,
     selectedOptions: variant.selectedOptions,
@@ -436,6 +443,7 @@ function normalizeProduct(product: RawProduct): Product {
     title: product.title,
     description: product.description,
     descriptionHtml: product.descriptionHtml,
+    updatedAt: product.updatedAt,
     availableForSale: product.availableForSale,
     images: product.images.nodes.map(normalizeImage),
     priceRange: {
@@ -634,22 +642,30 @@ export async function getCollection(handle: string, first = 24): Promise<Collect
   }
 }
 
-/** Every collection handle — feeds generateStaticParams() and the sitemap.
+/** Every public collection — feeds generateStaticParams() and the sitemap.
  * Not filtered by product count: an empty collection still gets a static
- * page (real 404 is reserved for a handle that doesn't exist at all). */
-export async function getCollectionHandles(): Promise<string[]> {
-  if (!isShopifyConfigured()) return mock.getMockCollectionHandles();
+ * page (real 404 is reserved for a handle that doesn't exist at all).
+ * Admin-only collections (see lib/shopify/collections.ts) are left out. */
+export async function getCollectionSummaries(): Promise<CollectionSummary[]> {
+  const mockSummaries = () => mock.getMockCollectionHandles().map((handle) => ({ handle }));
+  if (!isShopifyConfigured()) return mockSummaries();
 
   try {
-    const data = await shopifyFetch<{ collections: { nodes: { handle: string }[] } }>({
+    const data = await shopifyFetch<{
+      collections: { nodes: { handle: string; updatedAt?: string }[] };
+    }>({
       query: COLLECTION_HANDLES_QUERY,
       revalidate: 3600,
       tags: ["products"],
     });
-    return data.collections.nodes.map((n) => n.handle);
+    return data.collections.nodes.filter((n) => !isHiddenCollection(n.handle));
   } catch (error) {
-    return handleReadFailure(error, "getCollectionHandles", () => mock.getMockCollectionHandles());
+    return handleReadFailure(error, "getCollectionSummaries", mockSummaries);
   }
+}
+
+export async function getCollectionHandles(): Promise<string[]> {
+  return (await getCollectionSummaries()).map((c) => c.handle);
 }
 
 /* ------------------------------------------------------------------ */
