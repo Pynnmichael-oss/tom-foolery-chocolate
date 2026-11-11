@@ -9,7 +9,13 @@ import { Preheader } from "@/components/ui/typography";
  * standalone number, per the brief's "numbers as the big statement,
  * labels as ALL CAPS preheaders" ask. The underlying figures are
  * untouched, only the presentation split. */
-const STATS: Array<{ label: string; value: string; suffix?: string }> = [
+export interface Stat {
+  label: string;
+  value: string;
+  suffix?: string;
+}
+
+const STATS: Stat[] = [
   { label: "Starting At", value: "$10" },
   { label: "Order Size", value: "20 – 2,000+", suffix: "units" },
   { label: "Turnaround", value: "24", suffix: "hours" },
@@ -22,7 +28,7 @@ const STATS: Array<{ label: string; value: string; suffix?: string }> = [
  * undivided on mobile). Same lightweight fade-up-on-scroll
  * `GiftingPanels`/`HeritageBeat` already use.
  */
-export function GiftingStats() {
+export function GiftingStats({ stats = STATS }: { stats?: Stat[] } = {}) {
   const sectionRef = useRef<HTMLElement>(null);
 
   useGSAP(
@@ -60,7 +66,7 @@ export function GiftingStats() {
   return (
     <section ref={sectionRef} className="bg-tf-black/5 px-fluid-md py-fluid-2xl">
       <div className="mx-auto flex max-w-4xl flex-col divide-y divide-tf-black/15 sm:flex-row sm:divide-x sm:divide-y-0">
-        {STATS.map((stat) => (
+        {stats.map((stat) => (
           <div
             key={stat.label}
             className="flex flex-1 flex-col items-center gap-fluid-xs px-fluid-md py-fluid-md text-center"
