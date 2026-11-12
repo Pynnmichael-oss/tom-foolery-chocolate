@@ -11,28 +11,23 @@ import { OmnisendSnippet } from "@/components/analytics/OmnisendSnippet";
 import { OmnisendPageView } from "@/components/analytics/OmnisendPageView";
 import { GoogleAnalyticsSnippet } from "@/components/analytics/GoogleAnalyticsSnippet";
 import { OrganizationJsonLd } from "@/components/seo/OrganizationJsonLd";
-import { POWER_STATEMENTS, SITE_NAME, SITE_URL } from "@/lib/site";
+import { BASE_OPEN_GRAPH, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — ${POWER_STATEMENTS.liveALittle}`,
+    default: SITE_TITLE,
     template: `%s — ${SITE_NAME}`,
   },
-  description: POWER_STATEMENTS.chocolateInteresting,
+  description: SITE_DESCRIPTION,
   robots: { index: true, follow: true },
-  openGraph: {
-    type: "website",
-    siteName: SITE_NAME,
-    title: `${SITE_NAME} — ${POWER_STATEMENTS.liveALittle}`,
-    description: POWER_STATEMENTS.chocolateInteresting,
-    locale: "en_US",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${SITE_NAME} — ${POWER_STATEMENTS.liveALittle}`,
-    description: POWER_STATEMENTS.chocolateInteresting,
-  },
+  // No title/description on openGraph or twitter here, on purpose: Next
+  // fills both from each route's own `title`/`description` when they're
+  // absent, whereas a value set at the root is inherited verbatim by every
+  // page below it (which is how every inner page once shared the
+  // homepage's Twitter card).
+  openGraph: { ...BASE_OPEN_GRAPH },
+  twitter: { card: "summary_large_image" },
 };
 
 /**
