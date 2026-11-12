@@ -69,6 +69,11 @@ export interface Product {
   title: string;
   description: string;
   descriptionHtml: string;
+  tags?: string[];
+  productType?: string;
+  /** The "Search engine listing" title/description from Shopify admin.
+   * Each is `null` when the merchant hasn't written one. */
+  seo?: { title: string | null; description: string | null };
   /** ISO timestamp of the last change in Shopify — the sitemap's `lastmod`. */
   updatedAt?: string;
   availableForSale: boolean;

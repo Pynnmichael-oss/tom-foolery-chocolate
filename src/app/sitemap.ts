@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { GIFT_SETS, getGiftBuilderConfig } from "@/lib/gift-builder/queries";
+import { isExcludedFromSitemap } from "@/lib/gift-builder/sets";
 import { getCollectionSummaries, getProducts, getShopPolicies } from "@/lib/shopify/queries";
 import { SITE_URL } from "@/lib/site";
 
@@ -14,13 +15,15 @@ async function giftSetIsLive(handle: string): Promise<boolean> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, collections, policies, barsLive, caramelsLive] = await Promise.all([
+  const [allProducts, collections, policies, giftBuilderLive] = await Promise.all([
     getProducts(),
     getCollectionSummaries(),
     getShopPolicies(),
     giftSetIsLive(GIFT_SETS.bars),
-    giftSetIsLive(GIFT_SETS.caramels),
   ]);
+  // getProducts already leaves out hidden products; this is the wider
+  // guardrail (samples, gift-builder products, by tag or product type).
+  const products = allProducts.filter((product) => !isExcludedFromSitemap(product));
 
   // `lastModified` is only set where there's a real one (Shopify's
   // `updatedAt`). Stamping every URL with "now" on each regeneration tells
@@ -37,24 +40,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/terms", exists: Boolean(policies.termsOfService) },
   ];
 
-  const giftBuilderPages = [
-    { path: "/gifts/build", live: barsLive },
-    { path: "/gifts/build?set=caramels", live: caramelsLive },
-  ];
-
   return [
     { url: SITE_URL, changeFrequency: "weekly", priority: 1 },
     { url: `${SITE_URL}/story`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/shop`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITE_URL}/gifting`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/contact`, changeFrequency: "yearly", priority: 0.5 },
-    ...giftBuilderPages
-      .filter((p) => p.live)
-      .map((p) => ({
-        url: `${SITE_URL}${p.path}`,
-        changeFrequency: "weekly" as const,
-        priority: 0.8,
-      })),
+    // The one page for gift sets — the gift-builder products themselves
+    // redirect here. `?set=caramels` canonicalises to it, so it isn't
+    // listed separately. Left out only while the builder would 404.
+    ...(giftBuilderLive
+      ? [{ url: `${SITE_URL}/gifts/build`, changeFrequency: "weekly" as const, priority: 0.8 }]
+      : []),
     ...products.map((product) => ({
       url: `${SITE_URL}/shop/${product.handle}`,
       ...lastModified(product.updatedAt),

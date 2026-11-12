@@ -32,6 +32,8 @@ const PRODUCT_FRAGMENT = `#graphql
     title
     description
     descriptionHtml
+    productType
+    seo { title description }
     updatedAt
     availableForSale
     images(first: 8) {
@@ -304,6 +306,8 @@ interface RawProduct {
   title: string;
   description: string;
   descriptionHtml: string;
+  productType?: string | null;
+  seo?: { title: string | null; description: string | null } | null;
   updatedAt?: string;
   availableForSale: boolean;
   images: { nodes: RawImage[] };
@@ -443,6 +447,12 @@ function normalizeProduct(product: RawProduct): Product {
     title: product.title,
     description: product.description,
     descriptionHtml: product.descriptionHtml,
+    tags: product.tags ?? [],
+    productType: product.productType ?? "",
+    seo: {
+      title: product.seo?.title?.trim() || null,
+      description: product.seo?.description?.trim() || null,
+    },
     updatedAt: product.updatedAt,
     availableForSale: product.availableForSale,
     images: product.images.nodes.map(normalizeImage),
