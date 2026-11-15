@@ -257,7 +257,7 @@ bring the corresponding route live — no code change needed.
 
 ### Announcement banner (`getActiveAnnouncement`)
 
-Bar above the nav on `/` and `/story` only (path list:
+Bar above the nav on `/`, `/story`, `/shop` and `/contact` only (path list:
 `BANNER_PATHS` in `src/components/layout/AnnouncementBanner.tsx`). Content
 comes from Shopify admin → Content → Metaobjects → **Announcement Banner**
 (type `announcement_banner`, created 2026-11-15, Storefront access on):

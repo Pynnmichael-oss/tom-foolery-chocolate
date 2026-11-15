@@ -50,7 +50,7 @@ const JS_CLASS_SCRIPT = `(function(){var e=document.documentElement;e.classList.
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   // Shopify-managed banner (5-minute cache). Fetched here so it can sit
-  // above <Nav />; AnnouncementBanner itself limits it to / and /story.
+  // above <Nav />; AnnouncementBanner itself limits it to BANNER_PATHS.
   const announcement = await getActiveAnnouncement();
 
   return (

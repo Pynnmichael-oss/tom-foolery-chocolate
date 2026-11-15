@@ -3,8 +3,9 @@
 import { usePathname } from "next/navigation";
 import type { Announcement, AnnouncementStyle } from "@/lib/shopify/types";
 
-/** Routes that show the banner — homepage and the Story ("about us") page. */
-const BANNER_PATHS = new Set(["/", "/story"]);
+/** Routes that show the banner. Exact paths only — `/shop` does not
+ * include product pages under `/shop/[handle]`. */
+const BANNER_PATHS = new Set(["/", "/story", "/shop", "/contact"]);
 
 /* Text colors chosen for WCAG AA: white only on the two dark brand colors
  * (cinnamon uses the -strong variant — plain cinnamon fails with white). */
