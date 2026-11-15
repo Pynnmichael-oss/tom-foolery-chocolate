@@ -8,7 +8,7 @@ import { WHOLESALE_FORM_ANCHOR } from "@/lib/wholesale/constants";
 const DESCRIPTION =
   "Carry Tom Foolery — small-batch Chicago chocolate bars for gift shops, boutiques, cafés, bookstores, and specialty grocery. Order on Faire or send us a wholesale inquiry.";
 const FORM_INTRO =
-  "Not ordering through Faire? Distributors, hospitality, corporate, and volume buyers — tell us about your business and we'll follow up with pricing and availability.";
+  "Looking for something specific, have a question, or want help figuring out the best option for your business? Leave us a note and we'll get back to you.";
 
 export const metadata: Metadata = {
   title: "Wholesale",
