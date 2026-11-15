@@ -5,21 +5,30 @@ import type { HubSpotCompany } from "./types";
  * on a public map — or `null` if it shouldn't be listed at all. Pure
  * (no I/O), so the rules below are easy to read and test in isolation.
  *
- * Company addresses in HubSpot are mostly marketplace *ship-to* addresses
- * (set by TF Ops Sync from Faire/Shopify orders), not curated storefront
- * addresses — hence the cleanup here, and hence `ListingMode`.
+ * Two different addresses live on a HubSpot company, and only one of
+ * them is ours to publish:
+ *
+ *  - `address`/`city`/`state`/`zip` — for most accounts, wherever a
+ *    marketplace order was *shipped* (set by TF Ops Sync, which also
+ *    matches future orders on it via `address_key`). Often the shop;
+ *    sometimes the owner's house. Never shown as a street address here.
+ *  - `storefront_address`/`_city`/`_state`/`_zip` — the shop a customer
+ *    walks into, entered by a person. The only street address this page
+ *    will ever print, and only once `store_locator_status` says so.
  */
 
 /** Every company property this module reads — also the `properties` list
  * the HubSpot search request asks for (see hubspot.ts). */
 export const HUBSPOT_PROPERTIES = [
   "name",
-  "address",
-  "address2",
   "city",
   "state",
   "zip",
-  "country",
+  "storefront_address",
+  "storefront_city",
+  "storefront_state",
+  "storefront_zip",
+  "store_locator_status",
   "website",
   "phone",
   "instagram_handle",
@@ -28,34 +37,23 @@ export const HUBSPOT_PROPERTIES = [
   "last_order_date",
   "order_count",
   "lifetime_revenue",
-  "store_locator_listing",
 ] as const;
 
 /**
- * - `full`      — name, street address, pin on the address (default).
- * - `city_only` — name and "City, ST" only, pin on the ZIP centroid. For
- *                 accounts whose HubSpot address is a home or a warehouse
- *                 rather than the shop itself.
- * - `hide`      — not on the map at all.
+ * HubSpot company property `store_locator_status`:
  *
- * Set per company with the optional HubSpot company property
- * `store_locator_listing` (values exactly as above). The property doesn't
- * have to exist — without it everything is `full` except the IDs below.
+ * - `listed`       — storefront address verified: name, street, pin on
+ *                    the address.
+ * - `needs_review` — the default, and what an empty value means: name
+ *                    and "City, ST" only, pin on the ZIP's centre. A
+ *                    brand-new account shows up on the map straight
+ *                    away, but nobody's home address can be published
+ *                    just because a box was shipped there.
+ * - `city_only`    — same display as `needs_review`, chosen on purpose
+ *                    (no public shop, seasonal stall, owner's request).
+ * - `hidden`       — not on the map at all.
  */
-export type ListingMode = "full" | "city_only" | "hide";
-
-/** Code-side stand-in for `store_locator_listing` until that property
- * exists in HubSpot (a value set there always wins). Keyed by HubSpot
- * company ID. */
-const LISTING_OVERRIDES: Record<string, ListingMode> = {
-  // Rust & Stardust — HubSpot has a residential ship-to in Rhinelander;
-  // the shop itself is elsewhere (Lake Tomahawk, per its own listings).
-  "358981698274": "city_only",
-  // Relish (Geneva, IL) — "39W640 Sulley Dr" is a residential-subdivision
-  // address, not a downtown storefront. Unconfirmed; city-only until the
-  // real shop address is in HubSpot.
-  "358876206831": "city_only",
-};
+type LocatorStatus = "listed" | "needs_review" | "city_only" | "hidden";
 
 /** Relationships that buy from us but don't resell to the public. */
 const NON_RETAIL_CATEGORIES = new Set(["media", "corporate_gifting"]);
@@ -106,33 +104,6 @@ function fixShouting(value: string): string {
   return value.toLowerCase().replace(/(^|[\s-])([a-z])/g, (_, lead, ch) => lead + ch.toUpperCase());
 }
 
-const STARTS_WITH_NUMBER = /^\d/;
-const UNIT_LINE = /^(suite|ste\.?|unit|#|apt\.?|floor|fl\.?|bldg\.?|building)\s*\S+/i;
-
-/** One printable street line out of HubSpot's address + address2, which
- * for marketplace orders can hold anything a buyer typed into a shipping
- * form: a legal entity name in line 1, delivery instructions or a PO box
- * in line 2. Returns `null` if nothing in there looks like a street. */
-function normalizeStreet(address: string, address2: string): string | null {
-  let line1 = clean(address);
-  let line2 = clean(address2);
-
-  // "GATHERINGS INC" / "17004 Madison Ave" — the street is on line 2.
-  if (!STARTS_WITH_NUMBER.test(line1) && STARTS_WITH_NUMBER.test(line2)) {
-    line1 = line2;
-    line2 = "";
-  }
-  if (!STARTS_WITH_NUMBER.test(line1)) return null;
-
-  // "125 N Cache Box 702" — a mailing box isn't part of where the shop is.
-  line1 = line1.replace(/,?\s+(p\.?\s?o\.?\s+)?box\s+\d+$/i, "");
-
-  // Keep line 2 only when it's clearly a unit ("Suite 2"), never
-  // free-text like "*DELIVER TO LOADING DOCK" or "PO 528".
-  const street = UNIT_LINE.test(line2) ? `${line1}, ${line2}` : line1;
-  return fixShouting(street);
-}
-
 function normalizeWebsite(raw: string): string | undefined {
   const value = clean(raw);
   if (!value) return undefined;
@@ -157,12 +128,9 @@ function normalizePhone(raw: string): string | undefined {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 
-function listingMode(company: HubSpotCompany): ListingMode {
-  const fromHubSpot = clean(company.properties.store_locator_listing).toLowerCase();
-  if (fromHubSpot === "full" || fromHubSpot === "city_only" || fromHubSpot === "hide") {
-    return fromHubSpot;
-  }
-  return LISTING_OVERRIDES[company.id] ?? "full";
+function locatorStatus(company: HubSpotCompany): LocatorStatus {
+  const value = clean(company.properties.store_locator_status).toLowerCase();
+  return value === "listed" || value === "city_only" || value === "hidden" ? value : "needs_review";
 }
 
 /**
@@ -172,24 +140,32 @@ function listingMode(company: HubSpotCompany): ListingMode {
  *    excludes samples; the revenue check also drops $0 comped orders);
  *  - not a media or corporate-gifting account — they buy, but there's no
  *    shelf for a customer to walk up to;
- *  - a US address complete enough to place (city, state, 5-digit ZIP).
+ *  - a US city, state and 5-digit ZIP to place it by;
+ *  - `store_locator_status` isn't `hidden`.
  */
 export function normalizeCompany(company: HubSpotCompany): NormalizedCompany | null {
   const p = company.properties;
-  const mode = listingMode(company);
-  if (mode === "hide") return null;
+  const status = locatorStatus(company);
+  if (status === "hidden") return null;
 
   if (!(Number(p.order_count) > 0) || !(Number(p.lifetime_revenue) > 0)) return null;
   if (NON_RETAIL_CATEGORIES.has(clean(p.company_category).toLowerCase())) return null;
   if (NON_RETAIL_CHANNELS.has(clean(p.account_channel).toLowerCase())) return null;
 
+  // Where the shop is: the storefront fields when they're filled in
+  // (the shop can be in a different town from the ship-to), otherwise
+  // the ship-to's town — a town is safe to show, a street isn't.
+  const hasStorefrontPlace = Boolean(clean(p.storefront_city) && clean(p.storefront_zip));
   const name = clean(p.name);
-  const city = fixShouting(clean(p.city));
-  const state = normalizeState(p.state ?? "");
-  const zip = clean(p.zip).slice(0, 5);
+  const city = fixShouting(clean(hasStorefrontPlace ? p.storefront_city : p.city));
+  const state = normalizeState((hasStorefrontPlace && clean(p.storefront_state)) || (p.state ?? ""));
+  const zip = clean(hasStorefrontPlace ? p.storefront_zip : p.zip).slice(0, 5);
   if (!name || !city || !state || !/^\d{5}$/.test(zip)) return null;
 
-  const street = mode === "city_only" ? null : normalizeStreet(p.address ?? "", p.address2 ?? "");
+  // `listed` with no storefront street (someone flipped the status but
+  // never typed the address) degrades to city-only rather than falling
+  // back to the ship-to.
+  const street = status === "listed" && hasStorefrontPlace ? clean(p.storefront_address) || null : null;
 
   return {
     id: company.id,

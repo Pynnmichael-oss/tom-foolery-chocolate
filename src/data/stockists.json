@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11",
+  "generatedAt": "2026-11-15",
   "windowDays": 90,
   "stockists": [
     {
@@ -16,7 +16,7 @@
     {
       "id": "358809428711",
       "name": "Buena Bodega",
-      "street": "1803 East Main Street",
+      "street": "1803 E Main St",
       "city": "Ventura",
       "state": "CA",
       "zip": "93001",
@@ -27,7 +27,7 @@
     {
       "id": "358728865507",
       "name": "Congaree and Penn",
-      "street": "11830 Old Kings Road",
+      "street": "11830 Old Kings Rd",
       "city": "Jacksonville",
       "state": "FL",
       "zip": "32219",
@@ -38,18 +38,18 @@
     {
       "id": "362284004077",
       "name": "YAY!",
-      "street": "637 Terrace Blvd",
+      "street": "1211 N Orange Ave",
       "city": "Orlando",
       "state": "FL",
-      "zip": "32803",
-      "lat": 28.5578,
-      "lng": -81.36775,
+      "zip": "32804",
+      "lat": 28.56169,
+      "lng": -81.37339,
       "precise": true
     },
     {
       "id": "357740994297",
       "name": "Ándale Market – Andersonville",
-      "street": "5232 North Clark Street",
+      "street": "5232 N Clark St",
       "city": "Chicago",
       "state": "IL",
       "zip": "60640",
@@ -73,15 +73,15 @@
     {
       "id": "359081851632",
       "name": "East Bank Club",
-      "street": "500 North Kingsbury Street",
+      "street": null,
       "city": "Chicago",
       "state": "IL",
       "zip": "60654",
       "website": "https://eastbankclub.com/",
       "phone": "(312) 527-5800",
-      "lat": 41.89062,
-      "lng": -87.63926,
-      "precise": true
+      "lat": 41.892,
+      "lng": -87.637,
+      "precise": false
     },
     {
       "id": "359032811236",
@@ -100,7 +100,7 @@
     {
       "id": "358696474356",
       "name": "Olivia's Market",
-      "street": "2014 West Wabansia Avenue",
+      "street": "2014 W Wabansia Ave",
       "city": "Chicago",
       "state": "IL",
       "zip": "60647",
@@ -113,7 +113,7 @@
     {
       "id": "361515097820",
       "name": "Piccadilly Market",
-      "street": "2559 West Lawrence Avenue",
+      "street": "2559 W Lawrence Ave",
       "city": "Chicago",
       "state": "IL",
       "zip": "60625",
@@ -124,20 +124,20 @@
     {
       "id": "357717228256",
       "name": "POP/Culture Chicago",
-      "street": "434 West Briar Place",
+      "street": "2937 N Clark St",
       "city": "Chicago",
       "state": "IL",
       "zip": "60657",
       "website": "https://popculturechicago.com/",
       "phone": "(312) 955-0313",
-      "lat": 41.9388,
-      "lng": -87.64101,
+      "lat": 41.93576,
+      "lng": -87.6472,
       "precise": true
     },
     {
       "id": "358986287858",
       "name": "Totto’s Market",
-      "street": "751 South Dearborn Street",
+      "street": "751 S Dearborn St",
       "city": "Chicago",
       "state": "IL",
       "zip": "60605",
@@ -159,7 +159,7 @@
     {
       "id": "358728865505",
       "name": "Elawa Farm Market",
-      "street": "1401 Middlefork Drive",
+      "street": "1401 Middlefork Dr",
       "city": "Lake Forest",
       "state": "IL",
       "zip": "60045",
@@ -170,7 +170,7 @@
     {
       "id": "358758603470",
       "name": "Yellow &Co.",
-      "street": "1830 Patton Drive, Suite 2",
+      "street": "1830 Patton Dr, Suite 2",
       "city": "Mahomet",
       "state": "IL",
       "zip": "61853",
@@ -181,7 +181,7 @@
     {
       "id": "358805846762",
       "name": "1829 Country Store",
-      "street": "26 Otis Street",
+      "street": "26 Otis St",
       "city": "Mansfield",
       "state": "MA",
       "zip": "02048",
@@ -192,7 +192,7 @@
     {
       "id": "358738324164",
       "name": "Imperial Gas and Country Store",
-      "street": "1 Millville Road",
+      "street": "1 Millville Rd",
       "city": "Mendon",
       "state": "MA",
       "zip": "01756",
@@ -203,7 +203,7 @@
     {
       "id": "358958916304",
       "name": "Culinary Architecture",
-      "street": "236 South High Street",
+      "street": "236 S High St",
       "city": "Baltimore",
       "state": "MD",
       "zip": "21202",
@@ -214,18 +214,18 @@
     {
       "id": "358749976312",
       "name": "The Kingfisher & The Queen",
-      "street": "460 Shore Road",
-      "city": "Bremen",
+      "street": "79 Main St",
+      "city": "Damariscotta",
       "state": "ME",
-      "zip": "04551",
-      "lat": 43.97287,
-      "lng": -69.44509,
+      "zip": "04543",
+      "lat": 44.03102,
+      "lng": -69.52583,
       "precise": true
     },
     {
       "id": "358876206835",
       "name": "Tall Trees Cafe",
-      "street": "817 Livernois",
+      "street": "817 Livernois St",
       "city": "Ferndale",
       "state": "MI",
       "zip": "48220",
@@ -236,7 +236,7 @@
     {
       "id": "358975036122",
       "name": "Ohori's Coffee Roasters",
-      "street": "1098 1/2 S Saint Francis Dr",
+      "street": "1098 1/2 S St Francis Dr, Unit B",
       "city": "Santa Fe",
       "state": "NM",
       "zip": "87505",
@@ -247,7 +247,7 @@
     {
       "id": "358860036839",
       "name": "Batterby House",
-      "street": "608 Warren Street",
+      "street": "608 Warren St",
       "city": "Hudson",
       "state": "NY",
       "zip": "12534",
@@ -269,29 +269,40 @@
     {
       "id": "358804128479",
       "name": "Hedgerow",
-      "street": "56 Salem Road",
+      "street": "65 Westchester Ave",
       "city": "Pound Ridge",
       "state": "NY",
       "zip": "10576",
-      "lat": 41.21832,
-      "lng": -73.5676,
+      "lat": 41.19023,
+      "lng": -73.55141,
+      "precise": true
+    },
+    {
+      "id": "366299753207",
+      "name": "Pierogi Boys Market",
+      "street": "57-34 Catalpa Ave",
+      "city": "Ridgewood",
+      "state": "NY",
+      "zip": "11385",
+      "lat": 40.70095,
+      "lng": -73.9037,
       "precise": true
     },
     {
       "id": "358983476931",
       "name": "Gingham",
-      "street": "17004 Madison Ave",
+      "street": "17000 Madison Ave",
       "city": "Lakewood",
       "state": "OH",
       "zip": "44107",
       "lat": 41.47757,
-      "lng": -81.81502,
+      "lng": -81.81499,
       "precise": true
     },
     {
       "id": "359004270328",
       "name": "Feast on Brilliant",
-      "street": "27 Brilliant Avenue",
+      "street": "27 Brilliant Ave",
       "city": "Aspinwall",
       "state": "PA",
       "zip": "15215",
@@ -302,18 +313,29 @@
     {
       "id": "358787421913",
       "name": "Open House",
-      "street": "108 S 13th St",
+      "street": "107 S 13th St",
       "city": "Philadelphia",
       "state": "PA",
       "zip": "19107",
-      "lat": 39.94998,
-      "lng": -75.16199,
+      "lat": 39.95024,
+      "lng": -75.16178,
+      "precise": true
+    },
+    {
+      "id": "364997960384",
+      "name": "The Bearded Egg",
+      "street": "350 Rockdale Ave",
+      "city": "York",
+      "state": "PA",
+      "zip": "17403",
+      "lat": 39.95263,
+      "lng": -76.71316,
       "precise": true
     },
     {
       "id": "358805846768",
       "name": "Veggie Bin",
-      "street": "96 Spring Street",
+      "street": "96 Spring St",
       "city": "Charleston",
       "state": "SC",
       "zip": "29403",
@@ -346,7 +368,7 @@
     {
       "id": "358981698264",
       "name": "Department of Beer and Wine",
-      "street": "2805 Mount Vernon Avenue",
+      "street": "2805 Mount Vernon Ave",
       "city": "Alexandria",
       "state": "VA",
       "zip": "22301",
@@ -357,7 +379,7 @@
     {
       "id": "358758603468",
       "name": "Red Barn Mercantile",
-      "street": "1117 King Street",
+      "street": "1117 King St",
       "city": "Alexandria",
       "state": "VA",
       "zip": "22314",
@@ -369,7 +391,7 @@
     {
       "id": "358790974155",
       "name": "Brick House Butcher",
-      "street": "109 Rowell Court",
+      "street": "109 Rowell Ct",
       "city": "Falls Church",
       "state": "VA",
       "zip": "22046",
@@ -380,29 +402,29 @@
     {
       "id": "358881551079",
       "name": "Encore Chocolates and Teas",
-      "street": "116 5th Avenue Southeast",
+      "street": null,
       "city": "Olympia",
       "state": "WA",
       "zip": "98501",
-      "lat": 47.04415,
-      "lng": -122.9013,
-      "precise": true
+      "lat": 47.013,
+      "lng": -122.876,
+      "precise": false
     },
     {
       "id": "358981698274",
       "name": "Rust & Stardust",
-      "street": null,
-      "city": "Rhinelander",
+      "street": "7223 Bradley St",
+      "city": "Lake Tomahawk",
       "state": "WI",
-      "zip": "54501",
-      "lat": 45.705,
-      "lng": -89.387,
-      "precise": false
+      "zip": "54539",
+      "lat": 45.81458,
+      "lng": -89.59342,
+      "precise": true
     },
     {
       "id": "358804128476",
       "name": "MADE",
-      "street": "125 N Cache",
+      "street": "125 N Cache St",
       "city": "Jackson",
       "state": "WY",
       "zip": "83001",

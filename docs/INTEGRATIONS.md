@@ -406,23 +406,38 @@ whether the old content needs to be preserved somewhere first.
    `company_category` = `media` / `corporate_gifting` or `account_channel`
    = `corporate` (they buy, but don't resell to the public); must have a
    US city, state and 5-digit ZIP.
-3. **Per-store control**: an optional HubSpot **company** property,
-   internal name `store_locator_listing`, dropdown values `full` /
-   `city_only` / `hide`. `city_only` shows the name and "City, ST" with the
-   pin on the ZIP's centre — for accounts whose HubSpot address is a home
-   or warehouse rather than the shop. The property doesn't have to exist;
-   until it does, the same thing is done in code via `LISTING_OVERRIDES`
-   in `normalize.ts`.
+3. `store_locator_status` isn't `hidden` (next section).
 
-Only name, address, website, Instagram and phone are ever sent to the
-browser — never order counts, revenue, or contacts.
+Only name, storefront address, website, Instagram and phone are ever
+sent to the browser — never order counts, revenue, contacts, or the
+ship-to address.
 
-**Addresses are ship-to addresses.** Most companies were created by TF
-Ops Sync from marketplace orders, so `address` is wherever the buyer had
-the box sent. `normalize.ts` tidies the common mess (street on line 2,
-delivery notes, PO boxes, SHOUTED cities) but can't know that an address
-is someone's house. Fix the address in HubSpot, or set the store to
-`city_only`.
+### Storefront address vs. ship-to address
+
+HubSpot's built-in `address` on a company is **not** what the map shows.
+Most companies are created by TF Ops Sync from marketplace orders, so
+`address` is wherever the buyer had the box sent — the shop for about
+three in four accounts, the owner's home or a sister business for the
+rest (9 of the first 38 checked). The sync also matches later orders to
+the company on that address (`address_key`), so **don't "correct" it to
+the storefront** — that risks a duplicate company on the next order.
+
+Instead the storefront has its own company properties, which the sync
+never writes:
+
+| Property | Meaning |
+| --- | --- |
+| `storefront_address`, `storefront_city`, `storefront_state`, `storefront_zip` | The shop a customer walks into. |
+| `store_locator_status` | `listed` — street address and exact pin. `needs_review` (or empty) — name and "City, ST" only, pin on the ZIP's centre. `city_only` — same display, chosen deliberately. `hidden` — not on the map. |
+
+A new account therefore appears on the map as city-only the first time
+the page revalidates after its first paid order, and gets its street
+address once someone has looked the shop up, filled in the four
+storefront fields and set the status to **Listed**. `listed` without a
+storefront street stays city-only; the ship-to is never used as a
+fallback street. If only the storefront city/ZIP are filled in, the pin
+moves to that town (the shop is sometimes one town over from the
+ship-to).
 
 ### Live vs. snapshot
 

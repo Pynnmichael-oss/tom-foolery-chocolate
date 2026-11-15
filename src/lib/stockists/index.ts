@@ -66,13 +66,17 @@ async function locate(listing: NormalizedCompany, prior?: Stockist): Promise<Sto
   }
 
   if (listing.street) {
+    // The geocoder matches on the building; a trailing ", Suite 2" only
+    // gives it something to miss on.
+    const building = listing.street.split(",")[0];
     const point = await geocodeAddress(
-      `${listing.street}, ${listing.city}, ${listing.state} ${listing.zip}`
+      `${building}, ${listing.city}, ${listing.state} ${listing.zip}`
     );
     if (point) return { ...listing, ...point, precise: true };
   }
 
-  // City-only listing, or the geocoder couldn't place the street: the
+  // Not (yet) a verified storefront, or the geocoder couldn't place the
+  // street: the
   // ZIP's centre still puts the pin in the right town and keeps the
   // store in "nearest to me" results. No ZIP match at all → not mappable.
   const centroid = lookupZip(listing.zip);
