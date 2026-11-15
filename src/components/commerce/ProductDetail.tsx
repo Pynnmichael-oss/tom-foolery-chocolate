@@ -45,7 +45,12 @@ export function ProductDetail({ product }: { product: Product }) {
             {activeImage ? (
               <Image
                 src={activeImage.url}
-                alt={activeImage.altText ?? product.title}
+                alt={
+                  activeImage.altText ||
+                  (activeImageIndex === 0
+                    ? product.title
+                    : `${product.title}, photo ${activeImageIndex + 1} of ${product.images.length}`)
+                }
                 width={activeImage.width ?? 1000}
                 height={activeImage.height ?? 1000}
                 className="h-full w-full object-contain"

@@ -2,6 +2,8 @@ import { StripeDivider } from "@/components/ui/StripeDivider";
 import { StackedSignature } from "@/components/ui/logos";
 import { SOCIAL_LINKS } from "@/lib/social-links";
 import { NewsletterTriggerButton } from "@/components/layout/NewsletterTriggerButton";
+import { getShopPolicies } from "@/lib/shopify/queries";
+import type { ShopPolicies } from "@/lib/shopify/types";
 
 // Flip to true once FAQ, Wholesale, and Where to Find Us have real
 // content — the pages themselves stay live either way (direct links,
@@ -23,18 +25,26 @@ const FOOTER_LINKS: Array<{ href: string; label: string; comingSoon?: boolean }>
 // its own if the merchant hasn't filled in that policy in the Shopify
 // admin yet, so these are always linked (not conditional on content
 // existing, unlike FOOTER_LINKS' coming-soon pages above).
-const POLICY_LINKS = [
-  { href: "/privacy", label: "Privacy Policy" },
-  { href: "/returns", label: "Refund Policy" },
-  { href: "/shipping", label: "Shipping Policy" },
-  { href: "/terms", label: "Terms of Service" },
+/** `policy` is the Shopify policy each route renders — the route 404s
+ * until the merchant has written that policy (Settings → Policies), so
+ * the link is only shown once there's a page behind it. */
+const POLICY_LINKS: Array<{ href: string; label: string; policy: keyof ShopPolicies }> = [
+  { href: "/privacy", label: "Privacy Policy", policy: "privacyPolicy" },
+  { href: "/returns", label: "Refund Policy", policy: "refundPolicy" },
+  { href: "/shipping", label: "Shipping Policy", policy: "shippingPolicy" },
+  { href: "/terms", label: "Terms of Service", policy: "termsOfService" },
 ];
 
 const SOCIAL_LINK_CLASS =
   "font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-white/60 transition-colors hover:text-tf-white";
 
-export function Footer() {
+export async function Footer() {
   const visibleFooterLinks = FOOTER_LINKS.filter((link) => SHOW_COMING_SOON || !link.comingSoon);
+  // Never throws for a missing policy (each comes back null); a Shopify
+  // outage falls back to all-null in production, hiding the row until the
+  // next revalidation rather than breaking every page's footer.
+  const policies = await getShopPolicies();
+  const visiblePolicyLinks = POLICY_LINKS.filter((link) => policies[link.policy]);
 
   return (
     // bg-black (pure #000000), not bg-tf-black (#25382A) — brand-requested
@@ -87,7 +97,7 @@ export function Footer() {
           aria-label="Policies"
           className="flex flex-wrap items-center justify-center gap-fluid-md"
         >
-          {POLICY_LINKS.map((link) => (
+          {visiblePolicyLinks.map((link) => (
             <a
               key={link.label}
               href={link.href}

@@ -40,3 +40,18 @@ export function applySellingPlanAdjustment(base: Money, adjustment: SellingPlanP
       : baseAmount - Number(adjustment.amount.amount);
   return { amount: Math.max(adjusted, 0).toFixed(2), currencyCode: base.currencyCode };
 }
+
+/** Shopify CDN URL resized to `width` px (the CDN resizes on the fly via
+ * the `width` query param). Used for share images: product photos are
+ * uploaded at ~3000px PNG, far heavier than a social card needs. Any
+ * non-Shopify URL (mock/placeholder imagery) is returned untouched. */
+export function shopifyImageAtWidth(
+  image: { url: string; width?: number; height?: number },
+  width: number
+): { url: string; width?: number; height?: number } {
+  if (!image.url.includes("cdn.shopify.com") || (image.width && image.width <= width)) return image;
+  const url = `${image.url}${image.url.includes("?") ? "&" : "?"}width=${width}`;
+  const height =
+    image.width && image.height ? Math.round((image.height / image.width) * width) : undefined;
+  return { url, width, height };
+}

@@ -39,6 +39,24 @@ export function isHiddenFromListings(p: { handle: string; tags?: string[] | null
   return HIDDEN_PRODUCT_TAGS.some((t) => tags.includes(t));
 }
 
+/** Sitemap guardrail, wider than `isHiddenFromListings`: also drops sample
+ * products and anything tagged for the gift builder, by tag or by product
+ * type. These already 404 or redirect to /gifts/build today — this keeps
+ * one out of the sitemap if it's ever published by mistake. */
+const SITEMAP_EXCLUDED_TAGS = [...HIDDEN_PRODUCT_TAGS, "sample", "gift-builder"];
+const SITEMAP_EXCLUDED_PRODUCT_TYPES = ["gift set component", "sample"];
+
+export function isExcludedFromSitemap(p: {
+  handle: string;
+  tags?: string[] | null;
+  productType?: string | null;
+}): boolean {
+  if (isHiddenFromListings(p)) return true;
+  const tags = (p.tags ?? []).map((t) => t.toLowerCase());
+  if (SITEMAP_EXCLUDED_TAGS.some((t) => tags.includes(t))) return true;
+  return SITEMAP_EXCLUDED_PRODUCT_TYPES.includes((p.productType ?? "").trim().toLowerCase());
+}
+
 /** Handles of the $0 band and wrap component products. Their lines are
  * packaging, not contents: the cart drawer shows the band and wrap from
  * the set line itself instead of listing these under "Inside". */
