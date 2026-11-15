@@ -5,7 +5,7 @@ import { NewsletterTriggerButton } from "@/components/layout/NewsletterTriggerBu
 import { getShopPolicies } from "@/lib/shopify/queries";
 import type { ShopPolicies } from "@/lib/shopify/types";
 
-// Flip to true once FAQ, Wholesale, and Where to Find Us have real
+// Flip to true once FAQ and Where to Find Us have real
 // content — the pages themselves stay live either way (direct links,
 // e.g. from the nav or a search result, still work); this only controls
 // whether the footer nav points at them.
@@ -15,7 +15,7 @@ const FOOTER_LINKS: Array<{ href: string; label: string; comingSoon?: boolean }>
   { href: "/", label: "Home" },
   { href: "/story", label: "Story" },
   { href: "/faq", label: "FAQ", comingSoon: true },
-  { href: "/wholesale", label: "Wholesale", comingSoon: true },
+  { href: "/wholesale", label: "Wholesale" },
   { href: "/find-us", label: "Where to Find Us", comingSoon: true },
   { href: "/gifting", label: "Gifting" },
   { href: "/contact", label: "Contact" },

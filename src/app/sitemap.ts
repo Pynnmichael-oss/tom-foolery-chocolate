@@ -30,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // crawlers the field is meaningless, and they stop trusting it.
   const lastModified = (iso: string | undefined) => (iso ? { lastModified: new Date(iso) } : {});
 
-  // Deliberately excludes /faq, /wholesale, /find-us — each is a
+  // Deliberately excludes /faq, /find-us — each is a
   // ComingSoonPage with `robots: { index: false }` (placeholder copy, no
   // reason to send crawlers there yet; see each route's own metadata).
   const policyPages: Array<{ path: string; exists: boolean }> = [
@@ -45,6 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/story`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/shop`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITE_URL}/gifting`, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${SITE_URL}/wholesale`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/contact`, changeFrequency: "yearly", priority: 0.5 },
     // The one page for gift sets — the gift-builder products themselves
     // redirect here. `?set=caramels` canonicalises to it, so it isn't

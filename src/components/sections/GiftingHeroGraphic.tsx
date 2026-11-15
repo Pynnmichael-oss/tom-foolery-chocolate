@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import type { MouseEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { gsap, useGSAP, breakpoints } from "@/components/motion/gsap";
@@ -18,6 +19,25 @@ export interface GiftingHeroGraphicProps {
    * falls back to the gifts collection otherwise so it never links to a
    * 404 while the builder product is still a Draft. */
   giftBuilderAvailable?: boolean;
+  /** Override the gifting copy + CTAs so another landing page (e.g.
+   * /wholesale) can reuse this exact hero. Omit for the gifting defaults. */
+  content?: HeroGraphicContent;
+}
+
+export interface HeroGraphicCta {
+  href: string;
+  label: string;
+  /** Opens in a new tab (off-site destinations like Faire). */
+  external?: boolean;
+  onClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
+}
+
+export interface HeroGraphicContent {
+  preheader: string;
+  title: string;
+  sub: string;
+  primaryCta: HeroGraphicCta;
+  secondaryCta?: HeroGraphicCta;
 }
 
 /**
@@ -95,9 +115,19 @@ const CTA_BASE =
 export function GiftingHeroGraphic({
   groundColor = "var(--tf-rose)",
   giftBuilderAvailable = false,
+  content: contentOverride,
 }: GiftingHeroGraphicProps) {
   const rootRef = useRef<HTMLElement>(null);
   const customGiftLink = useCustomGiftLink();
+  const content: HeroGraphicContent = contentOverride ?? {
+    preheader: "Gifting",
+    title: "Give a little mischief.",
+    sub: "Stand out from the crowd with a unique, personalized gift for any occasion.",
+    primaryCta: giftBuilderAvailable
+      ? { href: "/gifts/build", label: "Build a Gift Set" }
+      : { href: "/collections/gifts", label: "Shop Gifts" },
+    secondaryCta: { ...customGiftLink, label: CUSTOM_GIFT_CTA_LABEL },
+  };
 
   useGSAP(
     () => {
@@ -178,31 +208,26 @@ export function GiftingHeroGraphic({
             data-hero="pre"
             className="font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em]"
           >
-            Gifting
+            {content.preheader}
           </p>
           <h1
             data-hero="title"
             className="font-display font-semibold"
             style={{ fontSize: "clamp(3.5rem, 2.2rem + 5.6vw, 6.5rem)", lineHeight: 0.95 }}
           >
-            Give a little mischief.
+            {content.title}
           </h1>
           <p data-hero="sub" className="max-w-md font-sans text-[length:var(--fs-body)] leading-snug">
-            Stand out from the crowd with a unique, personalized gift for any occasion.
+            {content.sub}
           </p>
           <div data-hero="cta" className="mt-fluid-xs flex flex-wrap gap-fluid-sm">
-            <Link
-              href={giftBuilderAvailable ? "/gifts/build" : "/collections/gifts"}
-              className={`${CTA_BASE} bg-tf-black text-tf-white`}
-            >
-              {giftBuilderAvailable ? "Build a Gift Set" : "Shop Gifts"}
-            </Link>
-            <a
-              {...customGiftLink}
-              className={`${CTA_BASE} bg-transparent text-tf-black hover:bg-tf-black/10`}
-            >
-              {CUSTOM_GIFT_CTA_LABEL}
-            </a>
+            <HeroCtaLink cta={content.primaryCta} className={`${CTA_BASE} bg-tf-black text-tf-white`} />
+            {content.secondaryCta && (
+              <HeroCtaLink
+                cta={content.secondaryCta}
+                className={`${CTA_BASE} bg-transparent text-tf-black hover:bg-tf-black/10`}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -258,5 +283,30 @@ export function GiftingHeroGraphic({
         </div>
       </div>
     </section>
+  );
+}
+
+/** Internal routes go through next/link; hash anchors, off-site URLs and
+ * anything with its own click handler stay a plain <a>. */
+function HeroCtaLink({ cta, className }: { cta: HeroGraphicCta; className: string }) {
+  if (cta.external) {
+    return (
+      <a href={cta.href} target="_blank" rel="noopener noreferrer" className={className}>
+        {cta.label}
+        <span className="sr-only"> (opens in a new tab)</span>
+      </a>
+    );
+  }
+  if (cta.href.startsWith("/") && !cta.onClick) {
+    return (
+      <Link href={cta.href} className={className}>
+        {cta.label}
+      </Link>
+    );
+  }
+  return (
+    <a href={cta.href} onClick={cta.onClick} className={className}>
+      {cta.label}
+    </a>
   );
 }

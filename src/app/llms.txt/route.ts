@@ -76,7 +76,8 @@ export async function GET() {
     "## About",
     "",
     `- [Our story](${SITE_URL}/story): The family history behind the brand, from Tom Meldrum's Sugar Bowl to Tom Foolery.`,
-    `- [Contact](${SITE_URL}/contact): Questions and wholesale inquiries.`,
+    `- [Wholesale](${SITE_URL}/wholesale): For shops and other businesses. Retailers order through Faire; distributors, hospitality and volume buyers use the inquiry form on the page.`,
+    `- [Contact](${SITE_URL}/contact): General questions.`,
     ...(policyLines.length > 0 ? ["", "## Policies", "", ...policyLines] : []),
     "",
   ].join("\n");
