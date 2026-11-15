@@ -102,10 +102,18 @@ export async function POST(request: Request) {
     );
   }
 
-  const emailConfig = resolveFormEmail("wholesale", {
-    to: "WHOLESALE_TO_EMAIL",
-    from: "WHOLESALE_FROM_EMAIL",
-  });
+  // Uses the Contact form's addresses unless a dedicated WHOLESALE_* pair
+  // is set — so wholesale inquiries work without any extra Vercel setup,
+  // and can be routed to their own inbox later by setting both vars.
+  const hasWholesaleEmails = Boolean(
+    process.env.WHOLESALE_TO_EMAIL && process.env.WHOLESALE_FROM_EMAIL
+  );
+  const emailConfig = resolveFormEmail(
+    "wholesale",
+    hasWholesaleEmails
+      ? { to: "WHOLESALE_TO_EMAIL", from: "WHOLESALE_FROM_EMAIL" }
+      : { to: "CONTACT_TO_EMAIL", from: "CONTACT_FROM_EMAIL" }
+  );
   if ("errorResponse" in emailConfig) return emailConfig.errorResponse;
 
   const fullName = `${firstName} ${lastName}`;

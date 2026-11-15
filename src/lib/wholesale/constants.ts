@@ -4,15 +4,13 @@
  */
 
 /**
- * Where "Shop Our Wholesale Catalog" goes. Set
- * NEXT_PUBLIC_FAIRE_DIRECT_URL to the brand's Faire Direct referral link
- * (Faire → Retailers → Invite retailers / Faire Direct link) so orders
- * placed through it are commission-free for us and carry Faire's
- * new-retailer incentives. Falls back to the public Faire brand page so
- * the CTA always lands somewhere real.
+ * Where "Shop Our Wholesale Catalog" goes — the brand's Faire Direct link,
+ * so retailer orders placed through it are commission-free and carry
+ * Faire's new-retailer incentives. Public, so it lives here; set
+ * NEXT_PUBLIC_FAIRE_DIRECT_URL only to override it without a code change.
  */
 export const FAIRE_WHOLESALE_URL: string =
-  process.env.NEXT_PUBLIC_FAIRE_DIRECT_URL?.trim() || "https://www.faire.com/brand/b_ke8n3hmnn5";
+  process.env.NEXT_PUBLIC_FAIRE_DIRECT_URL?.trim() || "https://tomfoolerychocolates.faire.com";
 
 export const FAIRE_CTA_LABEL = "Shop Our Wholesale Catalog";
 
