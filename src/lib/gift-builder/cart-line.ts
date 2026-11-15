@@ -8,7 +8,12 @@ import type { GiftBuilderConfig, GiftBuilderVariant } from "./queries";
  *
  *   1. Parent line: the gift set variant (e.g. BYO6-W, $56). Carries the price, box size and
  *      wrap. Properties: Set, Band.
- *   2. Component lines: the actual contents as $0 "(Gift Set)" variants carrying the real SKUs
+ *   2. Band line: the chosen band as a $0 "Gift Band (Gift Set)" variant (BAND-HATS, ...), so the
+ *      band prints by name and SKU even where a template can't read line item properties
+ *      (ShipStation's Liquid packing slips can't). Property: Set.
+ *   3. Wrap line (only when gift wrap is chosen): $0 "Gift Wrap (Gift Set)", SKU WRAP. The $1 stays
+ *      on the set's "Gift Wrapped" variant, so the price can't be dropped by removing this line.
+ *   4. Component lines: the actual contents as $0 "(Gift Set)" variants carrying the real SKUs
  *      (B001, B002, B003, F002, F002A), with the quantity of each. Property: Set.
  *
  * Shopify keeps every line on the order, and ShipStation imports each one as an item with its
@@ -138,10 +143,22 @@ export function buildCartLines(
     return { ok: false, error: "This set has too many details to print. Please contact us." };
   }
 
+  const bandLine: CartLineInput[] =
+    band && band.variantId ? [{ merchandiseId: band.variantId, quantity: 1, attributes: [setAttr] }] : [];
+  const wrapLine: CartLineInput[] =
+    sel.wrap && config.wrapComponentId
+      ? [{ merchandiseId: config.wrapComponentId, quantity: 1, attributes: [setAttr] }]
+      : [];
+
   return {
     ok: true,
-    // Parent first so the box/wrap/band line leads the group on the pick list.
-    lines: [{ merchandiseId: variant.id, quantity: 1, attributes: parentAttrs }, ...components],
+    // Set first, then its band and wrap, then what goes in the box: the order the packer reads them.
+    lines: [
+      { merchandiseId: variant.id, quantity: 1, attributes: parentAttrs },
+      ...bandLine,
+      ...wrapLine,
+      ...components,
+    ],
     variant,
     giftNote: note || null,
     setLabel,

@@ -3,12 +3,40 @@ import { notFound, redirect } from "next/navigation";
 import { giftSetKeyForHandle } from "@/lib/gift-builder/sets";
 import { getProduct, getProducts } from "@/lib/shopify/queries";
 import { ProductDetail } from "@/components/commerce/ProductDetail";
+import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { ProductJsonLd } from "@/components/seo/ProductJsonLd";
-import { POWER_STATEMENTS } from "@/lib/site";
+import { shopifyImageAtWidth } from "@/lib/shopify/format";
+import { BASE_OPEN_GRAPH, POWER_STATEMENTS } from "@/lib/site";
 
 export async function generateStaticParams() {
   const products = await getProducts();
   return products.map((product) => ({ handle: product.handle }));
+}
+
+const DESCRIPTION_MAX = 155;
+
+/**
+ * Meta description for a product with no SEO description in Shopify: the
+ * product's own description plus a short brand-voice flourish (not a full
+ * power statement on every PDP, which would read as duplicate content
+ * across the catalog). A description too long to fit is cut at the last
+ * whole word at or before 155 characters and ends in "…" — never
+ * mid-word, never on a trailing space.
+ */
+function fallbackDescription(raw: string): string {
+  // `description` is Shopify's plain-text field, but strip any stray tags
+  // and collapse whitespace so nothing odd reaches the meta tag.
+  const text = raw.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  const withFlourish = `${text.replace(/[.!?]+$/, "")}. ${POWER_STATEMENTS.liveALittle}.`;
+  if (!text) return `${POWER_STATEMENTS.liveALittle}.`;
+  if (withFlourish.length <= DESCRIPTION_MAX) return withFlourish;
+  if (text.length <= DESCRIPTION_MAX) return text;
+
+  const clipped = text.slice(0, DESCRIPTION_MAX + 1);
+  const lastSpace = clipped.lastIndexOf(" ");
+  const cut = (lastSpace > 0 ? clipped.slice(0, lastSpace) : text.slice(0, DESCRIPTION_MAX))
+    .replace(/[\s.,;:!?(–—-]+$/, "");
+  return `${cut}…`;
 }
 
 export async function generateMetadata(
@@ -18,32 +46,35 @@ export async function generateMetadata(
   const product = await getProduct(handle);
 
   if (!product) {
-    return { title: "Product Not Found" };
+    return { title: "Product Not Found", robots: { index: false, follow: true } };
   }
 
-  // Product-specific description first (unique per page, good SEO
-  // practice) with a short brand-voice flourish appended — not a full
-  // power statement repeated verbatim on every PDP, which would read as
-  // duplicate content across the catalog. Trailing punctuation is
-  // stripped from the description before joining so this never produces
-  // "...cookies Live a Little." (missing separator) or "...cookies.. Live
-  // a Little." (doubled) depending on whether the source description
-  // happens to end in a period.
-  const trimmedDescription = product.description.trim().replace(/[.!?]+$/, "");
-  const description = `${trimmedDescription}. ${POWER_STATEMENTS.liveALittle}.`.slice(0, 160);
+  // Shopify's "Search engine listing" fields win when the merchant has
+  // written them. The SEO title is used exactly as written (`absolute`
+  // skips the root layout's "— Tom Foolery Chocolate" template): those
+  // titles are already sized to what a search result shows.
+  const seoTitle = product.seo?.title;
+  const title = seoTitle ? { absolute: seoTitle } : product.title;
+  const shareTitle = seoTitle ?? product.title;
+  const description = product.seo?.description || fallbackDescription(product.description);
 
   const image = product.images[0];
+  // Social cards don't need the ~3000px original — see shopifyImageAtWidth.
+  const shareImage = image ? shopifyImageAtWidth(image, 1200) : undefined;
 
   return {
-    title: product.title,
+    title,
     description,
     alternates: { canonical: `/shop/${handle}` },
     openGraph: {
-      title: product.title,
+      ...BASE_OPEN_GRAPH,
+      url: `/shop/${handle}`,
+      title: shareTitle,
       description,
-      images: image
-        ? [{ url: image.url, width: image.width, height: image.height, alt: image.altText ?? product.title }]
-        : undefined,
+      images:
+        image && shareImage
+          ? [{ ...shareImage, alt: image.altText || product.title }]
+          : undefined,
     },
   };
 }
@@ -63,6 +94,12 @@ export default async function ProductPage(props: PageProps<"/shop/[handle]">) {
   return (
     <>
       <ProductJsonLd product={product} />
+      <BreadcrumbJsonLd
+        crumbs={[
+          { name: "Shop", path: "/shop" },
+          { name: product.title, path: `/shop/${product.handle}` },
+        ]}
+      />
       <ProductDetail product={product} />
     </>
   );

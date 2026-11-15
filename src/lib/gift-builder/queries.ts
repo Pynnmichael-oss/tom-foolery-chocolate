@@ -48,6 +48,11 @@ const GIFT_BUILDER_PRODUCT_QUERY = `#graphql
               handle
               name: field(key: "name") { value }
               category: field(key: "category") { value }
+              # $0 "Gift Band (Gift Set)" variant (BAND-XMAS, …) added with the set
+              # so the band prints on the packing slip by name and SKU.
+              variant: field(key: "variant") {
+                reference { ... on ProductVariant { id sku availableForSale product { tags } } }
+              }
               image: field(key: "image") {
                 reference {
                   ... on MediaImage {
@@ -61,6 +66,11 @@ const GIFT_BUILDER_PRODUCT_QUERY = `#graphql
         }
       }
       noteMax: metafield(namespace: "gift_builder", key: "note_max_length") { value }
+      # $0 "Gift Wrap (Gift Set)" (SKU WRAP), added when wrap is chosen. The
+      # $1 stays on the set's "Gift Wrapped" variant.
+      wrapComponent: metafield(namespace: "gift_builder", key: "wrap_component") {
+        reference { ... on ProductVariant { id sku availableForSale product { tags } } }
+      }
       heroCtaLabel: metafield(namespace: "gift_builder", key: "hero_cta_label") { value }
       heroCtaOccasion: metafield(namespace: "gift_builder", key: "hero_cta_occasion") { value }
       flavors: metafield(namespace: "gift_builder", key: "flavors") {
@@ -116,6 +126,11 @@ export type GiftBand = {
   name: string;
   category: string;
   image: Image | null;
+  /** The $0 "Gift Band (Gift Set)" variant added with the set, or null if
+   * the band entry has none (or it isn't a visible gift component) — the
+   * band then still reaches the order as the set line's Band property. */
+  variantId: string | null;
+  sku: string | null;
 };
 
 /** A pickable flavor = a $0 "(Gift Set)" component product. */
@@ -166,6 +181,9 @@ export type GiftBuilderConfig = {
   flavors: GiftBuilderFlavor[];
   /** Fixed contents by size. Empty for pick-your-flavors sets. */
   fixedContents: GiftBuilderComponent[];
+  /** $0 gift wrap component variant added when wrap is chosen, so wrapping
+   * prints as its own line. Null if not set up. */
+  wrapComponentId: string | null;
   /** Homepage hero button for this set, controlled from Shopify admin
    * (`gift_builder.hero_cta_label` / `hero_cta_occasion` product
    * metafields). `null` = no button — clear the label to turn it off. */
@@ -178,6 +196,14 @@ type RawBand = {
   name?: { value: string | null } | null;
   category?: { value: string | null } | null;
   image?: { reference: { image?: Image } | null } | null;
+  variant?: { reference: RawComponentVariant | null } | null;
+};
+
+type RawComponentVariant = {
+  id?: string;
+  sku?: string | null;
+  availableForSale?: boolean;
+  product?: { tags: string[] };
 };
 
 type RawFlavor =
@@ -214,6 +240,7 @@ type RawProduct = {
   heroCtaOccasion: { value: string } | null;
   flavors: { value: string; references: { nodes: RawFlavor[] } | null } | null;
   contents: { value: string; references: { nodes: RawComponent[] } | null } | null;
+  wrapComponent: { reference: RawComponentVariant | null } | null;
 };
 
 const DEFAULT_NOTE_MAX = 150;
@@ -228,6 +255,11 @@ function listedCount(field: { value: string } | null): number {
   } catch {
     return 0;
   }
+}
+
+/** A component variant's id/SKU if it's a visible gift-component variant. */
+function usableComponent(v: RawComponentVariant | null | undefined): { variantId: string | null; sku: string | null } {
+  return v?.id && isGiftComponent(v.product?.tags) ? { variantId: v.id, sku: v.sku ?? null } : { variantId: null, sku: null };
 }
 
 /** Only $0 component products may go into a set as contents. Anything
@@ -247,7 +279,15 @@ function toGiftBuilderConfig(p: RawProduct): GiftBuilderConfig | null {
       name: n.name!.value!,
       category: n.category?.value?.trim() || "Other",
       image: n.image?.reference?.image ?? null,
+      ...usableComponent(n.variant?.reference),
     }));
+  const bandsMissingVariant = bands.filter((b) => !b.variantId).map((b) => b.name);
+  if (bandsMissingVariant.length) {
+    console.warn(
+      `[gift-builder] ${p.handle}: no visible "Gift Band (Gift Set)" variant for ${bandsMissingVariant.join(", ")} — these bands won't get their own SKU line.`
+    );
+  }
+  const wrap = usableComponent(p.wrapComponent?.reference);
 
   const flavors: GiftBuilderFlavor[] = (p.flavors?.references?.nodes ?? [])
     .filter((n): n is Exclude<RawFlavor, Record<string, never>> => "id" in n && n.variants.nodes.length > 0)
@@ -312,6 +352,7 @@ function toGiftBuilderConfig(p: RawProduct): GiftBuilderConfig | null {
       : null,
     flavors,
     fixedContents,
+    wrapComponentId: wrap.variantId,
   };
 }
 
@@ -358,6 +399,13 @@ const MOCK_BANDS: Array<[string, string]> = [
   ["Thanks a Bunch", "Thank You"],
 ];
 
+function mockBandComponent(name: string): { variantId: string | null; sku: string | null } {
+  const v = MOCK_GIFT_COMPONENT_PRODUCTS.find((c) => c.handle === "gift-band-gift-set")?.variants.find(
+    (x) => x.title === name
+  );
+  return v ? { variantId: v.id, sku: (v as { sku?: string }).sku ?? null } : { variantId: null, sku: null };
+}
+
 function getMockGiftBuilderConfig(handle: string): GiftBuilderConfig | null {
   const product = MOCK_GIFT_SET_PRODUCTS.find((p) => p.handle === handle);
   if (!product) return null;
@@ -378,6 +426,7 @@ function getMockGiftBuilderConfig(handle: string): GiftBuilderConfig | null {
             width: 800,
             height: 600,
           },
+    ...mockBandComponent(name),
   }));
   return {
     productId: product.id,
@@ -409,6 +458,7 @@ function getMockGiftBuilderConfig(handle: string): GiftBuilderConfig | null {
             availableForSale: true,
           }))
         : [],
+    wrapComponentId: MOCK_GIFT_COMPONENT_PRODUCTS.find((c) => c.handle === "gift-wrap-gift-set")?.variants[0].id ?? null,
     fixedContents:
       handle === GIFT_SETS.caramels
         ? (MOCK_GIFT_COMPONENT_PRODUCTS.find((p) => p.handle === "malort-caramels-gift-set")?.variants ?? []).map((v) => ({

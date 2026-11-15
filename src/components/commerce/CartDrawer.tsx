@@ -9,6 +9,7 @@ import { isGiftComponentLine, useCart } from "./CartProvider";
 import { formatMoney } from "@/lib/shopify/format";
 import { compareSetLabels, groupBySet, labelOf, parseGiftNote } from "@/lib/gift-builder/gift-notes";
 import { shortFlavorName } from "@/lib/gift-builder/cart-line";
+import { isPackagingComponent } from "@/lib/gift-builder/sets";
 import type { CartLine } from "@/lib/shopify/types";
 import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 import { trackBeginCheckout, trackViewCart } from "@/lib/analytics/ga";
@@ -294,7 +295,9 @@ function GiftSetLineItem({
   onRemove: () => void;
 }) {
   const parent = lines.find((l) => !isGiftComponentLine(l)) ?? lines[0];
-  const contents = lines.filter((l) => l !== parent);
+  // Band and wrap lines are on the order for the packing slip; here the
+  // band shows from the set line and the wrap is in its variant title.
+  const contents = lines.filter((l) => l !== parent && !isPackagingComponent(l.product.handle));
   const band = parent.attributes.find((a) => a.key === "Band")?.value;
 
   return (

@@ -16,6 +16,23 @@ export const SITE_NAME = "Tom Foolery Chocolate";
  */
 export const DEFAULT_OG_IMAGE = "/opengraph-image";
 
+/** Search-facing title and description for the homepage (and the fallback
+ * for any route that doesn't set its own). The power statements below stay
+ * the on-page voice; these say plainly what the shop sells and where it's
+ * made, which is what a search result or an AI answer needs to quote. */
+export const SITE_TITLE = `${SITE_NAME} — Small-Batch Chocolate Made in Chicago`;
+export const SITE_DESCRIPTION =
+  "Small-batch chocolate bars, Malört caramels and gift sets, handcrafted in Chicago with 100% real chocolate. Chocolate as interesting as it is irresistible.";
+
+/** Fields every route's `openGraph` should carry. A page that sets its own
+ * `openGraph` replaces the root layout's object wholesale (see
+ * DEFAULT_OG_IMAGE above), so spread this into any page-level override. */
+export const BASE_OPEN_GRAPH = {
+  type: "website",
+  siteName: SITE_NAME,
+  locale: "en_US",
+} as const;
+
 /** Verbatim power statements — brand/BRAND_REFERENCE.md §1. */
 export const POWER_STATEMENTS = {
   liveALittle: "Live a Little",
