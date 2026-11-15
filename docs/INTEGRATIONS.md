@@ -255,6 +255,23 @@ featured collection above.
 currently 404. Fill each in under Shopify admin → Settings → Policies to
 bring the corresponding route live — no code change needed.
 
+### Announcement banner (`getActiveAnnouncement`)
+
+Bar above the nav on `/`, `/story`, `/shop` and `/contact` only (path list:
+`BANNER_PATHS` in `src/components/layout/AnnouncementBanner.tsx`). Content
+comes from Shopify admin → Content → Metaobjects → **Announcement Banner**
+(type `announcement_banner`, created 2026-11-15, Storefront access on):
+
+- **Status Active/Draft** is the on/off switch.
+- **Starts at / Ends at** (optional) schedule it; **Color** picks a brand
+  color (default Cinnamon); **Link label / Link URL** are optional.
+- Several live at once → the latest "Starts at" wins.
+- Cached 5 minutes (tag `announcement`), so edits and scheduled start/end
+  times take effect within ~5 minutes. Because it's fetched in the root
+  layout, every page's ISR window is now 5 minutes (was 1 hour); the
+  underlying product/collection fetches keep their own 1-hour cache.
+- Never throws — any failure just renders no banner.
+
 ### Selling plans
 
 `npm run check-selling-plans` (`scripts/check-selling-plans.ts`) audits

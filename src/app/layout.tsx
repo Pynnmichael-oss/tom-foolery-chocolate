@@ -4,6 +4,8 @@ import "./globals.css";
 import { newsreader, poppins } from "@/lib/fonts";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
 import { Nav } from "@/components/layout/Nav";
+import { AnnouncementBanner } from "@/components/layout/AnnouncementBanner";
+import { getActiveAnnouncement } from "@/lib/shopify/announcement";
 import { Footer } from "@/components/layout/Footer";
 import { CartProvider } from "@/components/commerce/CartProvider";
 import { CartDrawer } from "@/components/commerce/CartDrawer";
@@ -41,7 +43,11 @@ export const metadata: Metadata = {
  */
 const JS_CLASS_SCRIPT = `(function(){var e=document.documentElement;e.classList.add("js");setTimeout(function(){e.classList.remove("js")},10000)})()`;
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Shopify-managed banner (5-minute cache). Fetched here so it can sit
+  // above <Nav />; AnnouncementBanner itself limits it to BANNER_PATHS.
+  const announcement = await getActiveAnnouncement();
+
   return (
     <html
       lang="en"
@@ -70,6 +76,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </a>
         <SmoothScroll>
           <CartProvider>
+            <AnnouncementBanner announcement={announcement} />
             <Nav />
             {children}
             {/* Root-layout mount (moved out of the homepage, 2026-09-28)

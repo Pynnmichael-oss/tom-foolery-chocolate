@@ -200,3 +200,15 @@ export interface ShopPolicies {
   shippingPolicy: ShopPolicy | null;
   termsOfService: ShopPolicy | null;
 }
+
+/** Brand colors offered by the "Color" field on the Announcement Banner
+ * metaobject (Shopify admin → Content → Metaobjects). */
+export type AnnouncementStyle = "cinnamon" | "black" | "turmeric" | "juniper" | "rose";
+
+export interface Announcement {
+  /** Metaobject handle + updatedAt — stable per edit, used as a React key. */
+  id: string;
+  message: string;
+  link: { href: string; label: string } | null;
+  style: AnnouncementStyle;
+}
