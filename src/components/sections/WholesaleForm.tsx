@@ -286,7 +286,7 @@ export function WholesaleForm() {
             rows={5}
             value={form.message}
             onChange={(e) => update("message", e.target.value)}
-            placeholder="Which bars, roughly how many cases, how often — anything that helps us put together the right fit."
+            placeholder="Tell us a little about your business and what you have in mind."
             aria-invalid={Boolean(error)}
             aria-describedby={error ? "tf-wholesale-error" : undefined}
             className={`${FIELD_CLASS} resize-y`}
