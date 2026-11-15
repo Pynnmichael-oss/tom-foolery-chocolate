@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { WholesaleHero } from "@/components/sections/WholesaleHero";
-import { WholesalePanels } from "@/components/sections/WholesalePanels";
-import { GiftingStats } from "@/components/sections/GiftingStats";
 import { WholesaleForm } from "@/components/sections/WholesaleForm";
 import { Preheader, Headline, BodyText } from "@/components/ui/typography";
 import { DEFAULT_OG_IMAGE } from "@/lib/site";
@@ -11,14 +9,6 @@ const DESCRIPTION =
   "Carry Tom Foolery — small-batch Chicago chocolate bars for gift shops, boutiques, cafés, bookstores, and specialty grocery. Order on Faire or send us a wholesale inquiry.";
 const FORM_INTRO =
   "Not ordering through Faire? Distributors, hospitality, corporate, and volume buyers — tell us about your business and we'll follow up with pricing and availability.";
-
-// Product facts from the Faire brand listing: 3.5 oz bars, 6 per case,
-// 6-month shelf life. 60-day terms are Faire's standard retailer terms.
-const WHOLESALE_STATS = [
-  { label: "Case Pack", value: "6", suffix: "bars per case" },
-  { label: "Shelf Life", value: "6", suffix: "months, no refrigeration" },
-  { label: "Payment Terms", value: "60", suffix: "days on Faire" },
-];
 
 export const metadata: Metadata = {
   title: "Wholesale",
@@ -32,8 +22,9 @@ export const metadata: Metadata = {
 };
 
 /**
- * Wholesale landing page for specialty retail buyers — same structure as
- * /gifting (graphic hero → three panels → stats band → inquiry form).
+ * Wholesale landing page for specialty retail buyers — graphic hero (same
+ * as /gifting) → inquiry form. Panels and a stats band like /gifting's are
+ * planned once the content is ready.
  * The catalog CTAs go to Faire (lib/wholesale/constants.ts); the on-page
  * form (/api/wholesale) catches everything that doesn't fit Faire.
  */
@@ -41,8 +32,6 @@ export default function WholesalePage() {
   return (
     <main id="main-content">
       <WholesaleHero />
-      <WholesalePanels />
-      <GiftingStats stats={WHOLESALE_STATS} />
 
       <section id={WHOLESALE_FORM_ANCHOR} className="scroll-mt-24 px-fluid-md py-fluid-2xl">
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-fluid-lg">
