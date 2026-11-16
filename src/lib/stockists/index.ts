@@ -1,12 +1,11 @@
 import snapshotJson from "@/data/stockists.json";
 import { geocodeAddress } from "./geocode";
-import { fetchRecentBuyers, isHubSpotConfigured } from "./hubspot";
-import { normalizeCompany, type NormalizedCompany } from "./normalize";
-import type { HubSpotCompany, Stockist, StockistSnapshot } from "./types";
+import { fetchSheetCsv, isSheetConfigured, listingsFromCsv } from "./sheet";
+import type { Stockist, StockistSnapshot, StoreListing } from "./types";
 import { lookupZip } from "./zip";
 
 export type { Stockist } from "./types";
-export { STOCKIST_REVALIDATE_SECONDS } from "./hubspot";
+export { SHEET_REVALIDATE_SECONDS } from "./sheet";
 
 /** A store drops off the map this many days after its last paid order. */
 export const STOCKIST_WINDOW_DAYS = 90;
@@ -18,22 +17,18 @@ const snapshot = snapshotJson as StockistSnapshot;
 const GEOCODE_CONCURRENCY = 4;
 
 /**
- * Raw HubSpot companies → publishable, located stockists. Shared by the
- * live path below and by scripts/sync-stockists.ts (which writes the
- * committed snapshot), so both always apply identical rules.
+ * Gives each listing coordinates. Shared by the live path below and by
+ * scripts/sync-stockists.ts (which writes the committed snapshot), so
+ * both always behave identically.
  *
  * `known` lets a caller skip the geocoder for any store that's already
  * been placed at the same street + ZIP.
  */
-export async function buildStockists(
-  companies: HubSpotCompany[],
+export async function locateListings(
+  listings: StoreListing[],
   known: Stockist[] = []
 ): Promise<Stockist[]> {
   const knownById = new Map(known.map((s) => [s.id, s]));
-  const listings = companies
-    .map(normalizeCompany)
-    .filter((c): c is NormalizedCompany => c !== null);
-
   const located: Array<Stockist | null> = new Array(listings.length).fill(null);
   let next = 0;
 
@@ -55,7 +50,7 @@ export async function buildStockists(
     );
 }
 
-async function locate(listing: NormalizedCompany, prior?: Stockist): Promise<Stockist | null> {
+async function locate(listing: StoreListing, prior?: Stockist): Promise<Stockist | null> {
   if (
     prior &&
     prior.street === listing.street &&
@@ -75,10 +70,9 @@ async function locate(listing: NormalizedCompany, prior?: Stockist): Promise<Sto
     if (point) return { ...listing, ...point, precise: true };
   }
 
-  // Not (yet) a verified storefront, or the geocoder couldn't place the
-  // street: the
-  // ZIP's centre still puts the pin in the right town and keeps the
-  // store in "nearest to me" results. No ZIP match at all → not mappable.
+  // No street to show, or the geocoder couldn't place it: the ZIP's
+  // centre still puts the pin in the right town and keeps the store in
+  // "nearest to me" results. No ZIP match at all → not mappable.
   const centroid = lookupZip(listing.zip);
   return centroid ? { ...listing, ...centroid, precise: false } : null;
 }
@@ -86,26 +80,28 @@ async function locate(listing: NormalizedCompany, prior?: Stockist): Promise<Sto
 /**
  * Everything /find-us shows.
  *
- * With HUBSPOT_ACCESS_TOKEN set this is live: the rolling 90-day window
- * is re-applied every time the HubSpot response revalidates (see
- * STOCKIST_REVALIDATE_SECONDS), so stores appear after their first paid
- * order and drop off on their own once they stop reordering.
+ * With STOCKIST_SHEET_CSV_URL set this is live from the Google Sheet
+ * (see sheet.ts): re-read about hourly, with the rolling 90-day window
+ * applied on every read, so an edit in the sheet shows up on its own and
+ * a store falls off 90 days after its last paid order.
  *
- * Without the token — local dev, previews, or before it's been added in
- * Vercel — or if HubSpot errors, it serves the committed snapshot
+ * Without it — local dev, previews, or before the sheet is published —
+ * or if the sheet can't be read, it serves the committed snapshot
  * (src/data/stockists.json): real stores, frozen at whenever
- * `npm run sync-stockists` last ran. Unlike the Shopify mock-data
- * fallback this is genuine data, so it's safe to show in production; it
- * just doesn't move on its own.
+ * `npm run sync-stockists` last ran.
  */
 export async function getStockists(): Promise<Stockist[]> {
-  if (!isHubSpotConfigured()) return snapshot.stockists;
+  if (!isSheetConfigured()) return snapshot.stockists;
 
   try {
-    const companies = await fetchRecentBuyers(STOCKIST_WINDOW_DAYS);
-    return await buildStockists(companies, snapshot.stockists);
+    const listings = listingsFromCsv(await fetchSheetCsv(), STOCKIST_WINDOW_DAYS);
+    // An empty result means the sheet's header row was renamed or the
+    // wrong tab was published — far likelier than every store lapsing
+    // at once — so don't blank the map over it.
+    if (listings.length === 0) throw new Error("Store sheet has no usable rows");
+    return await locateListings(listings, snapshot.stockists);
   } catch (error) {
-    console.error("[stockists] HubSpot fetch failed — serving the committed snapshot instead.", error);
+    console.error("[stockists] Store sheet read failed — serving the committed snapshot instead.", error);
     return snapshot.stockists;
   }
 }

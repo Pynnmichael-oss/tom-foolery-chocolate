@@ -1,11 +1,12 @@
-/** One pin on /find-us. Only fields that are safe to publish — no order
- * counts, revenue, or contact people ever leave the server. */
+/** One pin on /find-us. */
 export interface Stockist {
-  /** HubSpot company record ID. */
+  /** Stable key for the row — the sheet's "HubSpot ID" when it has one,
+   * otherwise derived from name + ZIP. */
   id: string;
   name: string;
-  /** `null` for a "city only" listing (see `ListingMode` in normalize.ts)
-   * — the store shows as "City, ST" with its pin on the ZIP's centroid. */
+  /** Verified storefront street, or `null` when the row isn't `Listed`
+   * (see sheet.ts) — the store then shows as "City, ST" with its pin on
+   * the ZIP's centre. */
   street: string | null;
   city: string;
   state: string;
@@ -20,11 +21,8 @@ export interface Stockist {
   phone?: string;
 }
 
-/** A HubSpot company as the CRM search API returns it. */
-export interface HubSpotCompany {
-  id: string;
-  properties: Record<string, string | null | undefined>;
-}
+/** A store as read from the sheet, before it has coordinates. */
+export type StoreListing = Omit<Stockist, "lat" | "lng" | "precise">;
 
 /** Shape of the committed fallback, `src/data/stockists.json`. */
 export interface StockistSnapshot {

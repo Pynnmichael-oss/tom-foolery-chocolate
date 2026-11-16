@@ -15,14 +15,14 @@ export const metadata: Metadata = {
   alternates: { canonical: "/find-us" },
 };
 
-// How often the stockist list is re-pulled from HubSpot (ISR). Has to be
+// How often the store sheet is re-read (ISR). Has to be
 // a literal here — Next reads route segment config statically — so keep
-// it equal to STOCKIST_REVALIDATE_SECONDS in src/lib/stockists/hubspot.ts.
-export const revalidate = 21600;
+// it equal to SHEET_REVALIDATE_SECONDS in src/lib/stockists/sheet.ts.
+export const revalidate = 3600;
 
 /**
  * Store locator. The page itself is a static shell + one data read
- * (`getStockists()`: live from HubSpot when configured, otherwise the
+ * (`getStockists()`: live from the store Google Sheet when configured, otherwise the
  * committed snapshot — see src/lib/stockists/index.ts for the rules on
  * who's listed); `StoreLocator` is the interactive part. Plain MAIN
  * treatment and no GSAP, like the other footer utility pages — the map
