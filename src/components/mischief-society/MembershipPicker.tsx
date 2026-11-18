@@ -528,7 +528,7 @@ export function MembershipPicker({
                     </p>
                     <p className="font-display text-lg leading-snug break-words italic">
                       {active.note.trim() ||
-                        "Consider this your official invitation to six months of chocolate mischief. Secret handshake optional."}
+                        "Consider this your official invitation to six months of chocolate mischief. And don\u2019t worry, the secret handshake is optional."}
                     </p>
                     <p className="self-end font-display text-2xl">&ndash;{from.trim() || "You"}</p>
                   </>
