@@ -51,8 +51,25 @@ export function memberToken(orderGid: string, lineGid: string): string {
   return `${numericId(orderGid)}-${numericId(lineGid)}-${sign(payload, key)}`;
 }
 
-export function memberUrl(orderGid: string, lineGid: string): string {
-  return `${SITE_URL}${MISCHIEF_SOCIETY_MEMBER_PATH}/${memberToken(orderGid, lineGid)}`;
+/** `origin` lets a request served from a Vercel preview send links that
+ * open on that same preview (for testing); anything else gets the
+ * production site. Only the site's own origin or *.vercel.app is accepted,
+ * so a forged Host header can't point an emailed link elsewhere. */
+export function memberUrl(orderGid: string, lineGid: string, origin?: string): string {
+  return `${linkBase(origin)}${MISCHIEF_SOCIETY_MEMBER_PATH}/${memberToken(orderGid, lineGid)}`;
+}
+
+function linkBase(origin?: string): string {
+  if (!origin) return SITE_URL;
+  try {
+    const url = new URL(origin);
+    const site = new URL(SITE_URL);
+    if (url.origin === site.origin) return site.origin;
+    if (url.protocol === "https:" && url.hostname.endsWith(".vercel.app")) return url.origin;
+  } catch {
+    // fall through
+  }
+  return SITE_URL;
 }
 
 /** Returns the membership a token points at, or null if it's malformed

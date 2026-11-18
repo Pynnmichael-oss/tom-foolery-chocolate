@@ -54,6 +54,9 @@ export async function POST(request: Request) {
 
   try {
     const memberships = await findMembershipsByEmail(email, societyToday());
+    // Links open on the site that was asked (a Vercel preview while
+    // testing, production otherwise). memberUrl only trusts known hosts.
+    const origin = new URL(request.url).origin;
     for (const m of memberships.slice(0, 10)) {
       await sendCustomEvent({
         name: OMNISEND_EVENTS.memberLink,
@@ -61,7 +64,7 @@ export async function POST(request: Request) {
         properties: {
           first_name: m.memberName.split(/\s+/)[0] || "friend",
           bars_per_month: m.bars ?? "",
-          member_link: memberUrl(m.orderGid, m.lineGid),
+          member_link: memberUrl(m.orderGid, m.lineGid, origin),
           order: m.orderName,
         },
       });
