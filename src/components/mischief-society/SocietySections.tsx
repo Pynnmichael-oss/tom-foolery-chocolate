@@ -135,6 +135,18 @@ const PERKS: Array<{ title: string; body: string; icon: ReactNode; className: st
     ),
   },
   {
+    title: "Member-Exclusive Discounts",
+    body: "Add extra bars to any month\u2019s box at 10% off, for members only.",
+    className: "bg-tf-juniper text-tf-black",
+    icon: (
+      <svg {...ICON_PROPS}>
+        <path d="M3.5 12.6V4.5a1 1 0 0 1 1-1h8.1l8 8a1.4 1.4 0 0 1 0 2l-7.1 7.1a1.4 1.4 0 0 1-2 0z" />
+        <circle cx="8" cy="8" r="1.4" />
+        <path d="m10 16.5 5-5M10.6 12.2h.01M14.4 15.8h.01" />
+      </svg>
+    ),
+  },
+  {
     title: "The Gift That Keeps on Giving",
     body: "Made to be remembered well after it’s delivered.",
     className: "bg-tf-black text-tf-white",
@@ -158,7 +170,7 @@ export function SocietyPerks() {
             The Perks of Membership
           </Headline>
         </div>
-        <ul className="grid gap-fluid-sm md:grid-cols-3">
+        <ul className="grid gap-fluid-sm sm:grid-cols-2 lg:grid-cols-4">
           {PERKS.map((perk) => (
             <li key={perk.title} className={`flex flex-col gap-3 rounded-2xl p-6 ${perk.className}`}>
               {perk.icon}
