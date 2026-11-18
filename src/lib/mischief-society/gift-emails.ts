@@ -95,8 +95,8 @@ export async function runGiftEmails({
 
     const sent = parseSent(order.metafield?.value);
     const handledNow: string[] = [];
-    const buyerFirst = order.customer?.firstName?.trim() || "";
-    const buyerLast = order.customer?.lastName?.trim() || "";
+    const buyerFirst = order.buyer?.firstName?.trim() || "";
+    const buyerLast = order.buyer?.lastName?.trim() || "";
 
     for (const line of lines) {
       if (sent.has(line.id)) continue;
