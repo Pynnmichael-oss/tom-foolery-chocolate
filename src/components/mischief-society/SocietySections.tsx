@@ -112,7 +112,7 @@ const ICON_PROPS = {
 const PERKS: Array<{ title: string; body: string; icon: ReactNode; className: string }> = [
   {
     title: "Member-Only Flavors",
-    body: "Bars we make just for the Society. Not on the site, not in stores, not for the uninitiated.",
+    body: "Our most curious confections, available only to Society members.",
     className: "bg-tf-turmeric text-tf-black",
     icon: (
       <svg {...ICON_PROPS}>
@@ -124,8 +124,8 @@ const PERKS: Array<{ title: string; body: string; icon: ReactNode; className: st
     ),
   },
   {
-    title: "You Pick the Bars",
-    body: "Every month, choose from our full lineup of bars and that month’s member-only flavors.",
+    title: "Chocolate Curated to You",
+    body: "Pick your favorites or choose from that month’s member-only flavors.",
     className: "bg-tf-rose text-tf-black",
     icon: (
       <svg {...ICON_PROPS}>
@@ -135,13 +135,14 @@ const PERKS: Array<{ title: string; body: string; icon: ReactNode; className: st
     ),
   },
   {
-    title: "Gift-Ready",
-    body: "Gift as many people as you like. Each gets an email from you on the day you pick.",
+    title: "The Gift That Keeps on Giving",
+    body: "Made to be remembered well after it’s delivered.",
     className: "bg-tf-black text-tf-white",
     icon: (
       <svg {...ICON_PROPS}>
-        <rect x="3" y="5" width="18" height="14" rx="2" />
-        <path d="m3.5 6.5 8.5 6.5 8.5-6.5" />
+        <rect x="3.5" y="9" width="17" height="12" rx="1.5" />
+        <path d="M2.5 9h19v3.5h-19zM12 9v12" />
+        <path d="M12 9C10.5 5.5 6.5 5 6.5 7.3 6.5 9 9.5 9 12 9c2.5 0 5.5 0 5.5-1.7C17.5 5 13.5 5.5 12 9z" />
       </svg>
     ),
   },
@@ -154,7 +155,7 @@ export function SocietyPerks() {
         <div className="flex flex-col gap-fluid-xs">
           <Preheader>What Members Get</Preheader>
           <Headline as="h2" size="md">
-            The Perks of Bad Influence
+            The Perks of Membership
           </Headline>
         </div>
         <ul className="grid gap-fluid-sm md:grid-cols-3">
@@ -175,6 +176,81 @@ export function SocietyPerks() {
 /* Six-month timeline                                                   */
 /* ------------------------------------------------------------------ */
 
+/** One seasonal icon per month: a quiet nod to that month's holidays and
+ * flavors, never spelled out on the page. Keyed by MEMBERSHIP_MONTHS;
+ * update both together next season. Decorative (aria-hidden). */
+const MONTH_ICON_PROPS = {
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.5,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+  className: "h-14 w-14",
+};
+
+const CLOVER_LEAF = "M12 11.6C8.4 8.8 7.9 3.4 10.7 3.6c.6 0 1 .5 1.3 1.1.3-.6.7-1.1 1.3-1.1 2.8-.2 2.3 5.2-1.3 8z";
+
+const MONTH_ICONS: Record<(typeof MEMBERSHIP_MONTHS)[number], ReactNode> = {
+  // Two glasses clinking.
+  Jan: (
+    <svg {...MONTH_ICON_PROPS}>
+      <g transform="rotate(-14 8 12)">
+        <path d="M5.5 3.5h5l-.6 6.2a1.9 1.9 0 0 1-3.8 0z" />
+        <path d="M8 11.6v6.4M6 18h4" />
+      </g>
+      <g transform="rotate(14 16 12)">
+        <path d="M13.5 3.5h5l-.6 6.2a1.9 1.9 0 0 1-3.8 0z" />
+        <path d="M16 11.6v6.4M14 18h4" />
+      </g>
+      <path d="M12 2.2v1.6M10.3 2.8l.7.9M13.7 2.8l-.7.9" />
+    </svg>
+  ),
+  // Heart.
+  Feb: (
+    <svg {...MONTH_ICON_PROPS}>
+      <path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.2a4.2 4.2 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z" />
+    </svg>
+  ),
+  // Clover.
+  Mar: (
+    <svg {...MONTH_ICON_PROPS}>
+      <path d={CLOVER_LEAF} />
+      <path d={CLOVER_LEAF} transform="rotate(120 12 12)" />
+      <path d={CLOVER_LEAF} transform="rotate(240 12 12)" />
+      <path d="M12.4 12.6c.5 3.2 1.7 6 3.8 8.4" />
+    </svg>
+  ),
+  // Jester's cap.
+  Apr: (
+    <svg {...MONTH_ICON_PROPS}>
+      <path d="M6.5 16.5C6 12.2 6.9 9.1 9.3 7.4 7 7.5 4.7 9 3.6 11" />
+      <path d="M9.2 16.5c.6-4.6 1.4-8.6 2.8-11.3 1.4 2.7 2.2 6.7 2.8 11.3" />
+      <path d="M17.5 16.5c.5-4.3-.4-7.4-2.8-9.1 2.3.1 4.6 1.6 5.7 3.6" />
+      <path d="M5.5 16.5h13v3h-13z" />
+      <circle cx="3.2" cy="12.2" r="1.2" />
+      <circle cx="12" cy="3.9" r="1.2" />
+      <circle cx="20.8" cy="12.2" r="1.2" />
+    </svg>
+  ),
+  // Tulip.
+  May: (
+    <svg {...MONTH_ICON_PROPS}>
+      <path d="M8 4.5 10 6.6 12 4l2 2.6 2-2.1v4.2a4 4 0 0 1-8 0z" />
+      <path d="M12 12.7V21" />
+      <path d="M12 18.2c-2.4-.3-4-1.8-4.6-4 2.3.2 3.9 1.6 4.6 4zM12 16.6c2.2-.3 3.7-1.7 4.2-3.8-2.1.2-3.6 1.5-4.2 3.8z" />
+    </svg>
+  ),
+  // Sun.
+  Jun: (
+    <svg {...MONTH_ICON_PROPS}>
+      <circle cx="12" cy="12" r="4.2" />
+      <path d="M12 2.5v2.3M12 19.2v2.3M2.5 12h2.3M19.2 12h2.3M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" />
+    </svg>
+  ),
+};
+
 export function SocietyTimeline() {
   return (
     <section className="bg-tf-black px-fluid-md py-fluid-2xl text-tf-white">
@@ -182,41 +258,51 @@ export function SocietyTimeline() {
         <div className="flex flex-col gap-fluid-xs">
           <Preheader>How It Works</Preheader>
           <Headline as="h2" size="md">
-            One Box a Month, Six Months Running
+            Six Months of Curious Confections
           </Headline>
           <BodyText className="max-w-2xl text-tf-white/80">
-            Early each month we email you the lineup: our existing bars plus that month&rsquo;s
-            member-only flavors. You pick your bars, we ship the box. January through June.
+            Starting in January, we send you each month&rsquo;s lineup: our existing bars plus
+            Society-exclusive flavors. You build a box to your taste, and we ship it to you.
           </BodyText>
         </div>
         <ol className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {MEMBERSHIP_MONTHS.map((month, i) => (
+            // A tear-off calendar page: punched header with the month,
+            // the month's icon centered below, a thin stripe edge.
             <li
               key={month}
-              className={`flex flex-col gap-2 overflow-hidden rounded-xl px-4 pt-4 text-tf-black ${
-                i === 0 ? "bg-tf-turmeric pb-4" : "bg-tf-white"
+              className={`flex flex-col overflow-hidden rounded-xl text-tf-black ${
+                i === 0 ? "bg-tf-turmeric" : "bg-tf-white"
               }`}
             >
-              <span className="text-xs font-black tracking-[0.075em] text-tf-black/70">
-                {MEMBERSHIP_YEAR}
-              </span>
-              <span className="font-display text-3xl leading-none font-semibold">{month}</span>
-              <span className="text-sm leading-snug">
-                {i === 0 ? "Pick your first bars" : "New member-only flavor"}
-              </span>
-              {i > 0 && (
-                <span
-                  aria-hidden="true"
-                  className="-mx-4 mt-auto block h-11"
-                  style={{
-                    backgroundImage:
-                      "repeating-linear-gradient(90deg, var(--tf-black) 0 12px, var(--tf-white) 12px 24px)",
-                  }}
-                />
-              )}
+              <div className="relative flex items-baseline justify-between gap-2 bg-tf-cinnamon-strong px-4 pt-4 pb-2.5 text-tf-white">
+                <span aria-hidden="true" className="absolute top-1.5 left-1/4 h-1.5 w-1.5 rounded-full bg-tf-black/35" />
+                <span aria-hidden="true" className="absolute top-1.5 right-1/4 h-1.5 w-1.5 rounded-full bg-tf-black/35" />
+                <span className="font-display text-2xl leading-none font-semibold">{month}</span>
+                <span className="text-[0.7rem] font-black tracking-[0.075em] text-tf-white/80">
+                  {MEMBERSHIP_YEAR}
+                </span>
+              </div>
+              <div className="flex flex-1 flex-col items-center justify-center gap-1.5 px-3 py-5">
+                {MONTH_ICONS[month]}
+                {i === 0 && (
+                  <span className="text-xs font-black tracking-[0.075em] uppercase">Your first box</span>
+                )}
+              </div>
+              <span
+                aria-hidden="true"
+                className="block h-2.5"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(90deg, var(--tf-black) 0 8px, var(--tf-white) 8px 16px)",
+                }}
+              />
             </li>
           ))}
         </ol>
+        <p className="text-sm text-tf-white/70">
+          Each month&rsquo;s flavors stay under Tom&rsquo;s hat until that month&rsquo;s email.
+        </p>
       </div>
     </section>
   );
