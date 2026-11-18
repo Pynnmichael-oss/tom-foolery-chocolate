@@ -1,7 +1,7 @@
 import { adminFetch, isShopifyAdminConfigured } from "@/lib/shopify/admin";
 import { isProductionRuntime } from "@/lib/env";
 import type { CartAttribute } from "@/lib/shopify/types";
-import { GIFT_DATE_MIN, MISCHIEF_SOCIETY_HANDLE, SALE_CLOSES_AT } from "./config";
+import { GIFT_DATE_MIN, MEMBERSHIP_SKUS, MEMBERSHIP_TITLE_PREFIX, SALE_CLOSES_AT } from "./config";
 import { readGift } from "./gifts";
 import type { ShippingAddress } from "./address";
 
@@ -25,7 +25,10 @@ export interface MembershipOrderLine {
   id: string;
   currentQuantity: number;
   variantTitle: string | null;
-  product: { handle: string } | null;
+  /** The line's own SKU and title (order data). Deliberately not the
+   * line's product, which needs the read_products scope. */
+  sku: string | null;
+  title: string;
   customAttributes: CartAttribute[];
 }
 
@@ -72,7 +75,7 @@ const ORDERS_QUERY = /* GraphQL */ `
         buyer: billingAddress { firstName lastName }
         metafield(namespace: "${METAFIELD_NAMESPACE}", key: "${GIFTS_SENT_KEY}") { value }
         lineItems(first: 100) {
-          nodes { id currentQuantity variantTitle product { handle } customAttributes { key value } }
+          nodes { id currentQuantity variantTitle sku title customAttributes { key value } }
         }
       }
     }
@@ -90,7 +93,7 @@ const ORDER_QUERY = /* GraphQL */ `
       buyer: billingAddress { firstName lastName }
       member: metafield(namespace: "${METAFIELD_NAMESPACE}", key: $key) { value }
       lineItems(first: 100) {
-        nodes { id currentQuantity variantTitle product { handle } customAttributes { key value } }
+        nodes { id currentQuantity variantTitle sku title customAttributes { key value } }
       }
     }
   }
@@ -124,7 +127,12 @@ export function barsFrom(variantTitle: string | null): number | null {
 }
 
 export function isMembershipLine(line: MembershipOrderLine): boolean {
-  return line.product?.handle === MISCHIEF_SOCIETY_HANDLE && line.currentQuantity > 0;
+  if (line.currentQuantity <= 0) return false;
+  const sku = (line.sku ?? "").toUpperCase();
+  return (
+    MEMBERSHIP_SKUS.some((s) => sku === s.toUpperCase()) ||
+    line.title.trim().toLowerCase().startsWith(MEMBERSHIP_TITLE_PREFIX.toLowerCase())
+  );
 }
 
 function parseRecord(value: string | undefined | null): MemberRecord {
@@ -178,14 +186,16 @@ const SAMPLE_ORDER: MembershipOrder = {
         id: "gid://shopify/LineItem/2001",
         currentQuantity: 1,
         variantTitle: "6 Bars",
-        product: { handle: MISCHIEF_SOCIETY_HANDLE },
+        sku: "COTM-6-6",
+        title: "The Mischief Society: Chocolate of the Month Club",
         customAttributes: [],
       },
       {
         id: "gid://shopify/LineItem/2002",
         currentQuantity: 1,
         variantTitle: "3 Bars",
-        product: { handle: MISCHIEF_SOCIETY_HANDLE },
+        sku: "COTM-3-6",
+        title: "The Mischief Society: Chocolate of the Month Club",
         customAttributes: [
           { key: "Gift for", value: "Linda Park" },
           { key: "Recipient email", value: "linda@example.com" },
