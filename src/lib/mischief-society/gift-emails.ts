@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { adminFetch } from "@/lib/shopify/admin";
 import { sendCustomEvent, upsertContact } from "@/lib/omnisend/server";
-import { OMNISEND_EVENTS, OMNISEND_MEMBER_TAG } from "./config";
+import { DEFAULT_GIFT_NOTE, OMNISEND_EVENTS, OMNISEND_MEMBER_TAG } from "./config";
 import { formatGiftDate, readGift } from "./gifts";
 import { isMemberLinkConfigured, memberUrl } from "./member-links";
 import {
@@ -133,7 +133,8 @@ export async function runGiftEmails({
                 recipient_name: gift.name,
                 recipient_first_name: firstName || gift.name,
                 from,
-                note: gift.note,
+                // The email's membership card always shows a note.
+                note: gift.note || DEFAULT_GIFT_NOTE,
                 bars_per_month: bars ?? "",
                 order: order.name,
                 member_link: link,

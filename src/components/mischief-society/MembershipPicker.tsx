@@ -12,6 +12,7 @@ import {
   GIFT_DATE_MAX,
   GIFT_DATE_MIN,
   GIFT_NOTE_MAX,
+  DEFAULT_GIFT_NOTE,
   JOIN_ANCHOR,
   JOIN_GIFT_ANCHOR,
   NAME_MAX,
@@ -527,8 +528,7 @@ export function MembershipPicker({
                       {active.name.trim() ? `${active.name.trim().split(/\s+/)[0]}, you’re in.` : "You’re in."}
                     </p>
                     <p className="font-display text-lg leading-snug break-words italic">
-                      {active.note.trim() ||
-                        "Consider this your official invitation to six months of chocolate mischief. And don\u2019t worry, the secret handshake is optional."}
+                      {active.note.trim() || DEFAULT_GIFT_NOTE}
                     </p>
                     <p className="self-end font-display text-2xl">&ndash;{from.trim() || "You"}</p>
                   </>
