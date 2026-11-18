@@ -73,6 +73,15 @@ export const GIFT_ATTR = {
 /** Omnisend: every member gets this tag; the monthly pick-your-bars email
  * goes to it. */
 export const OMNISEND_MEMBER_TAG = `mischief-society-${MEMBERSHIP_YEAR}`;
+/** Omnisend tags for the "email me when doors open" signup: before the
+ * sale, and after it closes (next season). */
+export const OMNISEND_ALERT_TAGS = {
+  pre: "mischief-society-launch-alert",
+  closed: "mischief-society-next-season",
+} as const;
+/** In-page anchor for that signup form. */
+export const NOTIFY_ANCHOR = "notify";
+
 /** Custom events the Omnisend automations trigger on. */
 export const OMNISEND_EVENTS = {
   /** Sent to the recipient on their gift date — the gift email itself. */

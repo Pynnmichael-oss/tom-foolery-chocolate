@@ -313,6 +313,18 @@ of the shop grid and sitemap.
    `mischief_society.gifts_sent`, so re-runs never send twice. A missed
    day catches up on the next run.
 
+**"Email me when doors open" signup.** Before 11/27 and after 11/30 the
+hero and closing section show an email form instead of the Join / Gift
+buttons (the picker links to it too). It posts to
+`/api/mischief-society/notify`, which subscribes the email in Omnisend
+(email channel `subscribed`, with a consent record: source, time, IP,
+user agent; no welcome/discount email) and tags it by the server's clock:
+`mischief-society-launch-alert` before the sale,
+`mischief-society-next-season` after it. Honeypot field and a 5-per-10-min
+per-IP rate limit, same as the contact form. The form tells people
+they'll also get the occasional Tom Foolery email. Without
+`OMNISEND_API_KEY` it shows "Signups aren't set up yet."
+
 Check what a run would do without sending anything:
 `curl -H "Authorization: Bearer $CRON_SECRET" "https://<site>/api/cron/mischief-society-gifts?dry=1"`
 
@@ -333,6 +345,9 @@ Check what a run would do without sending anything:
    recipients aren't marketing subscribers, so check the automation is
    allowed to send to non-subscribers (or treat it as transactional).
    The monthly pick-your-bars email targets the `mischief-society-2027` tag.
+   For the launch alert, build a segment on the tag
+   `mischief-society-launch-alert` and schedule a campaign to it for the
+   morning of 11/27. Next season, use `mischief-society-next-season`.
 4. **Vercel:** set `CRON_SECRET` (Production). Cron jobs only run on the
    production deployment.
 

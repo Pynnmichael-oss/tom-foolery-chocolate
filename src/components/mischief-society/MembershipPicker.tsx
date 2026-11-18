@@ -15,6 +15,7 @@ import {
   JOIN_ANCHOR,
   JOIN_GIFT_ANCHOR,
   NAME_MAX,
+  NOTIFY_ANCHOR,
   SALE_OPENS_LABEL,
   societyToday,
   type SalePhase,
@@ -471,6 +472,16 @@ export function MembershipPicker({
                   {buttonLabel}
                 </Button>
               </div>
+              {phase !== "live" && (
+                <a
+                  href={`#${NOTIFY_ANCHOR}`}
+                  className="self-start text-sm font-semibold underline underline-offset-4"
+                >
+                  {phase === "pre"
+                    ? "Get an email when doors open \u2192"
+                    : "Get an email when the next season opens \u2192"}
+                </a>
+              )}
               {mode === "gift" && (
                 <ul className="flex flex-col gap-1 text-sm text-tf-black/70 tabular-nums">
                   {lines.map((l, i) => (
