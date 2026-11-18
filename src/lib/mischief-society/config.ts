@@ -52,6 +52,11 @@ export const GIFT_DATE_MAX = "2026-12-31";
 export const GIFT_DATE_DEFAULT = "2026-12-25";
 
 export const GIFT_NOTE_MAX = 200;
+
+/** Stands in for the gift note when the buyer leaves it blank: in the
+ * checkout preview and on the membership card in the gift email. */
+export const DEFAULT_GIFT_NOTE =
+  "Consider this your official invitation to six months of chocolate mischief. And don\u2019t worry, the secret handshake is optional.";
 export const NAME_MAX = 40;
 
 /** Timezone the gift dates are read in (and the cron's "today"). */
