@@ -12,6 +12,10 @@ import { CartDrawer } from "@/components/commerce/CartDrawer";
 import { OmnisendSnippet } from "@/components/analytics/OmnisendSnippet";
 import { OmnisendPageView } from "@/components/analytics/OmnisendPageView";
 import { GoogleAnalyticsSnippet } from "@/components/analytics/GoogleAnalyticsSnippet";
+import {
+  GoogleTagManagerNoScript,
+  GoogleTagManagerSnippet,
+} from "@/components/analytics/GoogleTagManagerSnippet";
 import { OrganizationJsonLd } from "@/components/seo/OrganizationJsonLd";
 import { BASE_OPEN_GRAPH, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
@@ -59,7 +63,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: JS_CLASS_SCRIPT }} />
       </head>
       <body className="min-h-full bg-bg font-sans text-fg">
+        <GoogleTagManagerNoScript />
         <OrganizationJsonLd />
+        <GoogleTagManagerSnippet />
         <GoogleAnalyticsSnippet />
         <OmnisendSnippet />
         {/* useSearchParams (inside OmnisendPageView) opts its subtree out
