@@ -56,8 +56,8 @@ export default async function MemberPage(props: PageProps<"/mischief-society/mem
           </Headline>
           <BodyText size="lg" className="max-w-2xl">
             {membership.isGift && membership.giftedBy
-              ? `${membership.giftedBy} made you a member. This is your corner of the Society: where your chocolate ships and, starting in January, what goes in the box.`
-              : "This is your corner of the Society: where your chocolate ships and, starting in January, what goes in the box."}
+              ? `${membership.giftedBy} let you in on the mischief. Drop your address below, and come January, this is where you’ll pick what’s in your box.`
+              : "Welcome to the inner circle. Drop your address below, and come January, this is where you’ll pick what’s in your box."}
           </BodyText>
         </div>
       </section>
