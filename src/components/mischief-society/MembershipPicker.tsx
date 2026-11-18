@@ -528,7 +528,7 @@ export function MembershipPicker({
                     </p>
                     <p className="font-display text-lg leading-snug break-words italic">
                       {active.note.trim() ||
-                        "Six months of chocolate, your pick every month. Welcome to the Society."}
+                        "Consider this your official invitation to six months of chocolate mischief. Secret handshake optional."}
                     </p>
                     <p className="self-end font-display text-2xl">&ndash;{from.trim() || "You"}</p>
                   </>
@@ -538,14 +538,12 @@ export function MembershipPicker({
                       Welcome to the Society.
                     </p>
                     <p className="font-display text-lg leading-snug italic">
-                      Your membership is official. In January you&rsquo;ll pick your first bars.
+                      Pull up a chair. Six months of curious confections are headed your way, and
+                      the secret handshake is optional.
                     </p>
                     <p className="self-end font-display text-2xl">&ndash;Tom</p>
                   </>
                 )}
-                <span className="self-start rounded-full bg-tf-black px-4 py-2 font-sans text-[0.7rem] font-black tracking-[0.075em] text-tf-white uppercase">
-                  Watch for your pick-your-bars email in January
-                </span>
                 <dl className="mt-auto grid grid-cols-3 gap-2 border-t-[1.5px] border-tf-black/20 pt-3 text-xs">
                   <div>
                     <dt className="sr-only">Bars</dt>
@@ -576,7 +574,7 @@ export function MembershipPicker({
                 ? `Gift ${activeIndex + 1} of ${recipients.length}: emailed to ${
                     active.email.trim() || "their inbox"
                   } on ${formatGiftDate(active.sendDate) || "the date you pick"}.`
-                : "In January we’ll email you to pick your first bars."}
+                : "A sneak peek at your membership card."}
             </p>
           </aside>
         </div>
