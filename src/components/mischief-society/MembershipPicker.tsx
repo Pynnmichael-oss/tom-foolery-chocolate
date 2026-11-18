@@ -539,7 +539,7 @@ export function MembershipPicker({
                     </p>
                     <p className="font-display text-lg leading-snug italic">
                       Pull up a chair. Six months of curious confections are headed your way, and
-                      the secret handshake is optional.
+                      don&rsquo;t worry, the secret handshake is optional.
                     </p>
                     <p className="self-end font-display text-2xl">&ndash;Tom</p>
                   </>
