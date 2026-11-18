@@ -280,6 +280,62 @@ purchase) — run it after adding or editing products, so a
 subscription-only product doesn't show up unexpectedly in
 `ProductDetail.tsx`'s purchase-options UI.
 
+## The Mischief Society — membership page + gift emails
+
+`/mischief-society` sells the six-month membership (Shopify product
+`chocolate-of-the-month-club`, variants "3 Bars" / "6 Bars", one
+payment). Dates, prices fallback, tier names, attribute keys and Omnisend
+names all live in `src/lib/mischief-society/config.ts`; next season is an
+edit to that file.
+
+**Buying.** "Just me" adds one plain line. "Gifting" adds one cart line
+per recipient in a single `cartLinesAdd`, each carrying line attributes
+`Gift for`, `Recipient email`, `Send gift email on` (YYYY-MM-DD), `From`
+and `Gift note`. Those become line item properties on the order. Send
+dates run from the sale opening to Dec 31, so every recipient is on the
+member list before the January pick-your-bars email. The product's own
+`/shop/[handle]` page redirects to `/mischief-society` and it's kept out
+of the shop grid and sitemap.
+
+**Daily job** (`/api/cron/mischief-society-gifts`, 7am Chicago via
+`vercel.json`, code in `src/lib/mischief-society/gift-emails.ts`):
+
+1. Reads paid, uncancelled orders from the sale window that contain the
+   membership (Shopify Admin API).
+2. For each gift line due today or earlier, not yet sent: upserts the
+   recipient in Omnisend (tag `mischief-society-2027`, custom properties
+   `society_bars`, `society_gifted_by`, `society_memberships`; no
+   subscription status is set, so recipients are not opted in to
+   marketing), then sends custom event `mischief society gift delivered`
+   to the recipient and `mischief society gift sent` to the buyer.
+3. For each "for me" line: upserts the buyer with the same tag.
+4. Records handled line IDs in the order metafield
+   `mischief_society.gifts_sent`, so re-runs never send twice. A missed
+   day catches up on the next run.
+
+Check what a run would do without sending anything:
+`curl -H "Authorization: Bearer $CRON_SECRET" "https://<site>/api/cron/mischief-society-gifts?dry=1"`
+
+### Setup checklist
+
+1. **Shopify product:** publish it to the Headless channel before 11/27,
+   set stock (or turn off inventory tracking), set it to not require
+   shipping (boxes ship from the monthly imported orders), and update the
+   description (still says December through May / rotating mix). Until
+   it's readable by the Storefront API the page shows fallback prices and
+   "Not available yet".
+2. **Shopify custom app** with `read_orders` + `write_orders` and
+   protected customer data access (email, name) → `SHOPIFY_ADMIN_ACCESS_TOKEN`.
+3. **Omnisend:** API key → `OMNISEND_API_KEY`. Build two custom-event
+   automations: one on `mischief society gift delivered` (the gift email;
+   properties `recipient_first_name`, `from`, `note`, `bars_per_month`)
+   and one on `mischief society gift sent` (the buyer's heads-up). Gift
+   recipients aren't marketing subscribers, so check the automation is
+   allowed to send to non-subscribers (or treat it as transactional).
+   The monthly pick-your-bars email targets the `mischief-society-2027` tag.
+4. **Vercel:** set `CRON_SECRET` (Production). Cron jobs only run on the
+   production deployment.
+
 ## Domain & DNS — tomfoolerychocolate.com
 
 **2026-10-04: live cutover from the old Shopify theme to this app.**

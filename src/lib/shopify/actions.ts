@@ -130,6 +130,33 @@ export async function addToCartAction(
   }
 }
 
+/**
+ * Adds several independent lines in ONE cartLinesAdd — e.g. a Mischief
+ * Society order with a membership per gift recipient, so a 20-person
+ * order never lands half-added. Each line keeps its own attributes.
+ * Same expired-cart recovery as addToCartAction.
+ */
+export async function addLinesAction(
+  cartId: string | null,
+  lines: CartLineInput[]
+): Promise<CartResult> {
+  if (!lines.length) return { success: false, error: GENERIC_CART_ERROR };
+  // Shopify puts each added line at the top of the cart, so send them
+  // reversed to keep the shopper's order at checkout.
+  const ordered = [...lines].reverse();
+  try {
+    if (!cartId) return { success: true, cart: await createCart(ordered) };
+    try {
+      return { success: true, cart: await addLines(cartId, ordered) };
+    } catch (error) {
+      console.error("[cart] addLines (multi) failed, starting a new cart:", error);
+      return { success: true, cart: await createCart(ordered) };
+    }
+  } catch (error) {
+    return { success: false, error: toCartError(error, "addLinesAction failed") };
+  }
+}
+
 export async function updateCartLineAction(
   cartId: string,
   lineId: string,

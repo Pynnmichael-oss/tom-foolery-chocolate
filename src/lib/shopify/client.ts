@@ -12,7 +12,7 @@
  */
 
 // Bump quarterly: https://shopify.dev/docs/api/usage/versioning
-const SHOPIFY_API_VERSION = "2026-07";
+export const SHOPIFY_API_VERSION = "2026-07";
 
 /** True once the store domain + public token are present. Every
  * query/mutation in queries.ts checks this first and falls back to

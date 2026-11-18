@@ -8,6 +8,8 @@
  * plain products they'd have no flavors/band on the order — so they're
  * kept out of the shop grid and their /shop/[handle] page redirects here.
  */
+import { MISCHIEF_SOCIETY_HANDLE } from "@/lib/mischief-society/config";
+
 export const GIFT_SETS = {
   bars: "build-your-own-bar-gift-set",
   caramels: "malort-caramel-gift-set",
@@ -35,6 +37,9 @@ export const LISTING_QUERY_FILTER = HIDDEN_PRODUCT_TAGS.map((t) => `-tag:${t}`).
  * (sold only through /gifts/build) and the hidden-tag component products. */
 export function isHiddenFromListings(p: { handle: string; tags?: string[] | null }): boolean {
   if (giftSetKeyForHandle(p.handle)) return true;
+  // Sold only through /mischief-society (gift recipients and dates live
+  // on that page) — never as a grid card or a plain product page.
+  if (p.handle === MISCHIEF_SOCIETY_HANDLE) return true;
   const tags = (p.tags ?? []).map((t) => t.toLowerCase());
   return HIDDEN_PRODUCT_TAGS.some((t) => tags.includes(t));
 }
