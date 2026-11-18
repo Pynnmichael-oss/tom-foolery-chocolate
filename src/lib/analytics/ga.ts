@@ -1,6 +1,7 @@
 "use client";
 
 import type { Cart, Product, ProductVariant } from "@/lib/shopify/types";
+import { metaAddToCart, metaViewContent } from "./meta";
 
 declare global {
   interface Window {
@@ -20,7 +21,9 @@ declare global {
 }
 
 /**
- * GA4 standard ecommerce events for the headless store. `purchase` is
+ * GA4 standard ecommerce events for the headless store. `trackViewItem`
+ * and `trackAddToCart` also send the matching Meta Pixel events (see
+ * `meta.ts`), so call sites make one call per user action. `purchase` is
  * deliberately not here — that stays with Shopify's own checkout
  * tracking once the visitor leaves for `checkout.tomfoolerychocolate.com`
  * (see GoogleTags.tsx's own comment).
@@ -57,6 +60,7 @@ function lineToItem(line: Cart["lines"][number]): GAItem {
 /** PDP view — fire once per product page load, not on every variant
  * selection change (that's a different event, not requested here). */
 export function trackViewItem(product: Product, variant: ProductVariant) {
+  metaViewContent(product, variant);
   gtagEvent("view_item", {
     currency: variant.price.currencyCode,
     value: Number(variant.price.amount),
@@ -77,6 +81,7 @@ export function trackAddToCart(
   variant: ProductVariant,
   quantity: number
 ) {
+  metaAddToCart(product, variant, quantity);
   gtagEvent("add_to_cart", {
     currency: variant.price.currencyCode,
     value: Number(variant.price.amount) * quantity,
