@@ -13,6 +13,11 @@ export const MISCHIEF_SOCIETY_HANDLE = "chocolate-of-the-month-club";
 
 export const MISCHIEF_SOCIETY_PATH = "/mischief-society";
 
+/** Members' welcome page (how membership works + "email me my link"). */
+export const MISCHIEF_SOCIETY_WELCOME_PATH = "/mischief-society/welcome";
+/** Private member pages live at /mischief-society/member/<token>. */
+export const MISCHIEF_SOCIETY_MEMBER_PATH = "/mischief-society/member";
+
 /** In-page anchors. Landing on JOIN_GIFT_ANCHOR preselects "Gifting". */
 export const JOIN_ANCHOR = "join";
 export const JOIN_GIFT_ANCHOR = "join-gift";
@@ -87,6 +92,9 @@ export const OMNISEND_EVENTS = {
   giftDelivered: "mischief society gift delivered",
   /** Sent to the buyer once a recipient's email has gone out. */
   giftSentBuyerCopy: "mischief society gift sent",
+  /** Sent to a member with their private member-page link: the welcome
+   * email for "for me" members, and the "email me my link" resend. */
+  memberLink: "mischief society member link",
 } as const;
 
 export type SalePhase = "pre" | "live" | "closed";

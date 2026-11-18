@@ -297,6 +297,33 @@ member list before the January pick-your-bars email. The product's own
 `/shop/[handle]` page redirects to `/mischief-society` and it's kept out
 of the shop grid and sitemap.
 
+**Member pages.** Every membership has a private page at
+`/mischief-society/member/<token>`. The token names the order line and is
+signed (HMAC) with `MEMBER_LINK_SECRET`, falling back to `CRON_SECRET`,
+so it can't be guessed or edited. There are no accounts: the link is the
+key. On the page the member sees their box size and months and adds or
+changes their US shipping address. Monthly bar picks (with 10%-off
+add-on bars) come next. The address is saved on the Shopify order in the
+metafield `mischief_society.member_<line id>` (JSON: `address`,
+`addressUpdatedAt`), one per member, so you can see it in Shopify admin.
+
+How members get their link:
+- **Gift recipients:** `member_link` on the "gift delivered" event, for the
+  gift email's button.
+- **"For me" buyers:** the daily job sends `mischief society member link`
+  (properties `first_name`, `member_link`, `bars_per_month`, `order`).
+- **Everyone:** the Omnisend contact property `society_member_link`, for
+  the monthly emails (`[[contact.custom_properties.society_member_link]]`).
+- **Lost links:** `/mischief-society/welcome` has an "Email My Link" box
+  (`/api/mischief-society/member-link`) that re-sends through the same
+  `mischief society member link` event. It answers the same way whether or
+  not the email has a membership, and a gift only counts once its gift date
+  has passed.
+
+Shopify only lets an app read orders from the last 60 days unless it has
+the `read_all_orders` scope. Add that scope to the Dev Dashboard app
+before late January, or member pages stop loading for November orders.
+
 **Daily job** (`/api/cron/mischief-society-gifts`, 7am Chicago via
 `vercel.json`, code in `src/lib/mischief-society/gift-emails.ts`):
 
@@ -348,14 +375,19 @@ Check what a run would do without sending anything:
 2. **Shopify app for the Admin API.** Shopify no longer allows new
    admin-created custom apps; create one in the Dev Dashboard (Shopify
    admin → Settings → Apps → Develop apps → Build apps in Dev Dashboard),
-   give its version the `read_orders` + `write_orders` scopes and
+   give its version the `read_orders` + `write_orders` scopes,
+   `read_all_orders` (member pages read orders older than 60 days) and
    protected customer data access (email, name), install it on the
    store, then copy its Client ID and Client secret →
    `SHOPIFY_ADMIN_CLIENT_ID` + `SHOPIFY_ADMIN_CLIENT_SECRET`. The job
    exchanges them for a 24-hour token (client credentials grant). An
    existing legacy app's permanent token in `SHOPIFY_ADMIN_ACCESS_TOKEN`
    also works.
-3. **Omnisend:** API key → `OMNISEND_API_KEY`. Build two custom-event
+3. **Omnisend:** a third automation on `mischief society member link`
+   (the member-page email, with a button to `[[event.member_link]]`), and
+   an "Add your shipping address" button in the gift email pointing to
+   `[[event.member_link]]`.
+4. **Omnisend (gift emails):** API key → `OMNISEND_API_KEY`. Build two custom-event
    automations: one on `mischief society gift delivered` (the gift email;
    properties `recipient_first_name`, `from`, `note`, `bars_per_month`)
    and one on `mischief society gift sent` (the buyer's heads-up). Gift
@@ -365,7 +397,7 @@ Check what a run would do without sending anything:
    For the launch alert, build a segment on the tag
    `mischief-society-launch-alert` and schedule a campaign to it for the
    morning of 11/27.
-4. **Vercel:** set `CRON_SECRET` (Production). Cron jobs only run on the
+5. **Vercel:** set `CRON_SECRET` (Production). Cron jobs only run on the
    production deployment.
 
 ## Domain & DNS — tomfoolerychocolate.com
