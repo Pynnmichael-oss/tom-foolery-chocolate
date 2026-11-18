@@ -25,7 +25,7 @@ export async function GET(request: Request) {
   }
 
   const missing = [
-    !isShopifyAdminConfigured() && "SHOPIFY_ADMIN_ACCESS_TOKEN",
+    !isShopifyAdminConfigured() && "SHOPIFY_ADMIN_CLIENT_ID + SHOPIFY_ADMIN_CLIENT_SECRET",
     !isOmnisendConfigured() && "OMNISEND_API_KEY",
   ].filter(Boolean);
   if (missing.length) {

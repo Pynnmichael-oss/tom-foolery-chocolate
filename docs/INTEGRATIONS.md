@@ -324,8 +324,16 @@ Check what a run would do without sending anything:
    description (still says December through May / rotating mix). Until
    it's readable by the Storefront API the page shows fallback prices and
    "Not available yet".
-2. **Shopify custom app** with `read_orders` + `write_orders` and
-   protected customer data access (email, name) → `SHOPIFY_ADMIN_ACCESS_TOKEN`.
+2. **Shopify app for the Admin API.** Shopify no longer allows new
+   admin-created custom apps; create one in the Dev Dashboard (Shopify
+   admin → Settings → Apps → Develop apps → Build apps in Dev Dashboard),
+   give its version the `read_orders` + `write_orders` scopes and
+   protected customer data access (email, name), install it on the
+   store, then copy its Client ID and Client secret →
+   `SHOPIFY_ADMIN_CLIENT_ID` + `SHOPIFY_ADMIN_CLIENT_SECRET`. The job
+   exchanges them for a 24-hour token (client credentials grant). An
+   existing legacy app's permanent token in `SHOPIFY_ADMIN_ACCESS_TOKEN`
+   also works.
 3. **Omnisend:** API key → `OMNISEND_API_KEY`. Build two custom-event
    automations: one on `mischief society gift delivered` (the gift email;
    properties `recipient_first_name`, `from`, `note`, `bars_per_month`)
