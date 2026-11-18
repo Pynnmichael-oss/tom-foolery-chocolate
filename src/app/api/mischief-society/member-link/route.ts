@@ -89,7 +89,12 @@ function failureCode(error: unknown): string {
   if (error instanceof ShopifyAdminError) {
     const m = error.message;
     if (/token request|Admin API token|reach Shopify for an Admin/i.test(m)) return "SHOP-TOKEN";
-    if (/access denied|not approved|protected customer data|ACCESS_DENIED|scope/i.test(m)) return "SHOP-ACCESS";
+    if (/access denied|not approved|protected customer data|ACCESS_DENIED|scope/i.test(m)) {
+      // Name the refused field when Shopify says which one ("Access denied
+      // for customer field"), e.g. SHOP-ACCESS-customer.
+      const field = /access denied for (\w+) field/i.exec(m)?.[1] ?? /use the (\w+) field/i.exec(m)?.[1];
+      return field ? `SHOP-ACCESS-${field}` : "SHOP-ACCESS";
+    }
     return "SHOP-API";
   }
   return "OTHER";

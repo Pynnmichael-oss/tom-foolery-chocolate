@@ -34,7 +34,10 @@ export interface MembershipOrder {
   name: string;
   cancelledAt: string | null;
   email: string | null;
-  customer: { firstName: string | null; lastName: string | null } | null;
+  /** The billing name (aliased from billingAddress). Deliberately not the
+   * order's customer record, which needs the read_customers scope; the
+   * order's own email and billing address only need read_orders. */
+  buyer: { firstName: string | null; lastName: string | null } | null;
   metafield: { value: string } | null;
   lineItems: { nodes: MembershipOrderLine[] };
 }
@@ -66,7 +69,7 @@ const ORDERS_QUERY = /* GraphQL */ `
         name
         cancelledAt
         email
-        customer { firstName lastName }
+        buyer: billingAddress { firstName lastName }
         metafield(namespace: "${METAFIELD_NAMESPACE}", key: "${GIFTS_SENT_KEY}") { value }
         lineItems(first: 100) {
           nodes { id currentQuantity variantTitle product { handle } customAttributes { key value } }
@@ -84,7 +87,7 @@ const ORDER_QUERY = /* GraphQL */ `
       cancelledAt
       email
       displayFinancialStatus
-      customer { firstName lastName }
+      buyer: billingAddress { firstName lastName }
       member: metafield(namespace: "${METAFIELD_NAMESPACE}", key: $key) { value }
       lineItems(first: 100) {
         nodes { id currentQuantity variantTitle product { handle } customAttributes { key value } }
@@ -140,7 +143,7 @@ function toMembership(
   record: MemberRecord
 ): Membership {
   const gift = readGift(line.customAttributes);
-  const buyerFirst = order.customer?.firstName?.trim() || "";
+  const buyerFirst = order.buyer?.firstName?.trim() || "";
   return {
     orderGid: order.id,
     lineGid: line.id,
@@ -167,7 +170,7 @@ const SAMPLE_ORDER: MembershipOrder = {
   name: "#SAMPLE",
   cancelledAt: null,
   email: "buyer@example.com",
-  customer: { firstName: "Garrett", lastName: "Sample" },
+  buyer: { firstName: "Garrett", lastName: "Sample" },
   metafield: null,
   lineItems: {
     nodes: [
