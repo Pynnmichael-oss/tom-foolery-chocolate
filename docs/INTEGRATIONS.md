@@ -297,11 +297,6 @@ member list before the January pick-your-bars email. The product's own
 `/shop/[handle]` page redirects to `/mischief-society` and it's kept out
 of the shop grid and sitemap.
 
-**Members' welcome page.** `/mischief-society/welcome` explains what
-happens next for people who were given a membership (no buying on it).
-The Omnisend gift email's button points there. It's `noindex` and not in
-the sitemap.
-
 **Daily job** (`/api/cron/mischief-society-gifts`, 7am Chicago via
 `vercel.json`, code in `src/lib/mischief-society/gift-emails.ts`):
 

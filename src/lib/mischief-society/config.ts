@@ -13,9 +13,6 @@ export const MISCHIEF_SOCIETY_HANDLE = "chocolate-of-the-month-club";
 
 export const MISCHIEF_SOCIETY_PATH = "/mischief-society";
 
-/** Members' welcome page — where the gift email's button points. */
-export const MISCHIEF_SOCIETY_WELCOME_PATH = "/mischief-society/welcome";
-
 /** In-page anchors. Landing on JOIN_GIFT_ANCHOR preselects "Gifting". */
 export const JOIN_ANCHOR = "join";
 export const JOIN_GIFT_ANCHOR = "join-gift";
