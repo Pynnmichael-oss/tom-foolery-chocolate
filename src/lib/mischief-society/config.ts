@@ -29,10 +29,13 @@ export const SALE_CLOSES_LABEL = "Cyber Monday, 11/30";
 export const MEMBERSHIP_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"] as const;
 export const MEMBERSHIP_YEAR = 2027;
 
-/** Gift emails can go out any day from the sale opening through Dec 31,
- * so every recipient is on the member list before the January
- * pick-your-bars email. YYYY-MM-DD, compared as strings. */
-export const GIFT_DATE_MIN = "2026-11-27";
+/** Gift emails can go out any day from today (the day of purchase)
+ * through Dec 31, so every recipient is on the member list before the
+ * January pick-your-bars email. GIFT_DATE_MIN is only a floor under
+ * "today": set to the start of pre-launch testing so test orders can use
+ * today's date. It also starts the order window the daily gift job reads.
+ * YYYY-MM-DD, compared as strings. */
+export const GIFT_DATE_MIN = "2026-11-18";
 export const GIFT_DATE_MAX = "2026-12-31";
 export const GIFT_DATE_DEFAULT = "2026-12-25";
 
@@ -82,6 +85,10 @@ export const OMNISEND_EVENTS = {
 } as const;
 
 export type SalePhase = "pre" | "live" | "closed";
+
+/** Adding ?test to the page URL opens checkout regardless of the sale
+ * dates, for testing on the live site before 11/27. Not linked anywhere. */
+export const TEST_MODE_PARAM = "test";
 
 export function salePhase(now: number = Date.now()): SalePhase {
   if (now < Date.parse(SALE_OPENS_AT)) return "pre";

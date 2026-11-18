@@ -313,6 +313,14 @@ of the shop grid and sitemap.
    `mischief_society.gifts_sent`, so re-runs never send twice. A missed
    day catches up on the next run.
 
+**Testing before the sale.** Add `?test` to the page URL
+(`/mischief-society?test`) to open checkout regardless of the sale dates.
+A black "Test mode" bar replaces the countdown. Gift dates can be any day
+from today, so a test gift dated today goes out on the next 7am run. Test
+orders are real orders: cancel or refund them afterwards (the job skips
+cancelled orders and refunded lines), and remove the test contacts from
+the `mischief-society-2027` tag in Omnisend.
+
 Check what a run would do without sending anything:
 `curl -H "Authorization: Bearer $CRON_SECRET" "https://<site>/api/cron/mischief-society-gifts?dry=1"`
 

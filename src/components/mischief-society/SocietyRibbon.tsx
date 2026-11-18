@@ -18,7 +18,18 @@ function countdown(ms: number): string {
 
 /** Cinnamon deadline bar across the top of /mischief-society. */
 export function SocietyRibbon({ initialPhase }: { initialPhase: SalePhase }) {
-  const { phase, now } = useSalePhase(initialPhase);
+  const { phase, now, testMode } = useSalePhase(initialPhase);
+
+  if (testMode) {
+    return (
+      <div className="bg-tf-black px-fluid-md py-2.5 text-center text-tf-white">
+        <p className="mx-auto max-w-7xl text-sm sm:text-base">
+          <span className="font-black tracking-wide">Test mode:</span> checkout is open for testing. The
+          public sale opens {SALE_OPENS_LABEL}.
+        </p>
+      </div>
+    );
+  }
 
   const message =
     phase === "pre"
