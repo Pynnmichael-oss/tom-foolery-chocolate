@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { Hero } from "@/components/sections/Hero";
 import { Marquee } from "@/components/ui/Marquee";
 import { FeaturedProducts } from "@/components/sections/FeaturedProducts";
 import { ScrollPrompt } from "@/components/sections/ScrollPrompt";
 import { WhatWeBelieve } from "@/components/sections/WhatWeBelieve";
 import { TomPeek } from "@/components/sections/TomPeek";
 import { GiftBuilderFeature } from "@/components/sections/GiftBuilderFeature";
+import { HomeHero, HomeOffers } from "@/components/mischief-society/HomeSocietyFeature";
+import { salePhase } from "@/lib/mischief-society/config";
 import { GIFT_SETS, getGiftBuilderConfig, type GiftBuilderConfig } from "@/lib/gift-builder/queries";
 
 /** Never throws — a Shopify hiccup just hides the gift builder section
@@ -18,6 +19,11 @@ async function safeGiftConfig(handle: string): Promise<GiftBuilderConfig | null>
     return null;
   }
 }
+
+/** Re-render every 5 minutes so the Mischief Society sale phase (and the
+ * Shopify-driven gift set) stays current; the browser also re-checks the
+ * phase on its own (see HomeOffers). */
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -51,25 +57,36 @@ export default async function Home() {
       }
     : undefined;
 
+  const phase = salePhase();
+
   return (
     <main id="main-content">
-      <Hero backgroundVideo="hero-orbit-new" backgroundVideoPoster="/video/hero-orbit-new-poster.jpg"
-        cta={heroCta}
+      <HomeHero
+        initialPhase={phase}
+        backgroundVideo="hero-orbit-new"
+        backgroundVideoPoster="/video/hero-orbit-new-poster.jpg"
+        giftSetCta={heroCta}
       />
 
       <Marquee className="bg-tf-black py-fluid-sm" />
 
-      {bars ? <GiftBuilderFeature bars={bars} caramels={caramels} /> : null}
+      <HomeOffers
+        initialPhase={phase}
+        giftSet={bars ? <GiftBuilderFeature bars={bars} caramels={caramels} /> : null}
+        rest={
+          <>
+            <FeaturedProducts />
 
-      <FeaturedProducts />
+            <ScrollPrompt />
 
-      <ScrollPrompt />
+            <WhatWeBelieve />
 
-      <WhatWeBelieve />
-
-      <div className="mx-auto flex max-w-6xl justify-end px-fluid-md">
-        <TomPeek className="mb-fluid-md" />
-      </div>
+            <div className="mx-auto flex max-w-6xl justify-end px-fluid-md">
+              <TomPeek className="mb-fluid-md" />
+            </div>
+          </>
+        }
+      />
     </main>
   );
 }
