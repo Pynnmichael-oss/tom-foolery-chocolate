@@ -4,7 +4,8 @@ import {
   getClientIp,
   isHoneypotTriggered,
 } from "@/lib/forms/shared";
-import { isOmnisendConfigured, sendCustomEvent } from "@/lib/omnisend/server";
+import { OmnisendError, isOmnisendConfigured, sendCustomEvent } from "@/lib/omnisend/server";
+import { ShopifyAdminError } from "@/lib/shopify/admin";
 import { OMNISEND_EVENTS, societyToday } from "@/lib/mischief-society/config";
 import { isMemberLinkConfigured, memberUrl } from "@/lib/mischief-society/member-links";
 import { findMembershipsByEmail } from "@/lib/mischief-society/members";
@@ -72,9 +73,24 @@ export async function POST(request: Request) {
     return Response.json(SENT);
   } catch (error) {
     console.error("[mischief-society] member link lookup failed:", error);
+    // A short code (no details) so a failed lookup can be diagnosed from
+    // the message alone; the full error is in the server log.
     return Response.json(
-      { error: "We couldn't look that up just now. Please try again in a moment." },
+      { error: `We couldn't look that up just now. Please try again in a moment. (Code: ${failureCode(error)})` },
       { status: 502 }
     );
   }
+}
+
+/** Which part failed: getting a Shopify token, Shopify refusing access to
+ * order or customer data, another Shopify error, or Omnisend. */
+function failureCode(error: unknown): string {
+  if (error instanceof OmnisendError) return "OMNI";
+  if (error instanceof ShopifyAdminError) {
+    const m = error.message;
+    if (/token request|Admin API token|reach Shopify for an Admin/i.test(m)) return "SHOP-TOKEN";
+    if (/access denied|not approved|protected customer data|ACCESS_DENIED|scope/i.test(m)) return "SHOP-ACCESS";
+    return "SHOP-API";
+  }
+  return "OTHER";
 }
