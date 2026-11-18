@@ -11,6 +11,13 @@
 /** Shopify product handle. One payment, two variants (3 Bars / 6 Bars). */
 export const MISCHIEF_SOCIETY_HANDLE = "chocolate-of-the-month-club";
 
+/** How order lines are recognized as memberships (by the gift job and
+ * member pages). Order data only: matching on the line's product would need
+ * the read_products scope. A line matches on SKU, or on title as a backup
+ * if a SKU is ever changed. Add next season's SKUs here. */
+export const MEMBERSHIP_SKUS: readonly string[] = ["COTM-3-6", "COTM-6-6"];
+export const MEMBERSHIP_TITLE_PREFIX = "The Mischief Society";
+
 export const MISCHIEF_SOCIETY_PATH = "/mischief-society";
 
 /** Members' welcome page (how membership works + "email me my link"). */
