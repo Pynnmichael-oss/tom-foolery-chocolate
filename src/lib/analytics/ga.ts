@@ -4,7 +4,7 @@ import type { Cart, Product, ProductVariant } from "@/lib/shopify/types";
 
 declare global {
   interface Window {
-    /** Set up by GoogleAnalyticsSnippet.tsx's inline bootstrap script
+    /** Set up by GoogleTags.tsx's inline bootstrap script
      * before anything else on the page runs — see that file's own
      * comment. */
     dataLayer?: unknown[];
@@ -23,13 +23,13 @@ declare global {
  * GA4 standard ecommerce events for the headless store. `purchase` is
  * deliberately not here — that stays with Shopify's own checkout
  * tracking once the visitor leaves for `checkout.tomfoolerychocolate.com`
- * (see GoogleAnalyticsSnippet.tsx's own comment).
+ * (see GoogleTags.tsx's own comment).
  *
  * `gtagEvent` calls `window.gtag('event', name, params)` — the real
  * `gtag()` wrapper, not a hand-rolled `dataLayer.push`, see that global's
  * own comment above for why. No-ops when `window.gtag` doesn't exist yet
- * (GA env var unset — local dev, Preview — the bootstrap script in
- * GoogleAnalyticsSnippet.tsx never ran), so every exported function here
+ * (local dev, Preview — the bootstrap script in GoogleTags.tsx never
+ * ran), so every exported function here
  * is safe to call unconditionally from any call site.
  */
 
