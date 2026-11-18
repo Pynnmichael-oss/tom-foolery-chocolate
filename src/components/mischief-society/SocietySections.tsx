@@ -187,7 +187,7 @@ const MONTH_ICON_PROPS = {
   strokeLinecap: "round" as const,
   strokeLinejoin: "round" as const,
   "aria-hidden": true,
-  className: "h-12 w-12",
+  className: "h-14 w-14",
 };
 
 const CLOVER_LEAF = "M12 11.6C8.4 8.8 7.9 3.4 10.7 3.6c.6 0 1 .5 1.3 1.1.3-.6.7-1.1 1.3-1.1 2.8-.2 2.3 5.2-1.3 8z";
@@ -266,34 +266,39 @@ export function SocietyTimeline() {
           </BodyText>
         </div>
         <ol className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {MEMBERSHIP_MONTHS.map((month, i) => {
-            return (
-              <li
-                key={month}
-                className={`flex flex-col gap-2 overflow-hidden rounded-xl px-4 pt-4 text-tf-black ${
-                  i === 0 ? "bg-tf-turmeric pb-4" : "bg-tf-white"
-                }`}
-              >
-                <span className="text-xs font-black tracking-[0.075em] text-tf-black/70">
+          {MEMBERSHIP_MONTHS.map((month, i) => (
+            // A tear-off calendar page: punched header with the month,
+            // the month's icon centered below, a thin stripe edge.
+            <li
+              key={month}
+              className={`flex flex-col overflow-hidden rounded-xl text-tf-black ${
+                i === 0 ? "bg-tf-turmeric" : "bg-tf-white"
+              }`}
+            >
+              <div className="relative flex items-baseline justify-between gap-2 bg-tf-cinnamon-strong px-4 pt-4 pb-2.5 text-tf-white">
+                <span aria-hidden="true" className="absolute top-1.5 left-1/4 h-1.5 w-1.5 rounded-full bg-tf-black/35" />
+                <span aria-hidden="true" className="absolute top-1.5 right-1/4 h-1.5 w-1.5 rounded-full bg-tf-black/35" />
+                <span className="font-display text-2xl leading-none font-semibold">{month}</span>
+                <span className="text-[0.7rem] font-black tracking-[0.075em] text-tf-white/80">
                   {MEMBERSHIP_YEAR}
                 </span>
-                <span className="font-display text-3xl leading-none font-semibold">{month}</span>
-                <span className="py-1">{MONTH_ICONS[month]}</span>
-                {i === 0 ? (
-                  <span className="mt-auto pt-1 text-sm font-semibold">Your first box</span>
-                ) : (
-                  <span
-                    aria-hidden="true"
-                    className="-mx-4 mt-auto block h-9"
-                    style={{
-                      backgroundImage:
-                        "repeating-linear-gradient(90deg, var(--tf-black) 0 12px, var(--tf-white) 12px 24px)",
-                    }}
-                  />
+              </div>
+              <div className="flex flex-1 flex-col items-center justify-center gap-1.5 px-3 py-5">
+                {MONTH_ICONS[month]}
+                {i === 0 && (
+                  <span className="text-xs font-black tracking-[0.075em] uppercase">Your first box</span>
                 )}
-              </li>
-            );
-          })}
+              </div>
+              <span
+                aria-hidden="true"
+                className="block h-2.5"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(90deg, var(--tf-black) 0 8px, var(--tf-white) 8px 16px)",
+                }}
+              />
+            </li>
+          ))}
         </ol>
         <p className="text-sm text-tf-white/70">
           Each month&rsquo;s flavors stay under Tom&rsquo;s hat until that month&rsquo;s email.
