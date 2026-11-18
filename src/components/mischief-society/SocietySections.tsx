@@ -112,7 +112,7 @@ const ICON_PROPS = {
 const PERKS: Array<{ title: string; body: string; icon: ReactNode; className: string }> = [
   {
     title: "Member-Only Flavors",
-    body: "Bars we make just for the Society. Not on the site, not in stores, not for the uninitiated.",
+    body: "Our most curious confections, available only to Society members.",
     className: "bg-tf-turmeric text-tf-black",
     icon: (
       <svg {...ICON_PROPS}>
@@ -124,8 +124,8 @@ const PERKS: Array<{ title: string; body: string; icon: ReactNode; className: st
     ),
   },
   {
-    title: "You Pick the Bars",
-    body: "Every month, choose from our full lineup of bars and that month’s member-only flavors.",
+    title: "Chocolate Curated to You",
+    body: "Pick your favorites or choose from that month’s member-only flavors.",
     className: "bg-tf-rose text-tf-black",
     icon: (
       <svg {...ICON_PROPS}>
@@ -135,13 +135,14 @@ const PERKS: Array<{ title: string; body: string; icon: ReactNode; className: st
     ),
   },
   {
-    title: "Gift-Ready",
-    body: "Gift as many people as you like. Each gets an email from you on the day you pick.",
+    title: "The Gift That Keeps on Giving",
+    body: "Made to be remembered well after it’s delivered.",
     className: "bg-tf-black text-tf-white",
     icon: (
       <svg {...ICON_PROPS}>
-        <rect x="3" y="5" width="18" height="14" rx="2" />
-        <path d="m3.5 6.5 8.5 6.5 8.5-6.5" />
+        <rect x="3.5" y="9" width="17" height="12" rx="1.5" />
+        <path d="M2.5 9h19v3.5h-19zM12 9v12" />
+        <path d="M12 9C10.5 5.5 6.5 5 6.5 7.3 6.5 9 9.5 9 12 9c2.5 0 5.5 0 5.5-1.7C17.5 5 13.5 5.5 12 9z" />
       </svg>
     ),
   },
@@ -154,7 +155,7 @@ export function SocietyPerks() {
         <div className="flex flex-col gap-fluid-xs">
           <Preheader>What Members Get</Preheader>
           <Headline as="h2" size="md">
-            The Perks of Bad Influence
+            The Perks of Membership
           </Headline>
         </div>
         <ul className="grid gap-fluid-sm md:grid-cols-3">
