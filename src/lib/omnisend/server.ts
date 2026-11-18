@@ -54,37 +54,16 @@ export interface ContactUpsert {
   lastName?: string;
   tags?: string[];
   customProperties?: Record<string, string | number | boolean>;
-  /** Set only when the person asked to be emailed (a signup form):
-   * marks the email channel subscribed with a consent record. */
-  subscribe?: { source: string; ip?: string; userAgent?: string };
 }
 
 /**
- * Creates or updates a contact by email. Without `subscribe` it sends no
- * channel status: an existing subscriber stays subscribed, and a new
- * contact (e.g. a gift recipient) is NOT opted in to marketing. Never
- * triggers the welcome (discount) automation.
+ * Creates or updates a contact by email. Deliberately sends no channel
+ * status: an existing subscriber stays subscribed, and a new contact
+ * (e.g. a gift recipient) is NOT opted in to marketing.
  */
 export async function upsertContact(contact: ContactUpsert): Promise<void> {
-  const now = new Date().toISOString();
-  const identifier = {
-    type: "email",
-    id: contact.email,
-    sendWelcomeMessage: false,
-    ...(contact.subscribe
-      ? {
-          channels: { email: { status: "subscribed", statusChangedAt: now } },
-          consent: {
-            source: contact.subscribe.source,
-            createdAt: now,
-            ...(contact.subscribe.ip ? { ip: contact.subscribe.ip } : {}),
-            ...(contact.subscribe.userAgent ? { userAgent: contact.subscribe.userAgent } : {}),
-          },
-        }
-      : {}),
-  };
   await omnisendPost("/contacts", {
-    identifiers: [identifier],
+    identifiers: [{ type: "email", id: contact.email, sendWelcomeMessage: false }],
     ...(contact.firstName ? { firstName: contact.firstName } : {}),
     ...(contact.lastName ? { lastName: contact.lastName } : {}),
     ...(contact.tags?.length ? { tags: contact.tags } : {}),

@@ -85,7 +85,7 @@ export default async function MischiefSocietyPage() {
   return (
     <main id="main-content">
       <SocietyRibbon initialPhase={phase} />
-      <SocietyHero phase={phase} />
+      <SocietyHero />
       <StripeBand />
       <SocietyPerks />
       <SocietyTimeline />
