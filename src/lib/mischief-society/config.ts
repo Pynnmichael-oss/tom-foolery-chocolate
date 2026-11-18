@@ -13,6 +13,9 @@ export const MISCHIEF_SOCIETY_HANDLE = "chocolate-of-the-month-club";
 
 export const MISCHIEF_SOCIETY_PATH = "/mischief-society";
 
+/** Members' welcome page — where the gift email's button points. */
+export const MISCHIEF_SOCIETY_WELCOME_PATH = "/mischief-society/welcome";
+
 /** In-page anchors. Landing on JOIN_GIFT_ANCHOR preselects "Gifting". */
 export const JOIN_ANCHOR = "join";
 export const JOIN_GIFT_ANCHOR = "join-gift";
@@ -76,6 +79,11 @@ export const GIFT_ATTR = {
 /** Omnisend: every member gets this tag; the monthly pick-your-bars email
  * goes to it. */
 export const OMNISEND_MEMBER_TAG = `mischief-society-${MEMBERSHIP_YEAR}`;
+/** Omnisend tag for the pre-sale "email me when doors open" signup. */
+export const OMNISEND_LAUNCH_ALERT_TAG = "mischief-society-launch-alert";
+/** In-page anchor for that signup form. */
+export const NOTIFY_ANCHOR = "notify";
+
 /** Custom events the Omnisend automations trigger on. */
 export const OMNISEND_EVENTS = {
   /** Sent to the recipient on their gift date — the gift email itself. */

@@ -2,10 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { EyesHatIcon } from "@/components/ui/logos";
-import { buttonClasses } from "@/components/ui/buttonClasses";
 import { Preheader, Headline, BodyText } from "@/components/ui/typography";
+import { SocietyActions } from "./NotifyForm";
 import {
-  JOIN_ANCHOR,
   JOIN_GIFT_ANCHOR,
   MEMBERSHIP_MONTHS,
   MEMBERSHIP_YEAR,
@@ -34,7 +33,7 @@ export function StripeBand() {
 /* Hero                                                                 */
 /* ------------------------------------------------------------------ */
 
-export function SocietyHero() {
+export function SocietyHero({ phase }: { phase: SalePhase }) {
   return (
     <section className="overflow-hidden bg-tf-juniper text-tf-black">
       <div className="mx-auto grid max-w-7xl items-center gap-fluid-lg px-fluid-md py-fluid-xl md:grid-cols-[1.05fr_0.95fr]">
@@ -48,14 +47,7 @@ export function SocietyHero() {
             through June, you pick a box of bars from our lineup plus member-only flavors you
             won&rsquo;t find on our site or in stores.
           </BodyText>
-          <div className="mt-fluid-xs flex flex-wrap gap-fluid-sm">
-            <a href={`#${JOIN_ANCHOR}`} className={buttonClasses("primary")}>
-              Join the Society
-            </a>
-            <a href={`#${JOIN_GIFT_ANCHOR}`} className={buttonClasses("secondary")}>
-              Gift a Membership
-            </a>
-          </div>
+          <SocietyActions initialPhase={phase} anchor />
         </div>
 
         <div aria-hidden="true" className="relative mx-auto w-full max-w-md pb-28 md:pb-36">
@@ -410,14 +402,7 @@ export function SocietyClosing({ phase }: { phase: SalePhase }) {
         <BodyText className="max-w-xl">
           Six boxes, your pick of bars every month, and flavors nobody else gets to try.
         </BodyText>
-        <div className="mt-fluid-xs flex flex-wrap justify-center gap-fluid-sm">
-          <a href={`#${JOIN_ANCHOR}`} className={buttonClasses("primary")}>
-            Join the Society
-          </a>
-          <a href={`#${JOIN_GIFT_ANCHOR}`} className={buttonClasses("secondary")}>
-            Gift a Membership
-          </a>
-        </div>
+        <SocietyActions initialPhase={phase} center />
         <p className="font-display text-3xl italic">&ndash;Tom</p>
       </div>
     </section>
