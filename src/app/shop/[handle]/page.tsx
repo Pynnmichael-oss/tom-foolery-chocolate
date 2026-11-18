@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { MISCHIEF_SOCIETY_HANDLE, MISCHIEF_SOCIETY_PATH } from "@/lib/mischief-society/config";
 import { giftSetKeyForHandle } from "@/lib/gift-builder/sets";
 import { getProduct, getProducts } from "@/lib/shopify/queries";
 import { ProductDetail } from "@/components/commerce/ProductDetail";
@@ -86,6 +87,9 @@ export default async function ProductPage(props: PageProps<"/shop/[handle]">) {
   // would let them be bought with no flavors/band on the order.
   const giftSet = giftSetKeyForHandle(handle);
   if (giftSet) redirect(`/gifts/build?set=${giftSet}`);
+
+  // The membership is sold only on its own page (recipients, gift dates).
+  if (handle === MISCHIEF_SOCIETY_HANDLE) redirect(MISCHIEF_SOCIETY_PATH);
 
   const product = await getProduct(handle);
 

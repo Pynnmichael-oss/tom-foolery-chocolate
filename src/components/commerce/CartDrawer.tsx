@@ -12,6 +12,7 @@ import { shortFlavorName } from "@/lib/gift-builder/cart-line";
 import { isPackagingComponent } from "@/lib/gift-builder/sets";
 import type { CartLine } from "@/lib/shopify/types";
 import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
+import { formatGiftDate, readGift } from "@/lib/mischief-society/gifts";
 import { trackBeginCheckout, trackViewCart } from "@/lib/analytics/ga";
 
 /** Right-side slide-in cart drawer. Focus-trapped while open (see
@@ -234,6 +235,7 @@ function ProductLineItem({
       <div className="flex flex-1 flex-col gap-1">
         <p className="font-display text-base leading-tight">{line.product.title}</p>
         <p className="font-sans text-sm text-tf-white/60">{line.variantTitle}</p>
+        <GiftLineSummary line={line} />
         {line.sellingPlanName ? (
           // tf-turmeric, not the muted white/60 variantTitle uses — this is
           // the one thing on the line that isn't just "which variant," it's
@@ -344,5 +346,18 @@ function GiftSetLineItem({
         </div>
       </div>
     </li>
+  );
+}
+
+/** Mischief Society gift lines: who it's for and when their email goes
+ * out, so several gift memberships in one cart can be told apart. */
+function GiftLineSummary({ line }: { line: CartLine }) {
+  const gift = readGift(line.attributes);
+  if (!gift) return null;
+  return (
+    <p className="font-sans text-sm font-semibold text-tf-turmeric">
+      Gift for {gift.name || gift.email}
+      {gift.sendDate ? ` · emailed ${formatGiftDate(gift.sendDate)}` : ""}
+    </p>
   );
 }

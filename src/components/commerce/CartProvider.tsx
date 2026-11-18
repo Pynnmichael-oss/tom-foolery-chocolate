@@ -11,6 +11,7 @@ import {
 import type { ReactNode } from "react";
 import {
   addGiftSetAction,
+  addLinesAction,
   addToCartAction,
   getCartAction,
   removeCartLineAction,
@@ -186,6 +187,9 @@ interface CartContextValue {
     /** Line item properties — see lib/gift-builder/cart-line.ts. */
     attributes?: CartAttribute[]
   ) => Promise<CartResult>;
+  /** Adds several independent lines in one mutation (e.g. one Mischief
+   * Society membership per gift recipient) and opens the drawer. */
+  addLines: (lines: CartLineInput[]) => Promise<CartResult>;
   updateItem: (lineId: string, quantity: number) => Promise<CartResult>;
   removeItem: (lineId: string) => Promise<CartResult>;
   /** Adds a gift set (parent + $0 SKU component lines, one mutation) and
@@ -273,6 +277,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // added above reverts on its own once this transition settles,
       // since useOptimistic always falls back to the last real `cart`
       // state — no separate rollback action needed.
+      settle(result);
+    });
+
+    return promise;
+  }
+
+  function addLines(lines: CartLineInput[]): Promise<CartResult> {
+    let settle!: (result: CartResult) => void;
+    const promise = new Promise<CartResult>((resolve) => {
+      settle = resolve;
+    });
+
+    // No optimistic lines: callers show their own "Adding…" state until
+    // the real cart comes back, same as addGiftSet.
+    startTransition(async () => {
+      const result = await addLinesAction(cart?.id || readCartIdCookie(), lines);
+      if (result.success) {
+        writeCartIdCookie(result.cart.id);
+        setCart(result.cart);
+        setDrawerOpen(true);
+      }
       settle(result);
     });
 
@@ -390,6 +415,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     openDrawer: () => setDrawerOpen(true),
     closeDrawer: () => setDrawerOpen(false),
     addItem,
+    addLines,
     updateItem,
     removeItem,
     addGiftSet,
