@@ -176,16 +176,79 @@ export function SocietyPerks() {
 /* Six-month timeline                                                   */
 /* ------------------------------------------------------------------ */
 
-/** Seasonal teasers for each month's lineup. Hints only: the real flavors
- * are revealed in each month's pick-your-bars email. Keyed by
- * MEMBERSHIP_MONTHS; update both together next season. */
-const MONTH_HINTS: Record<(typeof MEMBERSHIP_MONTHS)[number], { occasion: string; hint: string }> = {
-  Jan: { occasion: "New Year", hint: "A toast to fresh starts (and broken resolutions)." },
-  Feb: { occasion: "Valentine\u2019s Day", hint: "Sweet nothings for your sweetheart. Or yourself." },
-  Mar: { occasion: "St. Patrick\u2019s Day", hint: "Feeling lucky? Expect a little something green." },
-  Apr: { occasion: "April Fools\u2019", hint: "Tom\u2019s favorite holiday. Expect mischief." },
-  May: { occasion: "Mother\u2019s Day", hint: "In full bloom, just in time for Mom." },
-  Jun: { occasion: "First Day of Summer", hint: "Hello, summer. Think ice cream trucks." },
+/** One seasonal icon per month: a quiet nod to that month's holidays and
+ * flavors, never spelled out on the page. Keyed by MEMBERSHIP_MONTHS;
+ * update both together next season. Decorative (aria-hidden). */
+const MONTH_ICON_PROPS = {
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.5,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+  className: "h-12 w-12",
+};
+
+const CLOVER_LEAF = "M12 11.6C8.4 8.8 7.9 3.4 10.7 3.6c.6 0 1 .5 1.3 1.1.3-.6.7-1.1 1.3-1.1 2.8-.2 2.3 5.2-1.3 8z";
+
+const MONTH_ICONS: Record<(typeof MEMBERSHIP_MONTHS)[number], ReactNode> = {
+  // Two glasses clinking.
+  Jan: (
+    <svg {...MONTH_ICON_PROPS}>
+      <g transform="rotate(-14 8 12)">
+        <path d="M5.5 3.5h5l-.6 6.2a1.9 1.9 0 0 1-3.8 0z" />
+        <path d="M8 11.6v6.4M6 18h4" />
+      </g>
+      <g transform="rotate(14 16 12)">
+        <path d="M13.5 3.5h5l-.6 6.2a1.9 1.9 0 0 1-3.8 0z" />
+        <path d="M16 11.6v6.4M14 18h4" />
+      </g>
+      <path d="M12 2.2v1.6M10.3 2.8l.7.9M13.7 2.8l-.7.9" />
+    </svg>
+  ),
+  // Heart.
+  Feb: (
+    <svg {...MONTH_ICON_PROPS}>
+      <path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.2a4.2 4.2 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z" />
+    </svg>
+  ),
+  // Clover.
+  Mar: (
+    <svg {...MONTH_ICON_PROPS}>
+      <path d={CLOVER_LEAF} />
+      <path d={CLOVER_LEAF} transform="rotate(120 12 12)" />
+      <path d={CLOVER_LEAF} transform="rotate(240 12 12)" />
+      <path d="M12.4 12.6c.5 3.2 1.7 6 3.8 8.4" />
+    </svg>
+  ),
+  // Jester's cap.
+  Apr: (
+    <svg {...MONTH_ICON_PROPS}>
+      <path d="M6.5 16.5C6 12.2 6.9 9.1 9.3 7.4 7 7.5 4.7 9 3.6 11" />
+      <path d="M9.2 16.5c.6-4.6 1.4-8.6 2.8-11.3 1.4 2.7 2.2 6.7 2.8 11.3" />
+      <path d="M17.5 16.5c.5-4.3-.4-7.4-2.8-9.1 2.3.1 4.6 1.6 5.7 3.6" />
+      <path d="M5.5 16.5h13v3h-13z" />
+      <circle cx="3.2" cy="12.2" r="1.2" />
+      <circle cx="12" cy="3.9" r="1.2" />
+      <circle cx="20.8" cy="12.2" r="1.2" />
+    </svg>
+  ),
+  // Tulip.
+  May: (
+    <svg {...MONTH_ICON_PROPS}>
+      <path d="M8 4.5 10 6.6 12 4l2 2.6 2-2.1v4.2a4 4 0 0 1-8 0z" />
+      <path d="M12 12.7V21" />
+      <path d="M12 18.2c-2.4-.3-4-1.8-4.6-4 2.3.2 3.9 1.6 4.6 4zM12 16.6c2.2-.3 3.7-1.7 4.2-3.8-2.1.2-3.6 1.5-4.2 3.8z" />
+    </svg>
+  ),
+  // Sun.
+  Jun: (
+    <svg {...MONTH_ICON_PROPS}>
+      <circle cx="12" cy="12" r="4.2" />
+      <path d="M12 2.5v2.3M12 19.2v2.3M2.5 12h2.3M19.2 12h2.3M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" />
+    </svg>
+  ),
 };
 
 export function SocietyTimeline() {
@@ -204,7 +267,6 @@ export function SocietyTimeline() {
         </div>
         <ol className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {MEMBERSHIP_MONTHS.map((month, i) => {
-            const { occasion, hint } = MONTH_HINTS[month];
             return (
               <li
                 key={month}
@@ -216,14 +278,7 @@ export function SocietyTimeline() {
                   {MEMBERSHIP_YEAR}
                 </span>
                 <span className="font-display text-3xl leading-none font-semibold">{month}</span>
-                <span
-                  className={`self-start rounded-full px-2.5 py-1 text-[0.65rem] leading-tight font-black tracking-[0.075em] uppercase ${
-                    i === 0 ? "bg-tf-black text-tf-white" : "bg-tf-rose/50"
-                  }`}
-                >
-                  {occasion}
-                </span>
-                <span className="font-display text-base leading-snug italic">{hint}</span>
+                <span className="py-1">{MONTH_ICONS[month]}</span>
                 {i === 0 ? (
                   <span className="mt-auto pt-1 text-sm font-semibold">Your first box</span>
                 ) : (
@@ -241,7 +296,7 @@ export function SocietyTimeline() {
           })}
         </ol>
         <p className="text-sm text-tf-white/70">
-          Just hints. The real flavors stay under Tom&rsquo;s hat until each month&rsquo;s email.
+          Each month&rsquo;s flavors stay under Tom&rsquo;s hat until that month&rsquo;s email.
         </p>
       </div>
     </section>
