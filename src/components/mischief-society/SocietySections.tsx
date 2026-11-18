@@ -176,6 +176,18 @@ export function SocietyPerks() {
 /* Six-month timeline                                                   */
 /* ------------------------------------------------------------------ */
 
+/** Seasonal teasers for each month's lineup. Hints only: the real flavors
+ * are revealed in each month's pick-your-bars email. Keyed by
+ * MEMBERSHIP_MONTHS; update both together next season. */
+const MONTH_HINTS: Record<(typeof MEMBERSHIP_MONTHS)[number], { occasion: string; hint: string }> = {
+  Jan: { occasion: "New Year", hint: "A toast to fresh starts (and broken resolutions)." },
+  Feb: { occasion: "Valentine\u2019s Day", hint: "Sweet nothings for your sweetheart. Or yourself." },
+  Mar: { occasion: "St. Patrick\u2019s Day", hint: "Feeling lucky? Expect a little something green." },
+  Apr: { occasion: "April Fools\u2019", hint: "Tom\u2019s favorite holiday. Expect mischief." },
+  May: { occasion: "Mother\u2019s Day", hint: "In full bloom, just in time for Mom." },
+  Jun: { occasion: "First Day of Summer", hint: "Hello, summer. Think ice cream trucks." },
+};
+
 export function SocietyTimeline() {
   return (
     <section className="bg-tf-black px-fluid-md py-fluid-2xl text-tf-white">
@@ -183,41 +195,54 @@ export function SocietyTimeline() {
         <div className="flex flex-col gap-fluid-xs">
           <Preheader>How It Works</Preheader>
           <Headline as="h2" size="md">
-            One Box a Month, Six Months Running
+            Six Months of Curious Confections
           </Headline>
           <BodyText className="max-w-2xl text-tf-white/80">
-            Early each month we email you the lineup: our existing bars plus that month&rsquo;s
-            member-only flavors. You pick your bars, we ship the box. January through June.
+            Starting in January, we send you each month&rsquo;s lineup: our existing bars plus
+            Society-exclusive flavors. You build a box to your taste, and we ship it to you.
           </BodyText>
         </div>
         <ol className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {MEMBERSHIP_MONTHS.map((month, i) => (
-            <li
-              key={month}
-              className={`flex flex-col gap-2 overflow-hidden rounded-xl px-4 pt-4 text-tf-black ${
-                i === 0 ? "bg-tf-turmeric pb-4" : "bg-tf-white"
-              }`}
-            >
-              <span className="text-xs font-black tracking-[0.075em] text-tf-black/70">
-                {MEMBERSHIP_YEAR}
-              </span>
-              <span className="font-display text-3xl leading-none font-semibold">{month}</span>
-              <span className="text-sm leading-snug">
-                {i === 0 ? "Pick your first bars" : "New member-only flavor"}
-              </span>
-              {i > 0 && (
+          {MEMBERSHIP_MONTHS.map((month, i) => {
+            const { occasion, hint } = MONTH_HINTS[month];
+            return (
+              <li
+                key={month}
+                className={`flex flex-col gap-2 overflow-hidden rounded-xl px-4 pt-4 text-tf-black ${
+                  i === 0 ? "bg-tf-turmeric pb-4" : "bg-tf-white"
+                }`}
+              >
+                <span className="text-xs font-black tracking-[0.075em] text-tf-black/70">
+                  {MEMBERSHIP_YEAR}
+                </span>
+                <span className="font-display text-3xl leading-none font-semibold">{month}</span>
                 <span
-                  aria-hidden="true"
-                  className="-mx-4 mt-auto block h-11"
-                  style={{
-                    backgroundImage:
-                      "repeating-linear-gradient(90deg, var(--tf-black) 0 12px, var(--tf-white) 12px 24px)",
-                  }}
-                />
-              )}
-            </li>
-          ))}
+                  className={`self-start rounded-full px-2.5 py-1 text-[0.65rem] leading-tight font-black tracking-[0.075em] uppercase ${
+                    i === 0 ? "bg-tf-black text-tf-white" : "bg-tf-rose/50"
+                  }`}
+                >
+                  {occasion}
+                </span>
+                <span className="font-display text-base leading-snug italic">{hint}</span>
+                {i === 0 ? (
+                  <span className="mt-auto pt-1 text-sm font-semibold">Your first box</span>
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className="-mx-4 mt-auto block h-9"
+                    style={{
+                      backgroundImage:
+                        "repeating-linear-gradient(90deg, var(--tf-black) 0 12px, var(--tf-white) 12px 24px)",
+                    }}
+                  />
+                )}
+              </li>
+            );
+          })}
         </ol>
+        <p className="text-sm text-tf-white/70">
+          Just hints. The real flavors stay under Tom&rsquo;s hat until each month&rsquo;s email.
+        </p>
       </div>
     </section>
   );
