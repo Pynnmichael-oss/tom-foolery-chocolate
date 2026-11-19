@@ -42,7 +42,7 @@ export function SocietyHero({ phase }: { phase: SalePhase }) {
           <Headline as="h1" size="lg" className="text-balance">
             Six Months of Mischief, Delivered.
           </Headline>
-          <BodyText size="lg" className="max-w-xl">
+          <BodyText className="max-w-xl">
             Join Tom&rsquo;s not-so-secret society of chocolate lovers. Every month from January
             through June, you pick a box of bars from our lineup plus member-only flavors you
             won&rsquo;t find on our site or in stores.

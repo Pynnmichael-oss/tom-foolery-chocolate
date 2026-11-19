@@ -42,8 +42,8 @@ export function NotifyForm({
   // Pre-sale only: once doors open (or in ?test mode) the buttons return.
   if (phase !== "pre") return null;
 
-  const heading = `Get an email the minute doors open ${SALE_OPENS_LABEL}.`;
-  const sub = "Memberships are only sold for four days. We'll make sure you don't miss them.";
+  const heading = "Get the heads-up";
+  const sub = `Doors open ${SALE_OPENS_LABEL} and close four days later. We'll email you the minute they open.`;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -78,13 +78,13 @@ export function NotifyForm({
   return (
     <div id={anchor ? NOTIFY_ANCHOR : undefined} className={`scroll-mt-24 rounded-2xl p-5 sm:p-6 ${panel} ${className}`}>
       {status === "done" ? (
-        <p role="status" className="font-display text-xl leading-snug font-semibold">
+        <p role="status">
           You&rsquo;re on the list. We&rsquo;ll email you when doors open.
         </p>
       ) : (
         <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
-          <p className="font-display text-xl leading-snug font-semibold">{heading}</p>
-          <p className="text-sm">{sub}</p>
+          <p className="text-sm font-black uppercase tracking-[0.075em]">{heading}</p>
+          <p>{sub}</p>
 
           {/* Honeypot — see ContactForm.tsx. */}
           <label htmlFor={`${uid}-website`} className="sr-only" aria-hidden="true">
