@@ -19,7 +19,6 @@ import {
   JOIN_GIFT_ANCHOR,
   MEMBERSHIP_MONTHS,
   NAME_MAX,
-  NOTIFY_ANCHOR,
   SALE_OPENS_LABEL,
   societyToday,
   type SalePhase,
@@ -277,6 +276,10 @@ export function MembershipPicker({
   const active = recipients.find((r) => r.key === activeKey) ?? recipients[0];
   const activeIndex = recipients.indexOf(active);
 
+  // Tiers and prices stay hidden until doors open (the hero's signup form
+  // covers the pre-sale). ?test counts as open, so it can still be checked.
+  if (phase === "pre") return null;
+
   return (
     <section id={JOIN_ANCHOR} className="scroll-mt-24 px-fluid-md py-fluid-2xl">
       <span id={JOIN_GIFT_ANCHOR} className="block scroll-mt-24" aria-hidden="true" />
@@ -513,14 +516,6 @@ export function MembershipPicker({
                   Shipping included on every box. Bought month by month with shipping:{" "}
                   <s>{formatMoney({ amount: compareTotal.toFixed(2), currencyCode: currency })}</s>.
                 </p>
-              )}
-              {phase === "pre" && (
-                <a
-                  href={`#${NOTIFY_ANCHOR}`}
-                  className="self-start text-sm font-semibold underline underline-offset-4"
-                >
-                  Get an email when doors open &rarr;
-                </a>
               )}
               {mode === "gift" && (
                 <ul className="flex flex-col gap-1 text-sm text-tf-black/70 tabular-nums">

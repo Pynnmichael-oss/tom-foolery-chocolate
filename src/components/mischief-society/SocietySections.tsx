@@ -7,6 +7,7 @@ import { SocietyActions } from "./NotifyForm";
 import {
   JOIN_GIFT_ANCHOR,
   MEMBERSHIP_MONTHS,
+  NOTIFY_ANCHOR,
   MEMBERSHIP_YEAR,
   SALE_CLOSES_LABEL,
   SALE_OPENS_LABEL,
@@ -339,7 +340,11 @@ const GIFT_STEPS = [
   },
 ];
 
-export function SocietyGifting() {
+export function SocietyGifting({ phase }: { phase: SalePhase }) {
+  // Before doors open there's no picker to jump to, so these point at the
+  // signup form instead.
+  const pre = phase === "pre";
+  const giftHref = pre ? `#${NOTIFY_ANCHOR}` : `#${JOIN_GIFT_ANCHOR}`;
   return (
     <section className="bg-tf-rose px-fluid-md py-fluid-2xl text-tf-black">
       <div className="mx-auto flex max-w-7xl flex-col gap-fluid-lg">
@@ -365,11 +370,11 @@ export function SocietyGifting() {
           ))}
         </ol>
         <div className="grid gap-fluid-sm md:grid-cols-3">
-          <AltPath title="Don’t know their address?" href={`#${JOIN_GIFT_ANCHOR}`} cta="Start gifting">
+          <AltPath title="Don’t know their address?" href={giftHref} cta={pre ? "Get the heads-up" : "Start gifting"}>
             You don&rsquo;t need it. They give us their address when they pick their first bars in
             January.
           </AltPath>
-          <AltPath title="Long list?" href={`#${JOIN_GIFT_ANCHOR}`} cta="Paste a list">
+          <AltPath title="Long list?" href={giftHref} cta={pre ? "Get the heads-up" : "Paste a list"}>
             Paste names and emails straight from a spreadsheet and set dates in one go.
           </AltPath>
           <AltPath title="Gifting a whole team?" href="/gifting" cta="Corporate gifting">

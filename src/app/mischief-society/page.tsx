@@ -99,7 +99,7 @@ export default async function MischiefSocietyPage() {
         }}
         initialPhase={phase}
       />
-      <SocietyGifting />
+      <SocietyGifting phase={phase} />
       <SocietyFaq />
       <SocietyClosing phase={phase} />
       <StripeBand />
