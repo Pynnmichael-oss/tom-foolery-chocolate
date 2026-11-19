@@ -14,6 +14,7 @@ import {
   GIFT_NOTE_MAX,
   DEFAULT_GIFT_NOTE,
   INSTALLMENTS,
+  compareAtTotal,
   JOIN_ANCHOR,
   JOIN_GIFT_ANCHOR,
   MEMBERSHIP_MONTHS,
@@ -148,7 +149,7 @@ export function MembershipPicker({
   const total = lines.reduce((sum, l) => sum + Number(tierFor(l.bars).price.amount), 0);
   // The same bars bought month by month from the shop, before shipping.
   const compareTotal = lines.reduce(
-    (sum, l) => sum + tierFor(l.bars).compareMonthly * MEMBERSHIP_MONTHS.length,
+    (sum, l) => sum + compareAtTotal(tierFor(l.bars)),
     0
   );
   const unavailable = lines.some((l) => {
@@ -346,25 +347,31 @@ export function MembershipPicker({
                         </span>
                       )}
                       <span className="font-display text-2xl leading-tight font-semibold">{tier.name}</span>
-                      <span className="font-display text-4xl leading-none font-semibold tabular-nums">
-                        {formatMoney(tier.price)}
+                      <span className="flex items-baseline gap-2.5 tabular-nums">
+                        <span className="font-display text-4xl leading-none font-semibold">
+                          {formatMoney(tier.price)}
+                        </span>
+                        <s className="font-display text-xl leading-none text-tf-black/45">
+                          <span className="sr-only">Bought month by month: </span>
+                          {formatMoney({
+                            amount: compareAtTotal(tier).toFixed(2),
+                            currencyCode: tier.price.currencyCode,
+                          })}
+                        </s>
                       </span>
-                      <span className="text-sm font-semibold tabular-nums">
-                        or {INSTALLMENTS} interest-free payments of{" "}
-                        {installment(Number(tier.price.amount), tier.price.currencyCode)}
+                      <span className="self-start rounded-full bg-tf-juniper px-2.5 py-0.5 font-sans text-xs font-black tabular-nums">
+                        Save{" "}
+                        {formatMoney({
+                          amount: (compareAtTotal(tier) - Number(tier.price.amount)).toFixed(2),
+                          currencyCode: tier.price.currencyCode,
+                        })}{" "}
+                        · shipping included
                       </span>
                       <span className="text-sm text-tf-black/70 tabular-nums">
                         {tier.bars} bars a month · {tier.bars * MEMBERSHIP_MONTHS.length} bars total
                       </span>
-                      <span className="mt-1 border-t border-tf-black/15 pt-2 text-sm text-tf-black/70 tabular-nums">
-                        Shipping included on all {MEMBERSHIP_MONTHS.length} boxes. Bought month by month:{" "}
-                        <span className="line-through">
-                          {formatMoney({
-                            amount: (tier.compareMonthly * MEMBERSHIP_MONTHS.length).toFixed(2),
-                            currencyCode: tier.price.currencyCode,
-                          })}
-                        </span>{" "}
-                        plus shipping, six times.
+                      <span className="text-xs text-tf-black/55">
+                        Compared with buying the same bars monthly, plus shipping.
                       </span>
                     </label>
                   ))}
@@ -504,11 +511,8 @@ export function MembershipPicker({
               </div>
               {mode === "gift" && (
                 <p className="text-sm text-tf-black/70 tabular-nums">
-                  Shipping included on every box. Bought month by month, the same bars would run{" "}
-                  <span className="line-through">
-                    {formatMoney({ amount: compareTotal.toFixed(2), currencyCode: currency })}
-                  </span>{" "}
-                  before shipping.
+                  Shipping included on every box. Bought month by month with shipping:{" "}
+                  <s>{formatMoney({ amount: compareTotal.toFixed(2), currencyCode: currency })}</s>.
                 </p>
               )}
               {phase === "pre" && (

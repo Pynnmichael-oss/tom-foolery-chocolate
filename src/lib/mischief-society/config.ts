@@ -56,6 +56,16 @@ export const GIFT_DATE_DEFAULT = "2026-12-25";
  * Shopify Payments settings). */
 export const INSTALLMENTS = 4;
 
+/** Shipping assumed per month in the "bought month by month" compare-at
+ * price (each month's order would ship on its own). */
+export const COMPARE_SHIPPING_PER_MONTH = 8;
+
+/** Compare-at price for a tier: six months of the same bars from the shop,
+ * each with its own shipping. $216 for 3 bars, $378 for 6. */
+export function compareAtTotal(tier: { compareMonthly: number }): number {
+  return (tier.compareMonthly + COMPARE_SHIPPING_PER_MONTH) * MEMBERSHIP_MONTHS.length;
+}
+
 export const GIFT_NOTE_MAX = 200;
 
 /** Stands in for the gift note when the buyer leaves it blank: in the
