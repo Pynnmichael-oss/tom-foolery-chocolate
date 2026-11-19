@@ -364,8 +364,7 @@ export function MembershipPicker({
                         {formatMoney({
                           amount: (compareAtTotal(tier) - Number(tier.price.amount)).toFixed(2),
                           currencyCode: tier.price.currencyCode,
-                        })}{" "}
-                        · shipping included
+                        })}
                       </span>
                       <span className="text-sm text-tf-black/70 tabular-nums">
                         {tier.bars} bars a month · {tier.bars * MEMBERSHIP_MONTHS.length} bars total
