@@ -418,7 +418,15 @@ function AltPath({
 const FAQS: Array<{ q: string; a: string; open?: boolean }> = [
   {
     q: "Is this a subscription? Will I get charged again?",
-    a: "No. You pay once at checkout and that covers all six boxes. Nothing renews and there’s nothing to cancel.",
+    a: "No. One checkout covers all six boxes. Nothing renews and there’s nothing to cancel.",
+  },
+  {
+    q: "Is shipping included?",
+    a: "Yes, on all six boxes. The price you see is the whole thing.",
+  },
+  {
+    q: "Can I split up the payment?",
+    a: "Yes. Choose Shop Pay at checkout to pay in 4 interest-free installments.",
   },
   {
     q: "How does picking bars work?",

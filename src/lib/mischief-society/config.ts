@@ -51,6 +51,11 @@ export const GIFT_DATE_MIN = "2026-11-18";
 export const GIFT_DATE_MAX = "2026-12-31";
 export const GIFT_DATE_DEFAULT = "2026-12-25";
 
+/** Shop Pay Installments: the price shown as "or 4 interest-free payments
+ * of $X". Shopify decides eligibility at checkout (it must be turned on in
+ * Shopify Payments settings). */
+export const INSTALLMENTS = 4;
+
 export const GIFT_NOTE_MAX = 200;
 
 /** Stands in for the gift note when the buyer leaves it blank: in the
@@ -72,11 +77,15 @@ export interface TierInfo {
   /** Fallback while the product isn't readable (draft / not published to
    * the Headless channel). The real price comes from Shopify. */
   fallbackPrice: number;
+  /** What one month of the same bars costs bought from the shop (before
+   * shipping), for the "month by month" comparison: the 3-pack ($28, SKUs
+   * B00xA) or the 6-count sampler ($55, GS001A). Update if those change. */
+  compareMonthly: number;
 }
 
 export const TIERS: readonly TierInfo[] = [
-  { bars: 3, name: "The Taster", optionValue: "3 Bars", fallbackPrice: 155 },
-  { bars: 6, name: "The Ringleader", optionValue: "6 Bars", fallbackPrice: 295 },
+  { bars: 3, name: "The Taster", optionValue: "3 Bars", fallbackPrice: 155, compareMonthly: 28 },
+  { bars: 6, name: "The Ringleader", optionValue: "6 Bars", fallbackPrice: 295, compareMonthly: 55 },
 ];
 
 /** Cart line attribute keys — they become line item properties on the

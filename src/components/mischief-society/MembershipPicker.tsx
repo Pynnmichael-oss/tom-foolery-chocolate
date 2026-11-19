@@ -13,8 +13,10 @@ import {
   GIFT_DATE_MIN,
   GIFT_NOTE_MAX,
   DEFAULT_GIFT_NOTE,
+  INSTALLMENTS,
   JOIN_ANCHOR,
   JOIN_GIFT_ANCHOR,
+  MEMBERSHIP_MONTHS,
   NAME_MAX,
   NOTIFY_ANCHOR,
   SALE_OPENS_LABEL,
@@ -35,6 +37,8 @@ export interface PickerTier {
   bars: TierBars;
   name: string;
   price: Money;
+  /** The same bars for one month bought from the shop, before shipping. */
+  compareMonthly: number;
   /** null while the product can't be read from Shopify (draft, not on
    * the Headless channel) — the page still renders, Add to Cart is off. */
   variant: ProductVariant | null;
@@ -64,6 +68,11 @@ function formatMoney({ amount, currencyCode }: Money): string {
   } catch {
     return `${amount} ${currencyCode}`;
   }
+}
+
+/** "$38.75": one Shop Pay Installments payment. */
+function installment(amount: number, currencyCode: string): string {
+  return formatMoney({ amount: (Math.round((amount / INSTALLMENTS) * 100) / 100).toFixed(2), currencyCode });
 }
 
 let nextKey = 1;
@@ -137,6 +146,11 @@ export function MembershipPicker({
 
   const currency = tiers[0]?.price.currencyCode ?? "USD";
   const total = lines.reduce((sum, l) => sum + Number(tierFor(l.bars).price.amount), 0);
+  // The same bars bought month by month from the shop, before shipping.
+  const compareTotal = lines.reduce(
+    (sum, l) => sum + tierFor(l.bars).compareMonthly * MEMBERSHIP_MONTHS.length,
+    0
+  );
   const unavailable = lines.some((l) => {
     const v = tierFor(l.bars).variant;
     return !v || !v.availableForSale;
@@ -335,8 +349,22 @@ export function MembershipPicker({
                       <span className="font-display text-4xl leading-none font-semibold tabular-nums">
                         {formatMoney(tier.price)}
                       </span>
+                      <span className="text-sm font-semibold tabular-nums">
+                        or {INSTALLMENTS} interest-free payments of{" "}
+                        {installment(Number(tier.price.amount), tier.price.currencyCode)}
+                      </span>
                       <span className="text-sm text-tf-black/70 tabular-nums">
-                        {tier.bars} bars a month · {tier.bars * 6} bars total
+                        {tier.bars} bars a month · {tier.bars * MEMBERSHIP_MONTHS.length} bars total
+                      </span>
+                      <span className="mt-1 border-t border-tf-black/15 pt-2 text-sm text-tf-black/70 tabular-nums">
+                        Shipping included on all {MEMBERSHIP_MONTHS.length} boxes. Bought month by month:{" "}
+                        <span className="line-through">
+                          {formatMoney({
+                            amount: (tier.compareMonthly * MEMBERSHIP_MONTHS.length).toFixed(2),
+                            currencyCode: tier.price.currencyCode,
+                          })}
+                        </span>{" "}
+                        plus shipping, six times.
                       </span>
                     </label>
                   ))}
@@ -466,13 +494,23 @@ export function MembershipPicker({
                     {formatMoney({ amount: total.toFixed(2), currencyCode: currency })}
                   </p>
                   <p className="text-sm text-tf-black/70">
-                    {lines.length} {lines.length === 1 ? "membership" : "memberships"}
+                    {lines.length} {lines.length === 1 ? "membership" : "memberships"} · or {INSTALLMENTS}{" "}
+                    interest-free payments of {installment(total, currency)} with Shop Pay
                   </p>
                 </div>
                 <Button type="submit" disabled={!canAdd}>
                   {buttonLabel}
                 </Button>
               </div>
+              {mode === "gift" && (
+                <p className="text-sm text-tf-black/70 tabular-nums">
+                  Shipping included on every box. Bought month by month, the same bars would run{" "}
+                  <span className="line-through">
+                    {formatMoney({ amount: compareTotal.toFixed(2), currencyCode: currency })}
+                  </span>{" "}
+                  before shipping.
+                </p>
+              )}
               {phase === "pre" && (
                 <a
                   href={`#${NOTIFY_ANCHOR}`}
