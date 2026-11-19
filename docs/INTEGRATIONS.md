@@ -324,16 +324,19 @@ Shopify only lets an app read orders from the last 60 days unless it has
 the `read_all_orders` scope. Add that scope to the Dev Dashboard app
 before late January, or member pages stop loading for November orders.
 
-**Daily job** (`/api/cron/mischief-society-gifts`, 7am Chicago via
-`vercel.json`, code in `src/lib/mischief-society/gift-emails.ts`):
+**Daily job** (`/api/cron/mischief-society-gifts`, 9am Chicago via
+`vercel.json`: `0 15 * * *` is 15:00 UTC, which is 9am CST during the
+November–December gift window and 10am once daylight time starts;
+Vercel cron schedules are always UTC, code in `src/lib/mischief-society/gift-emails.ts`):
 
 1. Reads paid, uncancelled orders from the sale window that contain the
    membership (Shopify Admin API).
 2. For each gift line due today or earlier, not yet sent: upserts the
    recipient in Omnisend (tag `mischief-society-2027`, custom properties
    `society_bars`, `society_gifted_by`, `society_memberships`; no
-   subscription status is set, so recipients are not opted in to
-   marketing), then sends custom event `mischief society gift delivered`
+   subscribe status is set: they're sent as "nonSubscribed" with a long-past
+   timestamp, so new recipients are not opted in to marketing and existing
+   subscribers keep their status), then sends custom event `mischief society gift delivered`
    to the recipient and `mischief society gift sent` to the buyer.
 3. For each "for me" line: upserts the buyer with the same tag.
 4. Records handled line IDs in the order metafield
@@ -343,7 +346,7 @@ before late January, or member pages stop loading for November orders.
 **Testing before the sale.** Add `?test` to the page URL
 (`/mischief-society?test`) to open checkout regardless of the sale dates.
 A black "Test mode" bar replaces the countdown. Gift dates can be any day
-from today, so a test gift dated today goes out on the next 7am run. Test
+from today, so a test gift dated today goes out on the next 9am run. Test
 orders are real orders: cancel or refund them afterwards (the job skips
 cancelled orders and refunded lines), and remove the test contacts from
 the `mischief-society-2027` tag in Omnisend.
