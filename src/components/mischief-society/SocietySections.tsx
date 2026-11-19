@@ -42,7 +42,7 @@ export function SocietyHero({ phase }: { phase: SalePhase }) {
           <Headline as="h1" size="lg" className="text-balance">
             Six Months of Mischief, Delivered.
           </Headline>
-          <BodyText size="lg" className="max-w-xl">
+          <BodyText className="max-w-xl">
             Join Tom&rsquo;s not-so-secret society of chocolate lovers. Every month from January
             through June, you pick a box of bars from our lineup plus member-only flavors you
             won&rsquo;t find on our site or in stores.
@@ -418,7 +418,15 @@ function AltPath({
 const FAQS: Array<{ q: string; a: string; open?: boolean }> = [
   {
     q: "Is this a subscription? Will I get charged again?",
-    a: "No. You pay once at checkout and that covers all six boxes. Nothing renews and there’s nothing to cancel.",
+    a: "No. One checkout covers all six boxes. Nothing renews and there’s nothing to cancel.",
+  },
+  {
+    q: "Is shipping included?",
+    a: "Yes, on all six boxes. The price you see is the whole thing.",
+  },
+  {
+    q: "Can I split up the payment?",
+    a: "Yes. Choose Shop Pay at checkout to pay in 4 interest-free installments.",
   },
   {
     q: "How does picking bars work?",

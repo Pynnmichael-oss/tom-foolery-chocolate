@@ -67,6 +67,7 @@ function buildTiers(product: Product | null): PickerTier[] {
     return {
       bars: tier.bars,
       name: tier.name,
+      compareMonthly: tier.compareMonthly,
       price: variant?.price ?? { amount: tier.fallbackPrice.toFixed(2), currencyCode: "USD" },
       variant,
     };

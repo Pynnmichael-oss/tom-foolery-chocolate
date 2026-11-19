@@ -31,11 +31,12 @@ export function SocietyRibbon({ initialPhase }: { initialPhase: SalePhase }) {
     );
   }
 
+  // One short line, one size: the message plus the countdown.
   const message =
     phase === "pre"
-      ? `Doors open ${SALE_OPENS_LABEL}. Members-only for four days.`
+      ? "Doors open Black Friday"
       : phase === "live"
-        ? "Now open. Memberships close Cyber Monday at midnight."
+        ? "Doors close Cyber Monday"
         : "Doors are closed for this season.";
 
   // Countdown only once the browser knows the time, so the server HTML
@@ -44,14 +45,14 @@ export function SocietyRibbon({ initialPhase }: { initialPhase: SalePhase }) {
     now === null || phase === "closed"
       ? null
       : phase === "pre"
-        ? `Opens in ${countdown(Date.parse(SALE_OPENS_AT) - now)}`
-        : `Closes in ${countdown(Date.parse(SALE_CLOSES_AT) - now)}`;
+        ? countdown(Date.parse(SALE_OPENS_AT) - now)
+        : countdown(Date.parse(SALE_CLOSES_AT) - now);
 
   return (
     <div className="bg-tf-cinnamon-strong px-fluid-md py-2.5 text-center text-tf-white">
-      <p className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm sm:text-base">
-        <span>{message}</span>
-        {count && <span className="font-black tabular-nums tracking-wide">{count}</span>}
+      <p className="mx-auto max-w-7xl text-sm">
+        {message}
+        {count && <span className="tabular-nums"> · {count}</span>}
       </p>
     </div>
   );
