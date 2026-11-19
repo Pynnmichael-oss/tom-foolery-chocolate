@@ -59,11 +59,17 @@ export interface ContactUpsert {
   subscribe?: { source: string; ip?: string; userAgent?: string };
 }
 
+/** Omnisend requires an email channel status on every email identifier.
+ * Without a signup we send "nonSubscribed" stamped at this long-past time:
+ * Omnisend keeps whichever status change is newest, so a new contact comes
+ * in not subscribed while an existing subscriber stays subscribed. */
+const NO_STATUS_CHANGE = "2000-01-01T00:00:00Z";
+
 /**
- * Creates or updates a contact by email. Without `subscribe` it sends no
- * channel status: an existing subscriber stays subscribed, and a new
- * contact (e.g. a gift recipient) is NOT opted in to marketing. Never
- * triggers the welcome (discount) automation.
+ * Creates or updates a contact by email. Without `subscribe`, a new
+ * contact (e.g. a gift recipient) is NOT opted in to marketing and an
+ * existing contact's status is left as it is (see NO_STATUS_CHANGE).
+ * Never triggers the welcome (discount) automation.
  */
 export async function upsertContact(contact: ContactUpsert): Promise<void> {
   const now = new Date().toISOString();
@@ -81,7 +87,7 @@ export async function upsertContact(contact: ContactUpsert): Promise<void> {
             ...(contact.subscribe.userAgent ? { userAgent: contact.subscribe.userAgent } : {}),
           },
         }
-      : {}),
+      : { channels: { email: { status: "nonSubscribed", statusChangedAt: NO_STATUS_CHANGE } } }),
   };
   await omnisendPost("/contacts", {
     identifiers: [identifier],
