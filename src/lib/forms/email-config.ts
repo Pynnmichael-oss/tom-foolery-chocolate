@@ -10,8 +10,8 @@ interface ResolveFormEmailError {
 }
 
 interface FormEmailEnvVars {
-  to: "CONTACT_TO_EMAIL" | "GIFTING_TO_EMAIL";
-  from: "CONTACT_FROM_EMAIL" | "GIFTING_FROM_EMAIL";
+  to: "CONTACT_TO_EMAIL" | "GIFTING_TO_EMAIL" | "WHOLESALE_TO_EMAIL";
+  from: "CONTACT_FROM_EMAIL" | "GIFTING_FROM_EMAIL" | "WHOLESALE_FROM_EMAIL";
 }
 
 // Dev-only convenience so `next dev` (and Vercel Preview deploys, which
@@ -28,7 +28,7 @@ const DEV_FALLBACK_TO = "pynnmichael@outlook.com";
 
 /**
  * Resolves the to/from addresses for a form route (`/api/contact`,
- * `/api/gifting`). In a genuine production deploy, both must come from
+ * `/api/gifting`, `/api/wholesale`). In a genuine production deploy, both must come from
  * real env vars (see `.env.example`) — a missing one is a configuration
  * problem, surfaced to the submitter as a friendly 503 and logged loudly
  * server-side, never silently redirected to a personal inbox or an

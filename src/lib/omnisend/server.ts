@@ -1,0 +1,116 @@
+/**
+ * Server-side Omnisend REST client (contacts + custom events). Separate
+ * from the on-site snippet (components/analytics/OmnisendSnippet.tsx),
+ * which only needs the public brand ID.
+ *
+ * Env: OMNISEND_API_KEY — Omnisend → Store settings → API keys. Needs
+ * contacts and events write access. Server-only.
+ *
+ * API reference: https://api-docs.omnisend.com (version pinned below).
+ */
+
+const OMNISEND_BASE = "https://api.omnisend.com/api";
+const OMNISEND_VERSION = "2026-03-15";
+
+export class OmnisendError extends Error {
+  constructor(message: string, public readonly status?: number) {
+    super(message);
+    this.name = "OmnisendError";
+  }
+}
+
+export function isOmnisendConfigured(): boolean {
+  return Boolean(process.env.OMNISEND_API_KEY);
+}
+
+async function omnisendPost(path: string, body: unknown): Promise<void> {
+  const key = process.env.OMNISEND_API_KEY;
+  if (!key) throw new OmnisendError("Omnisend is not configured — set OMNISEND_API_KEY.");
+
+  let response: Response;
+  try {
+    response = await fetch(`${OMNISEND_BASE}${path}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Omnisend-API-Key ${key}`,
+        "Omnisend-Version": OMNISEND_VERSION,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+      cache: "no-store",
+    });
+  } catch (cause) {
+    throw new OmnisendError(`Failed to reach Omnisend (${path}): ${String(cause)}`);
+  }
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new OmnisendError(`Omnisend ${path} → HTTP ${response.status}: ${text.slice(0, 300)}`, response.status);
+  }
+}
+
+export interface ContactUpsert {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  tags?: string[];
+  customProperties?: Record<string, string | number | boolean>;
+  /** Set only when the person asked to be emailed (a signup form):
+   * marks the email channel subscribed with a consent record. */
+  subscribe?: { source: string; ip?: string; userAgent?: string };
+}
+
+/** Omnisend requires an email channel status on every email identifier.
+ * Without a signup we send "nonSubscribed" stamped at this long-past time:
+ * Omnisend keeps whichever status change is newest, so a new contact comes
+ * in not subscribed while an existing subscriber stays subscribed. */
+const NO_STATUS_CHANGE = "2000-01-01T00:00:00Z";
+
+/**
+ * Creates or updates a contact by email. Without `subscribe`, a new
+ * contact (e.g. a gift recipient) is NOT opted in to marketing and an
+ * existing contact's status is left as it is (see NO_STATUS_CHANGE).
+ * Never triggers the welcome (discount) automation.
+ */
+export async function upsertContact(contact: ContactUpsert): Promise<void> {
+  const now = new Date().toISOString();
+  const identifier = {
+    type: "email",
+    id: contact.email,
+    sendWelcomeMessage: false,
+    ...(contact.subscribe
+      ? {
+          channels: { email: { status: "subscribed", statusChangedAt: now } },
+          consent: {
+            source: contact.subscribe.source,
+            createdAt: now,
+            ...(contact.subscribe.ip ? { ip: contact.subscribe.ip } : {}),
+            ...(contact.subscribe.userAgent ? { userAgent: contact.subscribe.userAgent } : {}),
+          },
+        }
+      : { channels: { email: { status: "nonSubscribed", statusChangedAt: NO_STATUS_CHANGE } } }),
+  };
+  await omnisendPost("/contacts", {
+    identifiers: [identifier],
+    ...(contact.firstName ? { firstName: contact.firstName } : {}),
+    ...(contact.lastName ? { lastName: contact.lastName } : {}),
+    ...(contact.tags?.length ? { tags: contact.tags } : {}),
+    ...(contact.customProperties ? { customProperties: contact.customProperties } : {}),
+  });
+}
+
+/** Sends a custom event, which Omnisend automations can trigger on.
+ * `eventID` is Omnisend's optional unique event identifier (UUID). */
+export async function sendCustomEvent(event: {
+  name: string;
+  email: string;
+  eventID?: string;
+  properties: Record<string, unknown>;
+}): Promise<void> {
+  await omnisendPost("/events", {
+    eventName: event.name,
+    origin: "api",
+    ...(event.eventID ? { eventID: event.eventID } : {}),
+    contact: { email: event.email },
+    properties: event.properties,
+  });
+}

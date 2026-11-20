@@ -1,10 +1,11 @@
 "use client";
 
 import type { Cart, Product, ProductVariant } from "@/lib/shopify/types";
+import { metaAddToCart, metaViewContent } from "./meta";
 
 declare global {
   interface Window {
-    /** Set up by GoogleAnalyticsSnippet.tsx's inline bootstrap script
+    /** Set up by GoogleTags.tsx's inline bootstrap script
      * before anything else on the page runs — see that file's own
      * comment. */
     dataLayer?: unknown[];
@@ -20,16 +21,18 @@ declare global {
 }
 
 /**
- * GA4 standard ecommerce events for the headless store. `purchase` is
+ * GA4 standard ecommerce events for the headless store. `trackViewItem`
+ * and `trackAddToCart` also send the matching Meta Pixel events (see
+ * `meta.ts`), so call sites make one call per user action. `purchase` is
  * deliberately not here — that stays with Shopify's own checkout
  * tracking once the visitor leaves for `checkout.tomfoolerychocolate.com`
- * (see GoogleAnalyticsSnippet.tsx's own comment).
+ * (see GoogleTags.tsx's own comment).
  *
  * `gtagEvent` calls `window.gtag('event', name, params)` — the real
  * `gtag()` wrapper, not a hand-rolled `dataLayer.push`, see that global's
  * own comment above for why. No-ops when `window.gtag` doesn't exist yet
- * (GA env var unset — local dev, Preview — the bootstrap script in
- * GoogleAnalyticsSnippet.tsx never ran), so every exported function here
+ * (local dev, Preview — the bootstrap script in GoogleTags.tsx never
+ * ran), so every exported function here
  * is safe to call unconditionally from any call site.
  */
 
@@ -57,6 +60,7 @@ function lineToItem(line: Cart["lines"][number]): GAItem {
 /** PDP view — fire once per product page load, not on every variant
  * selection change (that's a different event, not requested here). */
 export function trackViewItem(product: Product, variant: ProductVariant) {
+  metaViewContent(product, variant);
   gtagEvent("view_item", {
     currency: variant.price.currencyCode,
     value: Number(variant.price.amount),
@@ -77,6 +81,7 @@ export function trackAddToCart(
   variant: ProductVariant,
   quantity: number
 ) {
+  metaAddToCart(product, variant, quantity);
   gtagEvent("add_to_cart", {
     currency: variant.price.currencyCode,
     value: Number(variant.price.amount) * quantity,

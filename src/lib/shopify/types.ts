@@ -51,6 +51,7 @@ export interface SellingPlanGroup {
 export interface ProductVariant {
   id: string;
   title: string;
+  sku?: string | null;
   availableForSale: boolean;
   price: Money;
   selectedOptions: SelectedOption[];
@@ -68,6 +69,13 @@ export interface Product {
   title: string;
   description: string;
   descriptionHtml: string;
+  tags?: string[];
+  productType?: string;
+  /** The "Search engine listing" title/description from Shopify admin.
+   * Each is `null` when the merchant hasn't written one. */
+  seo?: { title: string | null; description: string | null };
+  /** ISO timestamp of the last change in Shopify — the sitemap's `lastmod`. */
+  updatedAt?: string;
   availableForSale: boolean;
   images: ProductImage[];
   priceRange: { min: Money; max: Money };
@@ -111,6 +119,11 @@ export interface Collection {
 /** A cart line attribute — becomes an order line item property in
  * Shopify (and an item option in ShipStation). Keys starting with `_`
  * are hidden from the shopper at checkout and in the cart drawer. */
+export interface CollectionSummary {
+  handle: string;
+  updatedAt?: string;
+}
+
 export interface CartAttribute {
   key: string;
   value: string;
@@ -186,4 +199,16 @@ export interface ShopPolicies {
   refundPolicy: ShopPolicy | null;
   shippingPolicy: ShopPolicy | null;
   termsOfService: ShopPolicy | null;
+}
+
+/** Brand colors offered by the "Color" field on the Announcement Banner
+ * metaobject (Shopify admin → Content → Metaobjects). */
+export type AnnouncementStyle = "cinnamon" | "black" | "turmeric" | "juniper" | "rose";
+
+export interface Announcement {
+  /** Metaobject handle + updatedAt — stable per edit, used as a React key. */
+  id: string;
+  message: string;
+  link: { href: string; label: string } | null;
+  style: AnnouncementStyle;
 }

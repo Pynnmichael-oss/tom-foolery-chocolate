@@ -286,7 +286,40 @@ export function getMockProducts(): Product[] {
   return MOCK_PRODUCTS;
 }
 
+/** The Mischief Society membership (/mischief-society). Kept out of
+ * MOCK_PRODUCTS so it never shows in the /shop grid, same as in Shopify. */
+export const MOCK_MEMBERSHIP_PRODUCT: Product = {
+  ...makeProduct({
+    id: "gid://mock/Product/70",
+    handle: "chocolate-of-the-month-club",
+    title: "The Mischief Society: Chocolate of the Month Club",
+    description: "Six months of chocolate, January through June. Members pick their bars every month.",
+    bg: "9DD4CB",
+    fg: "25382A",
+    variants: [
+      {
+        id: "gid://mock/ProductVariant/7001",
+        title: "3 Bars",
+        availableForSale: true,
+        price: money(155),
+        selectedOptions: [{ name: "Bars per Month", value: "3 Bars" }],
+        sellingPlanIds: [],
+      },
+      {
+        id: "gid://mock/ProductVariant/7002",
+        title: "6 Bars",
+        availableForSale: true,
+        price: money(295),
+        selectedOptions: [{ name: "Bars per Month", value: "6 Bars" }],
+        sellingPlanIds: [],
+      },
+    ],
+  }),
+  tags: ["membership"],
+};
+
 export function getMockProduct(handle: string): Product | null {
+  if (handle === MOCK_MEMBERSHIP_PRODUCT.handle) return MOCK_MEMBERSHIP_PRODUCT;
   return MOCK_PRODUCTS.find((p) => p.handle === handle) ?? null;
 }
 
@@ -501,7 +534,7 @@ let cartCounter = 0;
 let lineCounter = 0;
 
 function findVariant(variantId: string): { variant: ProductVariant; product: Product } | null {
-  for (const product of [...MOCK_PRODUCTS, ...MOCK_GIFT_SET_PRODUCTS, ...MOCK_GIFT_COMPONENT_PRODUCTS]) {
+  for (const product of [...MOCK_PRODUCTS, MOCK_MEMBERSHIP_PRODUCT, ...MOCK_GIFT_SET_PRODUCTS, ...MOCK_GIFT_COMPONENT_PRODUCTS]) {
     const variant = product.variants.find((v) => v.id === variantId);
     if (variant) return { variant, product };
   }

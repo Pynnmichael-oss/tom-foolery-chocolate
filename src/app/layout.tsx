@@ -4,35 +4,33 @@ import "./globals.css";
 import { newsreader, poppins } from "@/lib/fonts";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
 import { Nav } from "@/components/layout/Nav";
+import { AnnouncementBanner } from "@/components/layout/AnnouncementBanner";
+import { getActiveAnnouncement } from "@/lib/shopify/announcement";
 import { Footer } from "@/components/layout/Footer";
 import { CartProvider } from "@/components/commerce/CartProvider";
 import { CartDrawer } from "@/components/commerce/CartDrawer";
 import { OmnisendSnippet } from "@/components/analytics/OmnisendSnippet";
 import { OmnisendPageView } from "@/components/analytics/OmnisendPageView";
-import { GoogleAnalyticsSnippet } from "@/components/analytics/GoogleAnalyticsSnippet";
+import { GoogleTagManagerNoScript, GoogleTags } from "@/components/analytics/GoogleTags";
+import { MetaPixel, MetaPixelNoScript } from "@/components/analytics/MetaPixel";
 import { OrganizationJsonLd } from "@/components/seo/OrganizationJsonLd";
-import { POWER_STATEMENTS, SITE_NAME, SITE_URL } from "@/lib/site";
+import { BASE_OPEN_GRAPH, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — ${POWER_STATEMENTS.liveALittle}`,
+    default: SITE_TITLE,
     template: `%s — ${SITE_NAME}`,
   },
-  description: POWER_STATEMENTS.chocolateInteresting,
+  description: SITE_DESCRIPTION,
   robots: { index: true, follow: true },
-  openGraph: {
-    type: "website",
-    siteName: SITE_NAME,
-    title: `${SITE_NAME} — ${POWER_STATEMENTS.liveALittle}`,
-    description: POWER_STATEMENTS.chocolateInteresting,
-    locale: "en_US",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${SITE_NAME} — ${POWER_STATEMENTS.liveALittle}`,
-    description: POWER_STATEMENTS.chocolateInteresting,
-  },
+  // No title/description on openGraph or twitter here, on purpose: Next
+  // fills both from each route's own `title`/`description` when they're
+  // absent, whereas a value set at the root is inherited verbatim by every
+  // page below it (which is how every inner page once shared the
+  // homepage's Twitter card).
+  openGraph: { ...BASE_OPEN_GRAPH },
+  twitter: { card: "summary_large_image" },
 };
 
 /**
@@ -46,7 +44,11 @@ export const metadata: Metadata = {
  */
 const JS_CLASS_SCRIPT = `(function(){var e=document.documentElement;e.classList.add("js");setTimeout(function(){e.classList.remove("js")},10000)})()`;
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Shopify-managed banner (5-minute cache). Fetched here so it can sit
+  // above <Nav />; AnnouncementBanner itself limits it to BANNER_PATHS.
+  const announcement = await getActiveAnnouncement();
+
   return (
     <html
       lang="en"
@@ -58,8 +60,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: JS_CLASS_SCRIPT }} />
       </head>
       <body className="min-h-full bg-bg font-sans text-fg">
+        <GoogleTagManagerNoScript />
+        <MetaPixelNoScript />
         <OrganizationJsonLd />
-        <GoogleAnalyticsSnippet />
+        <GoogleTags />
+        <MetaPixel />
         <OmnisendSnippet />
         {/* useSearchParams (inside OmnisendPageView) opts its subtree out
          * of static rendering unless wrapped in Suspense — see that
@@ -75,6 +80,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </a>
         <SmoothScroll>
           <CartProvider>
+            <AnnouncementBanner announcement={announcement} />
             <Nav />
             {children}
             {/* Root-layout mount (moved out of the homepage, 2026-09-28)

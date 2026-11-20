@@ -11,7 +11,7 @@ export interface SocialLink {
  */
 export const SOCIAL_LINKS: SocialLink[] = [
   // TODO(garrett): add the real Instagram profile URL.
-  { label: "Instagram", href: "" },
+  { label: "Instagram", href: "https://www.instagram.com/tomfoolerychocolates/" },
   // TODO(garrett): add the real TikTok profile URL.
   { label: "TikTok", href: "" },
 ];

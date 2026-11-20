@@ -29,7 +29,7 @@ export function Nav() {
           <HorizontalSignature tone="positive" width={150} />
         </Link>
 
-        <nav aria-label="Primary" className="hidden items-center gap-fluid-lg sm:flex">
+        <nav aria-label="Primary" className="hidden items-center gap-fluid-lg lg:flex">
           <Link
             href="/story"
             className="font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-black transition-colors hover:text-tf-cinnamon"
@@ -47,6 +47,12 @@ export function Nav() {
             className="font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-black transition-colors hover:text-tf-cinnamon"
           >
             Gifting
+          </Link>
+          <Link
+            href="/mischief-society"
+            className="whitespace-nowrap font-sans text-[length:var(--fs-preheader)] font-black uppercase tracking-[0.075em] text-tf-black transition-colors hover:text-tf-cinnamon"
+          >
+            Mischief Society
           </Link>
           <Link
             href="/contact"
@@ -74,7 +80,7 @@ export function Nav() {
             )}
           </Button>
 
-          {/* Hamburger toggle + full-screen panel — sm:hidden, same
+          {/* Hamburger toggle + full-screen panel — lg:hidden, same
            * breakpoint the desktop link row above switches on. `key`
            * remounts it on every navigation, which is what resets its
            * `isOpen` state closed (see that component's own comment on

@@ -255,6 +255,23 @@ featured collection above.
 currently 404. Fill each in under Shopify admin → Settings → Policies to
 bring the corresponding route live — no code change needed.
 
+### Announcement banner (`getActiveAnnouncement`)
+
+Bar above the nav on `/`, `/story`, `/shop` and `/contact` only (path list:
+`BANNER_PATHS` in `src/components/layout/AnnouncementBanner.tsx`). Content
+comes from Shopify admin → Content → Metaobjects → **Announcement Banner**
+(type `announcement_banner`, created 2026-11-15, Storefront access on):
+
+- **Status Active/Draft** is the on/off switch.
+- **Starts at / Ends at** (optional) schedule it; **Color** picks a brand
+  color (default Cinnamon); **Link label / Link URL** are optional.
+- Several live at once → the latest "Starts at" wins.
+- Cached 5 minutes (tag `announcement`), so edits and scheduled start/end
+  times take effect within ~5 minutes. Because it's fetched in the root
+  layout, every page's ISR window is now 5 minutes (was 1 hour); the
+  underlying product/collection fetches keep their own 1-hour cache.
+- Never throws — any failure just renders no banner.
+
 ### Selling plans
 
 `npm run check-selling-plans` (`scripts/check-selling-plans.ts`) audits
@@ -262,6 +279,129 @@ every product for Shopify's `requiresSellingPlan` flag (subscription-only
 purchase) — run it after adding or editing products, so a
 subscription-only product doesn't show up unexpectedly in
 `ProductDetail.tsx`'s purchase-options UI.
+
+## The Mischief Society — membership page + gift emails
+
+`/mischief-society` sells the six-month membership (Shopify product
+`chocolate-of-the-month-club`, variants "3 Bars" / "6 Bars", one
+payment). Dates, prices fallback, tier names, attribute keys and Omnisend
+names all live in `src/lib/mischief-society/config.ts`; next season is an
+edit to that file.
+
+**Buying.** "Just me" adds one plain line. "Gifting" adds one cart line
+per recipient in a single `cartLinesAdd`, each carrying line attributes
+`Gift for`, `Recipient email`, `Send gift email on` (YYYY-MM-DD), `From`
+and `Gift note`. Those become line item properties on the order. Send
+dates run from the sale opening to Dec 31, so every recipient is on the
+member list before the January pick-your-bars email. The product's own
+`/shop/[handle]` page redirects to `/mischief-society` and it's kept out
+of the shop grid and sitemap.
+
+**Member pages.** Every membership has a private page at
+`/mischief-society/member/<token>`. The token names the order line and is
+signed (HMAC) with `MEMBER_LINK_SECRET`, falling back to `CRON_SECRET`,
+so it can't be guessed or edited. There are no accounts: the link is the
+key. On the page the member sees their box size and months and adds or
+changes their US shipping address. Monthly bar picks (with 10%-off
+add-on bars) come next. The address is saved on the Shopify order in the
+metafield `mischief_society.member_<line id>` (JSON: `address`,
+`addressUpdatedAt`), one per member, so you can see it in Shopify admin.
+
+How members get their link:
+- **Gift recipients:** `member_link` on the "gift delivered" event, for the
+  gift email's button.
+- **"For me" buyers:** the daily job sends `mischief society member link`
+  (properties `first_name`, `member_link`, `bars_per_month`, `order`).
+- **Everyone:** the Omnisend contact property `society_member_link`, for
+  the monthly emails (`[[contact.custom_properties.society_member_link]]`).
+- **Lost links:** `/mischief-society/welcome` has an "Email My Link" box
+  (`/api/mischief-society/member-link`) that re-sends through the same
+  `mischief society member link` event. It answers the same way whether or
+  not the email has a membership, and a gift only counts once its gift date
+  has passed.
+
+Shopify only lets an app read orders from the last 60 days unless it has
+the `read_all_orders` scope. Add that scope to the Dev Dashboard app
+before late January, or member pages stop loading for November orders.
+
+**Daily job** (`/api/cron/mischief-society-gifts`, 9am Chicago via
+`vercel.json`: `0 15 * * *` is 15:00 UTC, which is 9am CST during the
+November–December gift window and 10am once daylight time starts;
+Vercel cron schedules are always UTC, code in `src/lib/mischief-society/gift-emails.ts`):
+
+1. Reads paid, uncancelled orders from the sale window that contain the
+   membership (Shopify Admin API).
+2. For each gift line due today or earlier, not yet sent: upserts the
+   recipient in Omnisend (tag `mischief-society-2027`, custom properties
+   `society_bars`, `society_gifted_by`, `society_memberships`; no
+   subscribe status is set: they're sent as "nonSubscribed" with a long-past
+   timestamp, so new recipients are not opted in to marketing and existing
+   subscribers keep their status), then sends custom event `mischief society gift delivered`
+   to the recipient and `mischief society gift sent` to the buyer.
+3. For each "for me" line: upserts the buyer with the same tag.
+4. Records handled line IDs in the order metafield
+   `mischief_society.gifts_sent`, so re-runs never send twice. A missed
+   day catches up on the next run.
+
+**Testing before the sale.** Add `?test` to the page URL
+(`/mischief-society?test`) to open checkout regardless of the sale dates.
+A black "Test mode" bar replaces the countdown. Gift dates can be any day
+from today, so a test gift dated today goes out on the next 9am run. Test
+orders are real orders: cancel or refund them afterwards (the job skips
+cancelled orders and refunded lines), and remove the test contacts from
+the `mischief-society-2027` tag in Omnisend.
+
+**"Email me when doors open" signup.** Before 11/27 the hero and closing
+section show an email form instead of the Join / Gift buttons (the picker
+links to it too). Once the sale opens, and in `?test` mode, the buttons
+come back. It posts to
+`/api/mischief-society/notify`, which subscribes the email in Omnisend
+(email channel `subscribed`, with a consent record: source, time, IP,
+user agent; no welcome/discount email) and tags it by the server's clock:
+`mischief-society-launch-alert`. Signups are refused once the sale is
+open or over. Honeypot field and a 5-per-10-min
+per-IP rate limit, same as the contact form. The form tells people
+they'll also get the occasional Tom Foolery email. Without
+`OMNISEND_API_KEY` it shows "Signups aren't set up yet."
+
+Check what a run would do without sending anything:
+`curl -H "Authorization: Bearer $CRON_SECRET" "https://<site>/api/cron/mischief-society-gifts?dry=1"`
+
+### Setup checklist
+
+1. **Shopify product:** publish it to the Headless channel before 11/27,
+   set stock (or turn off inventory tracking), set it to not require
+   shipping (boxes ship from the monthly imported orders), and update the
+   description (still says December through May / rotating mix). Until
+   it's readable by the Storefront API the page shows fallback prices and
+   "Not available yet".
+2. **Shopify app for the Admin API.** Shopify no longer allows new
+   admin-created custom apps; create one in the Dev Dashboard (Shopify
+   admin → Settings → Apps → Develop apps → Build apps in Dev Dashboard),
+   give its version the `read_orders` + `write_orders` scopes,
+   `read_all_orders` (member pages read orders older than 60 days) and
+   protected customer data access (email, name), install it on the
+   store, then copy its Client ID and Client secret →
+   `SHOPIFY_ADMIN_CLIENT_ID` + `SHOPIFY_ADMIN_CLIENT_SECRET`. The job
+   exchanges them for a 24-hour token (client credentials grant). An
+   existing legacy app's permanent token in `SHOPIFY_ADMIN_ACCESS_TOKEN`
+   also works.
+3. **Omnisend:** a third automation on `mischief society member link`
+   (the member-page email, with a button to `[[event.member_link]]`), and
+   an "Add your shipping address" button in the gift email pointing to
+   `[[event.member_link]]`.
+4. **Omnisend (gift emails):** API key → `OMNISEND_API_KEY`. Build two custom-event
+   automations: one on `mischief society gift delivered` (the gift email;
+   properties `recipient_first_name`, `from`, `note`, `bars_per_month`)
+   and one on `mischief society gift sent` (the buyer's heads-up). Gift
+   recipients aren't marketing subscribers, so check the automation is
+   allowed to send to non-subscribers (or treat it as transactional).
+   The monthly pick-your-bars email targets the `mischief-society-2027` tag.
+   For the launch alert, build a segment on the tag
+   `mischief-society-launch-alert` and schedule a campaign to it for the
+   morning of 11/27.
+5. **Vercel:** set `CRON_SECRET` (Production). Cron jobs only run on the
+   production deployment.
 
 ## Domain & DNS — tomfoolerychocolate.com
 

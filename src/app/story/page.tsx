@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { TomMeldrumStory } from "@/components/sections/TomMeldrumStory";
 import { StoryClosingCta } from "@/components/sections/StoryClosingCta";
-import { DEFAULT_OG_IMAGE } from "@/lib/site";
+import { BASE_OPEN_GRAPH, DEFAULT_OG_IMAGE } from "@/lib/site";
 
 // Distinct from the homepage's description (POWER_STATEMENTS.chocolate-
 // Interesting) — duplicate <meta name="description"> across pages is
@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   // images: DEFAULT_OG_IMAGE — see that constant's own comment on why an
   // openGraph override needs this explicitly, not just title/description.
   openGraph: {
+    ...BASE_OPEN_GRAPH,
+    url: "/story",
     title: TITLE,
     description: DESCRIPTION,
     images: [DEFAULT_OG_IMAGE],

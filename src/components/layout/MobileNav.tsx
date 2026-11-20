@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { href: "/story", label: "Story" },
   { href: "/shop", label: "Shop" },
   { href: "/gifting", label: "Gifting" },
+  { href: "/mischief-society", label: "Mischief Society" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -18,7 +19,7 @@ const TOGGLE_BAR_CLASS =
   "block h-[2px] w-6 rounded-full bg-tf-black transition-transform duration-200 motion-reduce:transition-none";
 
 /**
- * Mobile nav — hamburger toggle (`sm:hidden`, same breakpoint `Nav`'s own
+ * Mobile nav — hamburger toggle (`lg:hidden`, same breakpoint `Nav`'s own
  * desktop link row switches on) + a full-screen `--tf-black` overlay
  * beneath the sticky header (the header's own `z-50` keeps the logo/
  * toggle/cart visible and usable the whole time; this panel is `z-40`).
@@ -99,7 +100,7 @@ export function MobileNav() {
         aria-expanded={isOpen}
         aria-controls="mobile-nav-panel"
         aria-label={isOpen ? "Close menu" : "Open menu"}
-        className="relative flex h-11 w-11 shrink-0 flex-col items-center justify-center gap-[5px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-cinnamon focus-visible:ring-offset-2 sm:hidden"
+        className="relative flex h-11 w-11 shrink-0 flex-col items-center justify-center gap-[5px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-cinnamon focus-visible:ring-offset-2 lg:hidden"
       >
         <span
           aria-hidden="true"
@@ -132,7 +133,7 @@ export function MobileNav() {
             aria-modal="true"
             aria-label="Menu"
             inert={!isOpen}
-            className={`fixed inset-0 z-40 flex flex-col items-center justify-center gap-fluid-lg bg-tf-black transition-opacity duration-300 motion-reduce:transition-none sm:hidden ${
+            className={`fixed inset-0 z-40 flex flex-col items-center justify-center gap-fluid-lg bg-tf-black transition-opacity duration-300 motion-reduce:transition-none lg:hidden ${
               isOpen ? "opacity-100" : "pointer-events-none opacity-0"
             }`}
           >
@@ -142,7 +143,7 @@ export function MobileNav() {
                 href={link.href}
                 // This panel (and these links) exist in the DOM on every
                 // page, at every viewport width, even when closed and
-                // `sm:hidden` — only `display:none` (desktop) actually
+                // `lg:hidden` — only `display:none` (desktop) actually
                 // removes an element from layout; below that breakpoint
                 // it's merely `opacity-0`/`pointer-events-none`, still
                 // occupying its full-viewport box. `next/link`'s default
