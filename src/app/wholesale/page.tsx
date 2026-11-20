@@ -9,10 +9,11 @@ import { WHOLESALE_FORM_ANCHOR } from "@/lib/wholesale/constants";
 
 const DESCRIPTION =
   "Carry Tom Foolery — small-batch Chicago chocolate bars for gift shops, boutiques, cafés, bookstores, and specialty grocery. Order on Faire or send us a wholesale inquiry.";
-// True as long as /find-us keeps listing every retailer with a paid
-// order in the last 90 days (src/lib/stockists) — keep the two in step.
+// Social proof, not a perk: show a buyer who already stocks us. The
+// store types and "coast to coast" are true of the current list
+// (/find-us) — revisit if that list ever shrinks to one region.
 const LOCATOR_PITCH =
-  "Every shop that carries Tom Foolery gets a pin on our store locator, so chocolate lovers nearby know exactly where to find you.";
+  "Gift shops, markets, cafés and specialty grocers from coast to coast already have Tom Foolery on their shelves. Take a look at who you’d be joining.";
 const FORM_INTRO =
   "Looking for something specific, have a question, or want help figuring out the best option for your business? Leave us a note and we'll get back to you.";
 
@@ -39,18 +40,18 @@ export default function WholesalePage() {
     <main id="main-content">
       <WholesaleHero />
 
-      {/* What a buyer gets beyond the product: we send shoppers to them.
-          Also the wholesale-side entry point to /find-us, which is kept
-          out of the top nav on purpose (see FindAShopNote). */}
+      {/* Who already carries us. Also the wholesale-side entry point to
+          /find-us, which is kept out of the top nav on purpose (see
+          FindAShopNote). */}
       <section className="bg-tf-turmeric/25 px-fluid-md py-fluid-xl">
         <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-fluid-sm text-center">
-          <Preheader>On the Map</Preheader>
+          <Preheader>In Good Company</Preheader>
           <Headline as="h2" size="sm">
-            We Send Shoppers Your Way
+            See Who Carries Us
           </Headline>
           <BodyText className="max-w-md text-fg/80">{LOCATOR_PITCH}</BodyText>
           <Link href="/find-us" className={buttonClasses("secondary", "mt-fluid-xs")}>
-            See Our Stockists
+            See the Stores
           </Link>
         </div>
       </section>
