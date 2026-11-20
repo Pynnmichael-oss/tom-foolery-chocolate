@@ -165,7 +165,7 @@ export function MobileNav() {
               </Link>
             ))}
 
-            {/* Secondary on purpose: smaller and dimmer than the four
+            {/* Secondary on purpose: smaller and dimmer than the main
              * links above, which mirror the desktop nav. /find-us isn't
              * in that nav (it would compete with Shop), but someone on a
              * phone is the visitor most likely to be out looking for a
