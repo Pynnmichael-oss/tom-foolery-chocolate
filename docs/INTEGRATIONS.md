@@ -437,14 +437,18 @@ published.
 
 ### Live vs. snapshot
 
-- **`STOCKIST_SHEET_CSV_URL` set** (the Stores tab's publish-to-web CSV
-  link — see `.env.example`; publish that tab only, never the whole
-  document): the page is ISR, re-reading the sheet about hourly
-  (`SHEET_REVALIDATE_SECONDS`) and applying the 90-day window on every
-  read. Google's published CSV can itself lag an edit by a few minutes.
-- **Unset, or the sheet can't be read / comes back empty**: serves
+- **Live**: the page is ISR, re-reading the Stores tab's publish-to-web
+  CSV link about hourly (`SHEET_REVALIDATE_SECONDS`) and applying the
+  90-day window on every read. The link is public, not a secret, so it
+  is hard-coded as `DEFAULT_SHEET_CSV_URL` in `sheet.ts`; no environment
+  variable is needed (`STOCKIST_SHEET_CSV_URL` overrides it if set).
+  Google's published CSV can itself lag an edit by a few minutes. If
+  the tab is ever unpublished and republished Google issues a new link
+  — update the constant. Only the Stores tab is published; never
+  publish the whole document.
+- **Fallback** — if the sheet can't be read or comes back empty: serves
   `src/data/stockists.json`, a committed snapshot. Refresh it with
-  `npm run sync-stockists` (needs the URL in `.env.local`) or
+  `npm run sync-stockists`, or
   `npm run sync-stockists -- --input stores.csv` with the tab downloaded
   as CSV.
 

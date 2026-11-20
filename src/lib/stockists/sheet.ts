@@ -4,7 +4,7 @@ import type { StoreListing } from "./types";
  * The store locator's source of truth is one tab of a Google Sheet —
  * "Stores" in "Tom Foolery Store Locator" — published to the web as CSV
  * (File → Share → Publish to web → Stores → CSV) and read from
- * STOCKIST_SHEET_CSV_URL. Whatever that tab says is what the map shows;
+ * SHEET_CSV_URL below. Whatever that tab says is what the map shows;
  * edit a cell and the site follows within the hour, no deploy.
  *
  * Nothing here talks to HubSpot. A weekly scheduled task copies new
@@ -33,13 +33,21 @@ import type { StoreListing } from "./types";
 /** How long a fetched copy of the sheet is reused before asking again. */
 export const SHEET_REVALIDATE_SECONDS = 60 * 60;
 
-export function isSheetConfigured(): boolean {
-  return Boolean(process.env.STOCKIST_SHEET_CSV_URL);
-}
+/**
+ * The Stores tab's publish-to-web link. Not a secret — the tab is
+ * public by design and holds nothing but what the map prints — so it
+ * lives here rather than in an environment variable. `gid=1001` is the
+ * Stores tab; `single=true` keeps it to that tab alone.
+ *
+ * STOCKIST_SHEET_CSV_URL overrides it (to point a preview at a test
+ * sheet, or to move sheets without a code change). If the sheet is ever
+ * unpublished and republished, Google issues a new link: update it here.
+ */
+const DEFAULT_SHEET_CSV_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vRFixZvyGDHKHMFs4YrwrJBjhAZbAXFBfvFnyr5aLx9_6zfP36zwNMCyH2qapfDa1mskvjUjSSC3V9b/pub?gid=1001&single=true&output=csv";
 
 export async function fetchSheetCsv(): Promise<string> {
-  const url = process.env.STOCKIST_SHEET_CSV_URL;
-  if (!url) throw new Error("STOCKIST_SHEET_CSV_URL is not set");
+  const url = process.env.STOCKIST_SHEET_CSV_URL || DEFAULT_SHEET_CSV_URL;
 
   const response = await fetch(url, {
     next: { revalidate: SHEET_REVALIDATE_SECONDS, tags: ["stockists"] },

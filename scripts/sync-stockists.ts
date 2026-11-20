@@ -6,13 +6,13 @@
  *   npm run sync-stockists -- --input stores.csv # or a downloaded CSV of it
  *
  * Writes src/data/stockists.json, the list /find-us falls back to when
- * STOCKIST_SHEET_CSV_URL isn't set or the sheet can't be read (see
+ * the sheet can't be read (see
  * getStockists() in src/lib/stockists/index.ts). It runs the exact same
  * read → filter → geocode pipeline the live page does.
  *
  * `--input` takes the "Stores" tab saved as CSV (File → Download →
- * Comma-separated values) — for refreshing the snapshot without the
- * published URL to hand.
+ * Comma-separated values) — for refreshing the snapshot from somewhere
+ * the published link can't be reached.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";

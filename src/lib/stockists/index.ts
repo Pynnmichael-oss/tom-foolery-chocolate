@@ -1,6 +1,6 @@
 import snapshotJson from "@/data/stockists.json";
 import { geocodeAddress } from "./geocode";
-import { fetchSheetCsv, isSheetConfigured, listingsFromCsv } from "./sheet";
+import { fetchSheetCsv, listingsFromCsv } from "./sheet";
 import type { Stockist, StockistSnapshot, StoreListing } from "./types";
 import { lookupZip } from "./zip";
 
@@ -80,19 +80,17 @@ async function locate(listing: StoreListing, prior?: Stockist): Promise<Stockist
 /**
  * Everything /find-us shows.
  *
- * With STOCKIST_SHEET_CSV_URL set this is live from the Google Sheet
- * (see sheet.ts): re-read about hourly, with the rolling 90-day window
- * applied on every read, so an edit in the sheet shows up on its own and
- * a store falls off 90 days after its last paid order.
+ * Live from the Google Sheet (see sheet.ts): re-read about hourly, with
+ * the rolling 90-day window applied on every read, so an edit in the
+ * sheet shows up on its own and a store falls off 90 days after its
+ * last paid order.
  *
- * Without it — local dev, previews, or before the sheet is published —
- * or if the sheet can't be read, it serves the committed snapshot
- * (src/data/stockists.json): real stores, frozen at whenever
- * `npm run sync-stockists` last ran.
+ * If the sheet can't be read (Google down, tab unpublished, no network
+ * at build time) or comes back with no usable rows, it serves the
+ * committed snapshot (src/data/stockists.json) instead: real stores,
+ * frozen at whenever `npm run sync-stockists` last ran.
  */
 export async function getStockists(): Promise<Stockist[]> {
-  if (!isSheetConfigured()) return snapshot.stockists;
-
   try {
     const listings = listingsFromCsv(await fetchSheetCsv(), STOCKIST_WINDOW_DAYS);
     // An empty result means the sheet's header row was renamed or the
