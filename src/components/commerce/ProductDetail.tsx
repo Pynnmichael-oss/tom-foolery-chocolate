@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Preheader, Headline, BodyText } from "@/components/ui/typography";
 import { AddToCartButton } from "./AddToCartButton";
+import { FindAShopNote } from "@/components/stockists/FindAShopNote";
 import { PurchaseOptionsFields } from "./PurchaseOptionsFields";
 import { formatMoney } from "@/lib/shopify/format";
 import { useProductPurchaseOptions } from "@/lib/hooks/useProductPurchaseOptions";
@@ -116,6 +117,8 @@ export function ProductDetail({ product }: { product: Product }) {
               className="w-full sm:w-auto"
             />
           </div>
+
+          <FindAShopNote />
         </div>
       </div>
 

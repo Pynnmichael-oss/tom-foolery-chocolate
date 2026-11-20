@@ -528,3 +528,92 @@ If any of these still get real traffic (check Search Console/analytics
 for the old paths after launch), decide where each should point and add
 it to `redirects()` — don't guess at the destination without checking
 whether the old content needs to be preserved somewhere first.
+
+## Store locator (`/find-us`) — Google Sheet
+
+`/find-us` maps every retailer that has **placed a paid order in the last
+90 days**, searchable by ZIP code. The code is in `src/lib/stockists/`;
+the UI is `src/components/stockists/`.
+
+### Where the data comes from
+
+```
+HubSpot companies ──(weekly scheduled task)──▶ Google Sheet "Stores" tab ──(published CSV, hourly)──▶ /find-us
+     orders only                                   SOURCE OF TRUTH
+```
+
+- **The Google Sheet is the source of truth.** Sheet "Tom Foolery Store
+  Locator", tab **Stores**. The site shows exactly what that tab says.
+  Edit a cell (fix an address, hide a shop, add one by hand) and the map
+  follows within about an hour.
+- **HubSpot is only an input.** A weekly scheduled task ("Weekly store
+  locator update") reads HubSpot for accounts with paid orders, adds new
+  ones to the sheet, refreshes each row's *Last paid order* date, and
+  looks up new shops' storefront addresses. It never overwrites a name,
+  status or address a person has put in the sheet, and it doesn't write
+  to HubSpot. This site never calls HubSpot at all.
+
+### The Stores tab
+
+| Column | Meaning |
+| --- | --- |
+| Store | Name as shown on the map. |
+| Status | **Listed** — street address and exact pin. **Needs review** / **City only** — name and "City, ST" only, pin on the ZIP's centre. **Hidden** — not on the map. Anything else (blank, a typo) is treated as Needs review, so a mistake can hide an address but never publish one. |
+| Street, City, State, ZIP | The shop a customer walks into. Street is only shown when Status is Listed. |
+| Website, Instagram, Phone | Optional. |
+| Last paid order | `YYYY-MM-DD`. The shop drops off the map 90 days after this (`STOCKIST_WINDOW_DAYS`). **Blank = always shown** — for a shop added by hand. |
+| HubSpot ID | Ties the row to its HubSpot company; blank for hand-added shops. |
+
+Columns are matched by header name, so they can be re-ordered and extra
+columns added. Don't rename the headers above.
+
+**Why not use HubSpot's address?** A company's `address` in HubSpot is
+the marketplace ship-to (set by TF Ops Sync, which also matches later
+orders on it). For about a quarter of accounts that is the owner's home
+or a sister business, not the shop — 9 of the first 38 checked. The
+second tab, **Research log**, records what was on file, what was found,
+and the source for each store; it holds ship-to addresses and is not
+published.
+
+### Live vs. snapshot
+
+- **Live**: the page is ISR, re-reading the Stores tab's publish-to-web
+  CSV link about hourly (`SHEET_REVALIDATE_SECONDS`) and applying the
+  90-day window on every read. The link is public, not a secret, so it
+  is hard-coded as `DEFAULT_SHEET_CSV_URL` in `sheet.ts`; no environment
+  variable is needed (`STOCKIST_SHEET_CSV_URL` overrides it if set).
+  Google's published CSV can itself lag an edit by a few minutes. If
+  the tab is ever unpublished and republished Google issues a new link
+  — update the constant. Only the Stores tab is published; never
+  publish the whole document.
+- **Fallback** — if the sheet can't be read or comes back empty: serves
+  `src/data/stockists.json`, a committed snapshot. Refresh it with
+  `npm run sync-stockists`, or
+  `npm run sync-stockists -- --input stores.csv` with the tab downloaded
+  as CSV.
+
+### Geocoding and ZIP search — no API keys
+
+- **Store address → pin**: US Census Bureau geocoder
+  (`geocoding.geo.census.gov`; free, keyless), called server-side and
+  cached per address indefinitely, so only new/changed addresses are ever
+  looked up. Coordinates already in the snapshot are reused first. No
+  match → the pin falls back to the ZIP's centre. So a new address typed
+  into the sheet is placed automatically; nobody enters coordinates.
+- **Visitor ZIP → point**: `GET /api/zip/[zip]` reads a bundled table
+  (`src/data/zip-centroids.json`, ~42k ZIPs, built by `npm run
+  build-zip-centroids`). No third-party call; nothing is logged.
+- **"Use my location"**: the browser's own geolocation prompt; the
+  coordinates stay in the page and are never sent anywhere.
+
+### The map
+
+MapLibre GL JS (`maplibre-gl`, pinned to the v5 line — v6 ships its web
+worker as a separate file that Next's bundler doesn't resolve) over
+OpenFreeMap's hosted OpenStreetMap tiles: free, no key, no account.
+Switch providers with `NEXT_PUBLIC_MAP_STYLE_URL`. The attribution in the
+map's corner is required by the data licence — don't hide it.
+
+**If a CSP is ever added**: `connect-src` and `img-src` need the tile
+host (`tiles.openfreemap.org` by default), plus `worker-src blob:` and
+`child-src blob:` for MapLibre's worker.

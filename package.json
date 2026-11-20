@@ -8,12 +8,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "check-selling-plans": "tsx scripts/check-selling-plans.ts"
+    "check-selling-plans": "tsx scripts/check-selling-plans.ts",
+    "build-zip-centroids": "tsx scripts/build-zip-centroids.ts",
+    "sync-stockists": "tsx scripts/sync-stockists.ts"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
     "gsap": "^3.15.0",
     "lenis": "^1.3.26",
+    "maplibre-gl": "^5.24.1",
     "next": "16.3.6",
     "react": "19.2.8",
     "react-dom": "19.2.8"
@@ -27,6 +30,7 @@
     "eslint-config-next": "16.3.6",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "zipcodes": "^8.0.0"
   }
 }

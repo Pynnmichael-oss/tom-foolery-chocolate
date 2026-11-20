@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Preheader, Headline } from "@/components/ui/typography";
 import { ProductGrid } from "@/components/commerce/ProductGrid";
+import { FindAShopNote } from "@/components/stockists/FindAShopNote";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { BASE_OPEN_GRAPH, DEFAULT_OG_IMAGE } from "@/lib/site";
 
@@ -36,6 +37,8 @@ export default function ShopPage() {
         </header>
 
         <ProductGrid />
+
+        <FindAShopNote className="mt-fluid-xl text-center" />
       </div>
     </main>
   );
