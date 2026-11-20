@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Preheader, Headline } from "@/components/ui/typography";
 import { ProductGrid } from "@/components/commerce/ProductGrid";
+import { FindAShopNote } from "@/components/stockists/FindAShopNote";
 import { DEFAULT_OG_IMAGE, POWER_STATEMENTS } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -28,6 +29,8 @@ export default function ShopPage() {
         </header>
 
         <ProductGrid />
+
+        <FindAShopNote className="mt-fluid-xl text-center" />
       </div>
     </main>
   );

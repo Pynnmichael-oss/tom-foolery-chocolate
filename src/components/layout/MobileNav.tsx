@@ -163,6 +163,20 @@ export function MobileNav() {
                 {link.label}
               </Link>
             ))}
+
+            {/* Secondary on purpose: smaller and dimmer than the four
+             * links above, which mirror the desktop nav. /find-us isn't
+             * in that nav (it would compete with Shop), but someone on a
+             * phone is the visitor most likely to be out looking for a
+             * shop right now. Same prefetch/tap-target reasoning as the
+             * links above (py-3 → 44px tall at this text size). */}
+            <Link
+              href="/find-us"
+              prefetch={false}
+              className="rounded-sm px-2 py-3 font-sans text-sm font-black uppercase tracking-[0.075em] text-tf-white/70 underline decoration-tf-turmeric decoration-2 underline-offset-4 transition-colors hover:text-tf-turmeric"
+            >
+              Find a Shop Near You
+            </Link>
           </div>,
           document.body
         )}
