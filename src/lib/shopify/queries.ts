@@ -44,6 +44,8 @@ const PRODUCT_FRAGMENT = `#graphql
       maxVariantPrice { amount currencyCode }
     }
     requiresSellingPlan
+    ingredients: metafield(namespace: "custom", key: "ingredients") { value }
+    allergens: metafield(namespace: "custom", key: "allergens") { value }
     sellingPlanGroups(first: 5) {
       nodes {
         name
@@ -313,6 +315,8 @@ interface RawProduct {
   images: { nodes: RawImage[] };
   priceRange: { minVariantPrice: Money; maxVariantPrice: Money };
   requiresSellingPlan: boolean;
+  ingredients?: { value: string } | null;
+  allergens?: { value: string } | null;
   sellingPlanGroups: { nodes: RawSellingPlanGroup[] };
   variants: { nodes: RawVariant[] };
 }
@@ -463,6 +467,8 @@ function normalizeProduct(product: RawProduct): Product {
     variants: product.variants.nodes.map(normalizeVariant),
     requiresSellingPlan: product.requiresSellingPlan,
     sellingPlanGroups: product.sellingPlanGroups.nodes.map(normalizeSellingPlanGroup),
+    ingredients: product.ingredients?.value?.trim() || null,
+    allergens: product.allergens?.value?.trim() || null,
   };
 }
 
