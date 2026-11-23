@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Preheader, Headline, BodyText } from "@/components/ui/typography";
+import { Preheader, Headline } from "@/components/ui/typography";
 import { AddToCartButton } from "./AddToCartButton";
 import { FindAShopNote } from "@/components/stockists/FindAShopNote";
 import { PurchaseOptionsFields } from "./PurchaseOptionsFields";
+import { ProductIngredients } from "./ProductIngredients";
+import { ProductDescription } from "./ProductDescription";
 import { formatMoney } from "@/lib/shopify/format";
 import { useProductPurchaseOptions } from "@/lib/hooks/useProductPurchaseOptions";
 import { trackViewItem } from "@/lib/analytics/ga";
@@ -101,7 +103,10 @@ export function ProductDetail({ product }: { product: Product }) {
             {product.title}
           </Headline>
           <p className="font-sans text-lg text-fg/80">{formatMoney(price)}</p>
-          <BodyText className="text-fg/80">{product.description}</BodyText>
+          <ProductDescription product={product} />
+          {product.allergens && (
+            <p className="-mt-fluid-sm font-sans text-xs text-fg/60">{product.allergens}</p>
+          )}
 
           <PurchaseOptionsFields
             options={options}
@@ -119,6 +124,8 @@ export function ProductDetail({ product }: { product: Product }) {
           </div>
 
           <FindAShopNote />
+
+          <ProductIngredients ingredients={product.ingredients} />
         </div>
       </div>
 

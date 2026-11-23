@@ -86,6 +86,13 @@ export interface Product {
    * allowing a one-time purchase). */
   requiresSellingPlan: boolean;
   sellingPlanGroups: SellingPlanGroup[];
+  /** Full ingredient list (`custom.ingredients` metafield), shown in a
+   * collapsed disclosure on the PDP. `null` when not filled in. */
+  ingredients?: string | null;
+  /** Short allergen statement (`custom.allergens` metafield), e.g.
+   * "Contains: milk, soy." — shown as a small line under the description.
+   * `null` when not filled in. */
+  allergens?: string | null;
 }
 
 /**

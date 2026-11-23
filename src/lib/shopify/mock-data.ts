@@ -98,6 +98,8 @@ function makeProduct(input: {
   /** Subscription-only — see types.ts's Product.requiresSellingPlan. */
   requiresSellingPlan?: boolean;
   sellingPlanGroups?: SellingPlanGroup[];
+  ingredients?: string;
+  allergens?: string;
 }): Product {
   return {
     id: input.id,
@@ -114,6 +116,8 @@ function makeProduct(input: {
     variants: input.variants,
     requiresSellingPlan: input.requiresSellingPlan ?? false,
     sellingPlanGroups: input.sellingPlanGroups ?? [],
+    ingredients: input.ingredients ?? null,
+    allergens: input.allergens ?? null,
   };
 }
 
@@ -179,6 +183,9 @@ export const MOCK_PRODUCTS: Product[] = [
       "Dark chocolate with flaky sea salt scattered on with more enthusiasm than precision. Sweet, salty, a little chaotic.",
     bg: "9DD4CB",
     fg: "25382A",
+    ingredients:
+      "Dark chocolate (cocoa beans, cane sugar, cocoa butter, sunflower lecithin), flaky sea salt.",
+    allergens: "Contains: soy. Made in a facility that also processes milk and tree nuts.",
     variants: [
       variant("gid://mock/ProductVariant/201", "Single Bar 85g", 9, false),
       variant("gid://mock/ProductVariant/202", "Gift Box (3 Bars)", 24),

@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Headline, BodyText } from "@/components/ui/typography";
+import { Headline } from "@/components/ui/typography";
 import { AddToCartButton } from "./AddToCartButton";
 import { PurchaseOptionsFields } from "./PurchaseOptionsFields";
 import { priceRangeLabel } from "@/lib/shopify/format";
 import { useProductPurchaseOptions } from "@/lib/hooks/useProductPurchaseOptions";
+import { ProductDescription } from "./ProductDescription";
 import type { Product } from "@/lib/shopify/types";
 
 /**
@@ -52,7 +53,7 @@ export function FeaturedProductPanel({ product }: { product: Product }) {
           {product.title}
         </Headline>
         <p className="font-sans text-lg text-fg/80">{priceRangeLabel(product.priceRange)}</p>
-        <BodyText className="text-fg/80">{product.description}</BodyText>
+        <ProductDescription product={product} />
 
         <PurchaseOptionsFields
           options={options}
