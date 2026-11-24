@@ -2,7 +2,6 @@
 
 import {
   SALE_CLOSES_AT,
-  SALE_CLOSES_LABEL,
   SALE_OPENS_LABEL,
   type SalePhase,
 } from "@/lib/mischief-society/config";
@@ -34,14 +33,14 @@ export function SocietyRibbon({ initialPhase }: { initialPhase: SalePhase }) {
   }
 
   // One short line, one size. The timer appears once the browser knows the
-  // time (so the server HTML and first client render match); until then the
-  // line just names the closing day.
+  // time (so the server HTML and first client render match); until then it
+  // shows a placeholder for a split second.
   const message =
     phase === "pre"
       ? `Doors open ${SALE_OPENS_LABEL}`
       : phase === "live"
         ? now === null
-          ? `Memberships close ${SALE_CLOSES_LABEL}`
+          ? "Doors close in …"
           : `Doors close in ${countdown(Date.parse(SALE_CLOSES_AT) - now)}`
         : "Doors are closed for this season.";
 
