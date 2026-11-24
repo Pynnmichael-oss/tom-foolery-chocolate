@@ -13,6 +13,7 @@ import { OmnisendSnippet } from "@/components/analytics/OmnisendSnippet";
 import { OmnisendPageView } from "@/components/analytics/OmnisendPageView";
 import { GoogleTagManagerNoScript, GoogleTags } from "@/components/analytics/GoogleTags";
 import { MetaPixel, MetaPixelNoScript } from "@/components/analytics/MetaPixel";
+import { MetaPageView } from "@/components/analytics/MetaPageView";
 import { OrganizationJsonLd } from "@/components/seo/OrganizationJsonLd";
 import { BASE_OPEN_GRAPH, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
@@ -66,11 +67,12 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <GoogleTags />
         <MetaPixel />
         <OmnisendSnippet />
-        {/* useSearchParams (inside OmnisendPageView) opts its subtree out
+        {/* useSearchParams (inside OmnisendPageView and MetaPageView) opts its subtree out
          * of static rendering unless wrapped in Suspense — see that
          * component's own comment. */}
         <Suspense fallback={null}>
           <OmnisendPageView />
+          <MetaPageView />
         </Suspense>
         <a
           href="#main-content"

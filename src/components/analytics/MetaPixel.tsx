@@ -1,7 +1,6 @@
 import Script from "next/script";
 import { isProductionRuntime } from "@/lib/env";
-
-const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || "1690559959441889";
+import { META_PIXEL_ID } from "@/lib/analytics/meta-config";
 
 function activePixelId() {
   return META_PIXEL_ID && isProductionRuntime() ? META_PIXEL_ID : null;
@@ -24,10 +23,13 @@ function activePixelId() {
  * 2. `fbevents.js` via `next/script` `lazyOnload`, the same deferred loading
  *    as gtag.js/gtm.js, so the pixel never competes with LCP.
  *
- * Pageviews: only the one `PageView` above. `fbevents.js` automatically
- * fires a `PageView` on client-side navigations (History API pushState),
- * which is how Next's router moves between pages, so adding a route-change
- * listener here would double-count every navigation.
+ * Pageviews: the inline script sends the first `PageView` with an
+ * `eventID` (kept on `window.__metaPageViewId`), and `MetaPageView.tsx`
+ * sends its server copy to the Conversions API plus one `PageView` per
+ * client-side navigation, each with its own `eventID`. fbevents.js's own
+ * History API pageview tracking is switched off (`fbq.disablePushState`)
+ * because those automatic PageViews carry no event ID, so they couldn't be
+ * deduplicated against the server copies.
  *
  * Don't also add this pixel as a tag in the GTM container, or every event
  * is sent twice. Checkout events (`InitiateCheckout` onward, `Purchase`)
@@ -45,8 +47,12 @@ export function MetaPixel() {
             "!function(f){if(f.fbq)return;var n=f.fbq=function(){n.callMethod?" +
             "n.callMethod.apply(n,arguments):n.queue.push(arguments)};" +
             "if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[]}(window);" +
+            "fbq.disablePushState=!0;" +
             `fbq('init','${pixelId}');` +
-            "fbq('track','PageView');",
+            "var i=self.crypto&&crypto.randomUUID?crypto.randomUUID():" +
+            "Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12);" +
+            "window.__metaPageViewId=i;" +
+            "fbq('track','PageView',{},{eventID:i});",
         }}
       />
       <Script
