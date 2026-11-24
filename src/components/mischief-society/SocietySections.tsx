@@ -354,7 +354,7 @@ export function SocietyGifting({ phase }: { phase: SalePhase }) {
             The Easiest Gift You&rsquo;ll Give This Year
           </Headline>
           <BodyText className="max-w-2xl">
-            Buy during Black Friday weekend for as many people as you like. Each one hears about it
+            Buy before Cyber Monday for as many people as you like. Each one hears about it
             on the day you choose. No wrapping, no shipping deadlines, no guessing sizes.
           </BodyText>
         </div>
@@ -456,7 +456,7 @@ const FAQS: Array<{ q: string; a: string; open?: boolean }> = [
   },
   {
     q: "Can I join after Cyber Monday?",
-    a: "Memberships are only sold Black Friday through Cyber Monday. Sign up for our newsletter and we’ll tell you first when the next season opens.",
+    a: "Memberships are only sold through Cyber Monday, 11/30. Sign up for our newsletter and we’ll tell you first when the next season opens.",
   },
 ];
 

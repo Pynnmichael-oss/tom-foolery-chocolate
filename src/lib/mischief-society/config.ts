@@ -1,6 +1,6 @@
 /**
  * The Mischief Society — a six-month chocolate membership sold only over
- * Black Friday – Cyber Monday. Everything date- or product-specific lives
+ * Thanksgiving week through Cyber Monday. Everything date- or product-specific lives
  * here so next season is an edit to this file, not a hunt through
  * components.
  *
@@ -30,11 +30,12 @@ export const JOIN_ANCHOR = "join";
 export const JOIN_GIFT_ANCHOR = "join-gift";
 
 /** Sale window, Chicago time. Add to Cart is only live in between. */
-export const SALE_OPENS_AT = "2026-11-27T00:00:00-06:00";
+/** Opened early (Tue 11/24) instead of Black Friday. */
+export const SALE_OPENS_AT = "2026-11-24T00:00:00-06:00";
 export const SALE_CLOSES_AT = "2026-11-30T23:59:59-06:00";
 
 /** Shown as plain copy ("Doors open Black Friday, 11/27"). */
-export const SALE_OPENS_LABEL = "Black Friday, 11/27";
+export const SALE_OPENS_LABEL = "Tuesday, 11/24";
 export const SALE_CLOSES_LABEL = "Cyber Monday, 11/30";
 
 /** Membership months — members pick their bars from a monthly email. */
