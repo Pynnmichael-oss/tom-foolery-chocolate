@@ -43,7 +43,7 @@ export function NotifyForm({
   if (phase !== "pre") return null;
 
   const heading = "Get the heads-up";
-  const sub = `Doors open ${SALE_OPENS_LABEL} and close four days later. We'll email you the minute they open.`;
+  const sub = `Doors open ${SALE_OPENS_LABEL}. We'll email you the minute they open.`;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

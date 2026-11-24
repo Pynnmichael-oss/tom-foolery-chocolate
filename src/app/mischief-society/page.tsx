@@ -25,7 +25,7 @@ import {
 
 const TITLE = "The Mischief Society: Chocolate of the Month Club";
 const DESCRIPTION =
-  "Six months of Tom Foolery chocolate, January through June. Members pick their bars every month, including member-only flavors. Gift it to as many people as you like. Sold Black Friday through Cyber Monday only.";
+  "Six months of Tom Foolery chocolate, January through June. Members pick their bars every month, including member-only flavors. Gift it to as many people as you like. Sold through Cyber Monday, 11/30 only.";
 
 export const metadata: Metadata = {
   title: TITLE,
