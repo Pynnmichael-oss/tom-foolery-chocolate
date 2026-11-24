@@ -42,7 +42,7 @@ export function SocietyRibbon({ initialPhase }: { initialPhase: SalePhase }) {
       : phase === "live"
         ? now === null
           ? `Memberships close ${SALE_CLOSES_LABEL}`
-          : `Doors close in ${countdown(Date.parse(SALE_CLOSES_AT) - now)} · ${SALE_CLOSES_LABEL}`
+          : `Doors close in ${countdown(Date.parse(SALE_CLOSES_AT) - now)}`
         : "Doors are closed for this season.";
 
   return (
