@@ -103,7 +103,8 @@ export function MembershipPicker({
   const today = now === null ? null : societyToday(new Date(now));
   const uid = useId();
 
-  const [mode, setMode] = useState<"me" | "gift">("me");
+  // Gifting is the default during the holiday sale.
+  const [mode, setMode] = useState<"me" | "gift">("gift");
   const [selfBars, setSelfBars] = useState<TierBars>(3);
   const [from, setFrom] = useState("");
   const [recipients, setRecipients] = useState<Recipient[]>(() => [{ ...blankRecipient(), key: 0 }]);
@@ -118,10 +119,12 @@ export function MembershipPicker({
   const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null);
   const pasteRef = useRef<HTMLTextAreaElement>(null);
 
-  // "Gift a Membership" links land on #join-gift: preselect gifting.
+  // "Gift a Membership" lands on #join-gift (gifting), "Join the Society"
+  // on #join (just me).
   useEffect(() => {
     const apply = () => {
       if (window.location.hash === `#${JOIN_GIFT_ANCHOR}`) setMode("gift");
+      else if (window.location.hash === `#${JOIN_ANCHOR}`) setMode("me");
     };
     apply();
     window.addEventListener("hashchange", apply);
@@ -501,6 +504,15 @@ export function MembershipPicker({
                 <div>
                   <p className="font-display text-3xl font-semibold tabular-nums">
                     {formatMoney({ amount: total.toFixed(2), currencyCode: currency })}
+                  </p>
+                  {/* Per-month framing: follows the selected box size(s). */}
+                  <p className="text-sm tabular-nums">
+                    about{" "}
+                    {formatMoney({
+                      amount: Math.round(total / MEMBERSHIP_MONTHS.length).toFixed(2),
+                      currencyCode: currency,
+                    })}{" "}
+                    a month · one payment, nothing renews
                   </p>
                   <p className="text-sm text-tf-black/70">
                     {lines.length} {lines.length === 1 ? "membership" : "memberships"} · or {INSTALLMENTS}{" "}

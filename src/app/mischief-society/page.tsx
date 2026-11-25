@@ -82,16 +82,19 @@ function buildTiers(product: Product | null): PickerTier[] {
 export default async function MischiefSocietyPage() {
   const product = await loadMembership();
   const phase = salePhase();
+  const tiers = buildTiers(product);
+  // Lowest membership price ("From $155"), straight from Shopify.
+  const fromPrice = Math.min(...tiers.map((t) => Number(t.price.amount)));
 
   return (
     <main id="main-content">
       <SocietyRibbon initialPhase={phase} />
-      <SocietyHero phase={phase} />
+      <SocietyHero phase={phase} fromPrice={fromPrice} />
       <StripeBand />
       <SocietyPerks />
       <SocietyTimeline />
       <MembershipPicker
-        tiers={buildTiers(product)}
+        tiers={tiers}
         product={{
           title: product?.title ?? TITLE,
           handle: MISCHIEF_SOCIETY_HANDLE,

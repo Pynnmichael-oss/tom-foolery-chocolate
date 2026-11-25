@@ -165,11 +165,12 @@ export function SocietyActions({
   }
   return (
     <div className={`mt-fluid-xs flex flex-wrap gap-fluid-sm ${center ? "justify-center" : ""}`}>
-      <a href={`#${JOIN_ANCHOR}`} className={buttonClasses("primary")}>
-        Join the Society
-      </a>
-      <a href={`#${JOIN_GIFT_ANCHOR}`} className={buttonClasses("secondary")}>
+      {/* Gifting is the main push: it leads and gets the solid button. */}
+      <a href={`#${JOIN_GIFT_ANCHOR}`} className={buttonClasses("primary")}>
         Gift a Membership
+      </a>
+      <a href={`#${JOIN_ANCHOR}`} className={buttonClasses("secondary")}>
+        Join the Society
       </a>
     </div>
   );
