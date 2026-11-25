@@ -165,11 +165,12 @@ export function SocietyActions({
   }
   return (
     <div className={`mt-fluid-xs flex flex-wrap gap-fluid-sm ${center ? "justify-center" : ""}`}>
-      <a href={`#${JOIN_ANCHOR}`} className={buttonClasses("primary")}>
-        Join the Society
-      </a>
+      {/* Gifting leads during the holiday sale. */}
       <a href={`#${JOIN_GIFT_ANCHOR}`} className={buttonClasses("secondary")}>
         Gift a Membership
+      </a>
+      <a href={`#${JOIN_ANCHOR}`} className={buttonClasses("primary")}>
+        Join the Society
       </a>
     </div>
   );

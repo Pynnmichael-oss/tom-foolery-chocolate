@@ -34,21 +34,65 @@ export function StripeBand() {
 /* Hero                                                                 */
 /* ------------------------------------------------------------------ */
 
-export function SocietyHero({ phase }: { phase: SalePhase }) {
+/** Coverage linked from the hero ("As seen in"). Text only: no logos. */
+const PRESS = [
+  {
+    name: "The Afternoon Tea",
+    href: "https://afternoonteanews.com/miscellaneous-deals-you-need-to-know-about-this-black-friday/",
+  },
+  {
+    name: "Block Club Chicago",
+    href: "https://blockclubchicago.org/2026/11/23/shop-local-2026-a-chicago-food-gift-guide/",
+  },
+];
+
+const PRESS_LINK =
+  "font-semibold underline decoration-1 underline-offset-2 hover:text-tf-cinnamon-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tf-black";
+
+/** "$155" */
+function wholeDollars(amount: number): string {
+  return `$${Math.round(amount).toLocaleString("en-US")}`;
+}
+
+export function SocietyHero({ phase, fromPrice }: { phase: SalePhase; fromPrice: number }) {
+  const monthly = Math.round(fromPrice / MEMBERSHIP_MONTHS.length);
   return (
     <section className="overflow-hidden bg-tf-juniper text-tf-black">
-      <div className="mx-auto grid max-w-7xl items-center gap-fluid-lg px-fluid-md py-fluid-xl md:grid-cols-[1.05fr_0.95fr]">
+      <div className="mx-auto grid max-w-7xl items-center gap-fluid-lg px-fluid-md pt-8 pb-fluid-xl md:grid-cols-[1.05fr_0.95fr] md:py-fluid-xl">
         <div className="flex min-w-0 flex-col gap-fluid-sm">
           <Preheader>The Mischief Society · Members Only</Preheader>
           <Headline as="h1" size="lg" className="text-balance">
             Six Months of Mischief, Delivered.
           </Headline>
           <BodyText className="max-w-xl">
-            Join Tom&rsquo;s not-so-secret society of chocolate lovers. Every month from January
-            through June, you pick a box of bars from our lineup plus member-only flavors you
-            won&rsquo;t find on our site or in stores.
+            {/* The first sentence is dropped on phones so the price line
+             * under the buttons stays above the fold. */}
+            <span className="hidden sm:inline">
+              Join Tom&rsquo;s not-so-secret society of chocolate lovers.{" "}
+            </span>
+            Every month from January through June, you pick a box of bars from our lineup plus
+            member-only flavors you won&rsquo;t find on our site or in stores.
           </BodyText>
           <SocietyActions initialPhase={phase} anchor />
+          {phase !== "pre" && (
+            // Price and "not a subscription" up front, before the scroll.
+            // Prices stay hidden before doors open (see MembershipPicker).
+            <BodyText size="sm" className="max-w-xl text-tf-black/80">
+              <strong className="font-black text-tf-black">From {wholeDollars(fromPrice)}</strong> · about{" "}
+              {wholeDollars(monthly)} a month for six months · shipping included · one payment, nothing
+              renews
+            </BodyText>
+          )}
+          <p className="text-sm text-tf-black/80">
+            As seen in{" "}
+            <a href={PRESS[0].href} target="_blank" rel="noopener noreferrer" className={PRESS_LINK}>
+              {PRESS[0].name}
+            </a>{" "}
+            and{" "}
+            <a href={PRESS[1].href} target="_blank" rel="noopener noreferrer" className={PRESS_LINK}>
+              {PRESS[1].name}
+            </a>
+          </p>
         </div>
 
         <div aria-hidden="true" className="relative mx-auto w-full max-w-md pb-28 md:pb-36">
@@ -348,15 +392,25 @@ export function SocietyGifting({ phase }: { phase: SalePhase }) {
   return (
     <section className="bg-tf-rose px-fluid-md py-fluid-2xl text-tf-black">
       <div className="mx-auto flex max-w-7xl flex-col gap-fluid-lg">
-        <div className="flex flex-col gap-fluid-xs">
-          <Preheader>Gifting, Sorted</Preheader>
-          <Headline as="h2" size="md">
-            The Easiest Gift You&rsquo;ll Give This Year
-          </Headline>
-          <BodyText className="max-w-2xl">
-            Buy before Cyber Monday for as many people as you like. Each one hears about it
-            on the day you choose. No wrapping, no shipping deadlines, no guessing sizes.
-          </BodyText>
+        <div className="grid items-center gap-fluid-md md:grid-cols-[1.2fr_0.8fr]">
+          <div className="flex min-w-0 flex-col gap-fluid-xs">
+            <Preheader>Gifting, Sorted</Preheader>
+            <Headline as="h2" size="md">
+              The Easiest Gift You&rsquo;ll Give This Year
+            </Headline>
+            <BodyText className="max-w-2xl">
+              Buy before Cyber Monday for as many people as you like. Each one hears about it
+              on the day you choose. No wrapping, no shipping deadlines, no guessing sizes.
+            </BodyText>
+          </div>
+          <Image
+            src="/photos/mischief-society-stocking.webp"
+            alt="Tom Foolery chocolate bars spilling out of a red Christmas stocking onto holiday wrapping paper"
+            width={1200}
+            height={1600}
+            sizes="(min-width: 768px) 360px, 90vw"
+            className="mx-auto aspect-[4/5] w-full max-w-sm rounded-3xl object-cover shadow-[0_24px_40px_-24px_rgba(37,56,42,0.6)]"
+          />
         </div>
         <ol className="grid gap-fluid-sm md:grid-cols-3">
           {GIFT_STEPS.map((step, i) => (
