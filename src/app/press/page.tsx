@@ -16,6 +16,7 @@ import {
   PHOTO_LIBRARY_URL,
   PRESS_EMAIL,
   PRESS_FAQ,
+  type PressFaqItem,
 } from "@/lib/press/kit";
 import { BASE_OPEN_GRAPH, DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -45,6 +46,21 @@ export const revalidate = 3600;
 const CONTACT_HREF = PRESS_EMAIL
   ? `mailto:${PRESS_EMAIL}?subject=${encodeURIComponent("Press inquiry")}`
   : "/contact";
+
+/** The answer text, with `item.link.text` (if present) as an on-site link. */
+function FaqAnswer({ item }: { item: PressFaqItem }) {
+  const at = item.link ? item.answer.indexOf(item.link.text) : -1;
+  if (!item.link || at === -1) return <>{item.answer}</>;
+  return (
+    <>
+      {item.answer.slice(0, at)}
+      <Link href={item.link.href} className="underline underline-offset-2 hover:text-tf-cinnamon-strong">
+        {item.link.text}
+      </Link>
+      {item.answer.slice(at + item.link.text.length)}
+    </>
+  );
+}
 
 function formatDate(iso: string): string {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
@@ -356,7 +372,9 @@ export default async function PressPage() {
             {PRESS_FAQ.map((item) => (
               <div key={item.question} className="flex flex-col gap-1">
                 <dt className="font-sans font-black">{item.question}</dt>
-                <dd className="font-sans text-fg/80">{item.answer}</dd>
+                <dd className="font-sans text-fg/80">
+                  <FaqAnswer item={item} />
+                </dd>
               </div>
             ))}
           </dl>

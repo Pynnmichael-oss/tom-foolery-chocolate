@@ -15,7 +15,7 @@ export const PRESS_EMAIL = "";
 
 /** About-us paragraph, written to be pasted into a story as-is. */
 export const BOILERPLATE =
-  "Tom Foolery Chocolate is a small-batch chocolate maker in Chicago, Illinois. It makes chocolate bars, Malört caramels and gift sets with 100% real chocolate, nostalgic flavors and a little twist on it all. The brand is named for founder Garrett's grandfather, Tom Meldrum, who ran the Sugar Bowl, an old-fashioned candy store in Massillon, Ohio. More than 50 years and three generations later, Tom Foolery is an ode to those days: curious chocolates made for mischief and merriment.";
+  "Tom Foolery Chocolate is a small-batch chocolate maker in Chicago, Illinois. We make chocolate bars, Malört caramels and gift sets with 100% real chocolate, nostalgic flavors and a little twist on it all. The brand is named for founder Garrett's grandfather, Tom Meldrum, who ran the Sugar Bowl, an old-fashioned candy store in Massillon, Ohio, and was a major tom fool himself. More than 50 years and three generations later, Tom Foolery is an ode to those days: curious chocolates made for mischief and merriment.";
 
 export interface PressFact {
   label: string;
@@ -110,7 +110,15 @@ export const LOGO_FILES: Array<{ label: string; href: string; format: string }> 
   { label: "Tom icon, light", href: "/logos/icon-negative.png", format: "PNG" },
 ];
 
-export const PRESS_FAQ: Array<{ question: string; answer: string }> = [
+export interface PressFaqItem {
+  question: string;
+  /** Plain text, also used as-is in the FAQPage structured data. */
+  answer: string;
+  /** Turns the first occurrence of `text` in the answer into a link. */
+  link?: { text: string; href: string };
+}
+
+export const PRESS_FAQ: PressFaqItem[] = [
   {
     question: "Can I request samples or an interview?",
     answer:
@@ -129,5 +137,6 @@ export const PRESS_FAQ: Array<{ question: string; answer: string }> = [
     question: "Where can readers buy it?",
     answer:
       "Online at Tom Foolery Chocolate, and at independent shops across the U.S. The Where to Find Us page has a map of current stockists.",
+    link: { text: "Where to Find Us", href: "/find-us" },
   },
 ];
