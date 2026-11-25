@@ -29,7 +29,7 @@ export const FAST_FACTS: PressFact[] = [
   { label: "Based in", value: "Chicago, Illinois" },
   {
     label: "What we make",
-    value: "Small-batch chocolate bars, Malört caramels, sampler packs and gift sets, made with 100% real chocolate",
+    value: "Small-batch chocolate bars, Malört caramels, and more, made with 100% real chocolate and designed with gifting in mind",
     href: "/shop",
   },
   { label: "Founder", value: "Garrett, grandson of Tom Meldrum" },
