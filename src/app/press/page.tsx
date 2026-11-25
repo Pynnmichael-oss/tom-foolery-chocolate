@@ -84,17 +84,17 @@ function OutletMark({ mention }: { mention: PressMention }) {
         src={mention.logo}
         alt={mention.outlet}
         loading="lazy"
-        className="h-9 w-auto max-w-[12rem] self-start object-contain object-left"
+        className="h-9 w-auto max-w-[11rem] self-start object-contain object-left"
       />
     );
   }
   return (
-    <div className="flex items-center gap-fluid-xs">
+    <div className="flex items-center gap-fluid-xs md:flex-col md:items-start">
       <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-[4px] border border-tf-black/15 bg-tf-white">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={faviconUrl(mention.url)} alt="" loading="lazy" width={28} height={28} className="size-7" />
       </span>
-      <span className="font-sans font-black uppercase tracking-[0.075em]">{mention.outlet}</span>
+      <span className="font-sans font-black uppercase tracking-[0.075em] md:text-sm">{mention.outlet}</span>
     </div>
   );
 }
@@ -223,38 +223,42 @@ export default async function PressPage() {
             </div>
 
             {featured.length > 0 && (
-              <ul
-                className={`grid gap-fluid-md ${
-                  featured.length === 1 ? "mx-auto w-full max-w-xl" : "md:grid-cols-2"
-                }`}
-              >
+              // One full-width card per row: outlet mark in a left column,
+              // quote and caption beside it, so each card stays short.
+              <ul className="flex flex-col gap-fluid-sm">
                 {featured.map((m) => (
-                  <li key={m.url} className="flex">
-                    <figure className="flex w-full flex-col gap-fluid-sm rounded-[4px] border-[1.5px] border-tf-black bg-tf-white p-fluid-md">
-                      <OutletMark mention={m} />
-                      <blockquote cite={m.url} className="font-display text-xl leading-snug">
-                        &ldquo;{m.quote}&rdquo;
-                      </blockquote>
-                      <figcaption className="mt-auto font-sans text-sm text-fg/80">
-                        {/* The icon variant of OutletMark already names the
-                            outlet; a logo image only carries it as alt text. */}
-                        {m.logo && (
-                          <>
-                            <span className="font-black uppercase tracking-[0.075em]">{m.outlet}</span>
-                            {" · "}
-                          </>
-                        )}
-                        <a
-                          href={m.url}
-                          target="_blank"
-                          rel="noopener"
-                          className="underline underline-offset-2 hover:text-tf-cinnamon-strong"
-                        >
-                          {m.headline}
-                        </a>
-                        {" · "}
-                        <time dateTime={m.date}>{formatDate(m.date)}</time>
-                      </figcaption>
+                  <li key={m.url}>
+                    <figure className="grid gap-fluid-sm rounded-[4px] border-[1.5px] border-tf-black bg-tf-white px-fluid-md py-fluid-sm md:grid-cols-[13rem_1fr] md:items-center md:gap-fluid-md">
+                      <div className="md:self-stretch md:border-r md:border-tf-black/15 md:pr-fluid-md md:flex md:items-center">
+                        <OutletMark mention={m} />
+                      </div>
+                      <div className="flex flex-col gap-fluid-xs">
+                        <blockquote cite={m.url} className="font-display text-lg leading-snug">
+                          &ldquo;{m.quote}&rdquo;
+                        </blockquote>
+                        <figcaption className="font-sans text-sm text-fg/80">
+                          {/* The icon variant of OutletMark already names the
+                              outlet; a logo image only carries it as alt text. */}
+                          {m.logo && (
+                            <>
+                              <span className="font-black uppercase tracking-[0.075em]">{m.outlet}</span>
+                              {" · "}
+                            </>
+                          )}
+                          <a
+                            href={m.url}
+                            target="_blank"
+                            rel="noopener"
+                            className="underline underline-offset-2 hover:text-tf-cinnamon-strong"
+                          >
+                            {m.headline}
+                          </a>
+                          {" · "}
+                          <time dateTime={m.date} className="whitespace-nowrap">
+                            {formatDate(m.date)}
+                          </time>
+                        </figcaption>
+                      </div>
                     </figure>
                   </li>
                 ))}
