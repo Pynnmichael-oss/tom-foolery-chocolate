@@ -34,10 +34,12 @@ export const PRESS_SHEET_REVALIDATE_SECONDS = 60 * 60;
  * The coverage tab's publish-to-web CSV link. Not a secret (the tab is
  * public by design), so it can live here. PRESS_SHEET_CSV_URL overrides
  * it, for pointing a preview at a test sheet or moving sheets without a
- * code change. While both are empty the page serves the committed
- * snapshot (src/data/press.json).
+ * code change. `gid=0` is the Coverage tab; `single=true` keeps it to that
+ * tab alone. If the tab is ever unpublished and republished, Google
+ * issues a new link: update it here.
  */
-const DEFAULT_PRESS_SHEET_CSV_URL = "";
+const DEFAULT_PRESS_SHEET_CSV_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTtQFTAxPbJokbmakKSUhsu5Tk96u1paXkg1TEO1lyn4yqJvZi5UM17UQN78rcwcPGGuXwVTVT5uF_j/pub?gid=0&single=true&output=csv";
 
 export function pressSheetUrl(): string {
   return process.env.PRESS_SHEET_CSV_URL || DEFAULT_PRESS_SHEET_CSV_URL;
