@@ -78,9 +78,8 @@ export function SocietyHero({ phase, fromPrice }: { phase: SalePhase; fromPrice:
             // Price and "not a subscription" up front, before the scroll.
             // Prices stay hidden before doors open (see MembershipPicker).
             <BodyText size="sm" className="max-w-xl text-tf-black/80">
-              <strong className="font-black text-tf-black">From {wholeDollars(fromPrice)}</strong> · about{" "}
-              {wholeDollars(monthly)} a month for six months · shipping included · one payment, nothing
-              renews
+              <strong className="font-black text-tf-black">{wholeDollars(monthly)} a month</strong> for six
+              months · shipping included · one payment, nothing renews
             </BodyText>
           )}
           <p className="text-sm text-tf-black/80">
