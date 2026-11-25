@@ -617,3 +617,54 @@ map's corner is required by the data licence — don't hide it.
 **If a CSP is ever added**: `connect-src` and `img-src` need the tile
 host (`tiles.openfreemap.org` by default), plus `worker-src blob:` and
 `child-src blob:` for MapLibre's worker.
+
+## Press page (`/press`) — Google Sheet + Drive
+
+`/press` is the press and media kit: boilerplate, fast facts, coverage,
+photo and logo downloads, a press FAQ and the media contact. The code is
+in `src/lib/press/` and `src/app/press/page.tsx`.
+
+### Coverage: Google Sheet "Tom Foolery Press Coverage"
+
+```
+Google Sheet "Coverage" tab ──(published CSV, hourly)──▶ /press, llms.txt
+```
+
+- **Sheet:** "Tom Foolery Press Coverage" in Garrett's Drive. The
+  **Coverage** tab is the one the site reads; the **Read Me** tab explains
+  the columns and is never published.
+- **Columns** (matched by header name): Status (`Live` / `Draft` /
+  `Hidden`, only Live shows), Date, Outlet, Headline, URL, Type (Article,
+  Gift Guide, Podcast, Video, Award), Quote, Author, Featured (`Yes` pins
+  it to the top with its quote), Logo (optional image link shown on the
+  featured card; blank uses the outlet site's icon via Google's favicon
+  service). A row missing an outlet, headline, valid
+  date or link is skipped.
+- **Connecting it:** File → Share → Publish to web → **Coverage** tab →
+  **Comma-separated values (.csv)** → Publish. Put that link in
+  `DEFAULT_PRESS_SHEET_CSV_URL` (`src/lib/press/sheet.ts`), or set
+  `PRESS_SHEET_CSV_URL` in Vercel to connect it without a code change.
+- **Refresh:** the page and `llms.txt` re-read the sheet about hourly
+  (`PRESS_SHEET_REVALIDATE_SECONDS`, and `revalidate` in the page, which
+  must match).
+- **Fallback:** with no URL set, or if the sheet can't be read or a
+  required header is renamed, the page serves `src/data/press.json`.
+  Refresh it with `npm run sync-press` (or `-- --input coverage.csv`).
+- **Public:** the published tab is readable by anyone. Pitch notes and
+  journalist contacts stay in the PR tracker, never here.
+
+### Photos: Google Drive folder "Tom Foolery Photos"
+
+Linked, not copied: the page's "Download Photos" button and the four
+folder cards point at the Drive folder and its subfolders (Chocolate Bar
+Photos, Malort Caramel Photos, Lifestyle & Brand Photos, Gifting Bands),
+shared as "anyone with the link". Anything added there is available to
+press at once. If the folder is re-shared or moved, update the links in
+`src/lib/press/kit.ts`. Logos are served from `public/brand/` and
+`public/logos/`.
+
+### Fixed content
+
+Boilerplate, fast facts, founder bio, press FAQ and the press email are
+in `src/lib/press/kit.ts`. Only verified facts go there; the founder bio
+section and press email stay hidden until filled in.

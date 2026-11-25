@@ -10,7 +10,8 @@
     "lint": "eslint",
     "check-selling-plans": "tsx scripts/check-selling-plans.ts",
     "build-zip-centroids": "tsx scripts/build-zip-centroids.ts",
-    "sync-stockists": "tsx scripts/sync-stockists.ts"
+    "sync-stockists": "tsx scripts/sync-stockists.ts",
+    "sync-press": "tsx scripts/sync-press.ts"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

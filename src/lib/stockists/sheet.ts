@@ -1,4 +1,8 @@
+import { parseCsv } from "@/lib/csv";
 import type { StoreListing } from "./types";
+
+// Re-exported for scripts/sync-stockists.ts, which imports it from here.
+export { parseCsv };
 
 /**
  * The store locator's source of truth is one tab of a Google Sheet —
@@ -62,42 +66,6 @@ export async function fetchSheetCsv(): Promise<string> {
     throw new Error("Store sheet URL returned a web page, not CSV — is the Stores tab published to the web?");
   }
   return text;
-}
-
-/** RFC 4180 CSV → rows of cells (quoted fields, "" escapes, newlines
- * inside quotes). Small enough not to need a dependency. */
-export function parseCsv(text: string): string[][] {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let cell = "";
-  let quoted = false;
-  const input = text.replace(/^﻿/, "");
-
-  for (let i = 0; i < input.length; i++) {
-    const ch = input[i];
-    if (quoted) {
-      if (ch === '"' && input[i + 1] === '"') {
-        cell += '"';
-        i++;
-      } else if (ch === '"') quoted = false;
-      else cell += ch;
-    } else if (ch === '"') quoted = true;
-    else if (ch === ",") {
-      row.push(cell);
-      cell = "";
-    } else if (ch === "\n" || ch === "\r") {
-      if (ch === "\r" && input[i + 1] === "\n") i++;
-      row.push(cell);
-      rows.push(row);
-      row = [];
-      cell = "";
-    } else cell += ch;
-  }
-  if (cell !== "" || row.length > 0) {
-    row.push(cell);
-    rows.push(row);
-  }
-  return rows;
 }
 
 const US_STATES: Record<string, string> = {

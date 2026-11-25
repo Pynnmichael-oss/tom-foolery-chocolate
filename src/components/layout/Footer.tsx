@@ -18,6 +18,7 @@ const FOOTER_LINKS: Array<{ href: string; label: string; comingSoon?: boolean }>
   { href: "/wholesale", label: "Wholesale" },
   { href: "/find-us", label: "Where to Find Us" },
   { href: "/gifting", label: "Gifting" },
+  { href: "/press", label: "Press" },
   { href: "/contact", label: "Contact" },
 ];
 
