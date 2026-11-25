@@ -22,7 +22,7 @@ import type { PressMention, PressType } from "./types";
  *   Author    optional, the writer or host
  *   Featured  Yes to pin it to the top with its quote
  *   Logo      optional, a link to the outlet's logo image, shown on its
- *             featured card (blank = the outlet site's own icon)
+ *             featured card (blank, or a link that does not load as an image, = the outlet site's own icon)
  *
  * The published tab is public, so it must only hold what the page
  * prints. Pitch notes, contacts and follow-ups belong in a different,

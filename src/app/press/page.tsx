@@ -5,6 +5,7 @@ import { Preheader, Headline, BodyText } from "@/components/ui/typography";
 import { buttonClasses } from "@/components/ui/buttonClasses";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { OutletMark } from "@/components/press/OutletMark";
 import { ORGANIZATION_ID } from "@/components/seo/OrganizationJsonLd";
 import { getPressMentions, type PressMention } from "@/lib/press";
 import {
@@ -59,43 +60,6 @@ function FaqAnswer({ item }: { item: PressFaqItem }) {
       </Link>
       {item.answer.slice(at + item.link.text.length)}
     </>
-  );
-}
-
-/** The outlet site's own icon, from the article's domain, for a featured
- * card whose row has no Logo. Google's favicon service returns the best
- * size the site offers, up to the one asked for. */
-function faviconUrl(articleUrl: string): string {
-  const host = new URL(articleUrl).hostname;
-  return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=128`;
-}
-
-/**
- * Top of a featured card: the outlet's logo from the sheet when there is
- * one, otherwise its site icon beside the outlet name. Plain <img>, not
- * next/image: the sources are arbitrary outside hosts that can't all be
- * listed in next.config's remotePatterns, and these are small.
- */
-function OutletMark({ mention }: { mention: PressMention }) {
-  if (mention.logo) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={mention.logo}
-        alt={mention.outlet}
-        loading="lazy"
-        className="h-9 w-auto max-w-[11rem] self-start object-contain object-left"
-      />
-    );
-  }
-  return (
-    <div className="flex items-center gap-fluid-xs md:flex-col md:items-start">
-      <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-[4px] border border-tf-black/15 bg-tf-white">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={faviconUrl(mention.url)} alt="" loading="lazy" width={28} height={28} className="size-7" />
-      </span>
-      <span className="font-sans font-black uppercase tracking-[0.075em] md:text-sm">{mention.outlet}</span>
-    </div>
   );
 }
 
@@ -214,7 +178,7 @@ export default async function PressPage() {
       {/* Coverage, only once there is some */}
       {mentions.length > 0 && (
         <section className="bg-tf-turmeric/25 px-fluid-md py-fluid-xl">
-          <div className="mx-auto flex w-full max-w-4xl flex-col gap-fluid-lg">
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-fluid-lg">
             <div className="flex flex-col items-center gap-fluid-xs text-center">
               <Preheader>In the News</Preheader>
               <Headline as="h2" size="sm">
@@ -223,42 +187,34 @@ export default async function PressPage() {
             </div>
 
             {featured.length > 0 && (
-              // One full-width card per row: outlet mark in a left column,
-              // quote and caption beside it, so each card stays short.
-              <ul className="flex flex-col gap-fluid-sm">
+              // Side by side, in the wider coverage container, so each
+              // card is wide and stays short.
+              <ul
+                className={`grid gap-fluid-md ${
+                  featured.length === 1 ? "mx-auto w-full max-w-2xl" : "md:grid-cols-2"
+                }`}
+              >
                 {featured.map((m) => (
-                  <li key={m.url}>
-                    <figure className="grid gap-fluid-sm rounded-[4px] border-[1.5px] border-tf-black bg-tf-white px-fluid-md py-fluid-sm md:grid-cols-[13rem_1fr] md:items-center md:gap-fluid-md">
-                      <div className="md:self-stretch md:border-r md:border-tf-black/15 md:pr-fluid-md md:flex md:items-center">
-                        <OutletMark mention={m} />
-                      </div>
-                      <div className="flex flex-col gap-fluid-xs">
-                        <blockquote cite={m.url} className="font-display text-lg leading-snug">
-                          &ldquo;{m.quote}&rdquo;
-                        </blockquote>
-                        <figcaption className="font-sans text-sm text-fg/80">
-                          {/* The icon variant of OutletMark already names the
-                              outlet; a logo image only carries it as alt text. */}
-                          {m.logo && (
-                            <>
-                              <span className="font-black uppercase tracking-[0.075em]">{m.outlet}</span>
-                              {" · "}
-                            </>
-                          )}
-                          <a
-                            href={m.url}
-                            target="_blank"
-                            rel="noopener"
-                            className="underline underline-offset-2 hover:text-tf-cinnamon-strong"
-                          >
-                            {m.headline}
-                          </a>
-                          {" · "}
-                          <time dateTime={m.date} className="whitespace-nowrap">
-                            {formatDate(m.date)}
-                          </time>
-                        </figcaption>
-                      </div>
+                  <li key={m.url} className="flex">
+                    <figure className="flex w-full flex-col gap-fluid-xs rounded-[4px] border-[1.5px] border-tf-black bg-tf-white px-fluid-md py-fluid-sm">
+                      <OutletMark outlet={m.outlet} url={m.url} logo={m.logo} />
+                      <blockquote cite={m.url} className="font-display text-lg leading-snug">
+                        &ldquo;{m.quote}&rdquo;
+                      </blockquote>
+                      <figcaption className="mt-auto font-sans text-sm text-fg/80">
+                        <a
+                          href={m.url}
+                          target="_blank"
+                          rel="noopener"
+                          className="underline underline-offset-2 hover:text-tf-cinnamon-strong"
+                        >
+                          {m.headline}
+                        </a>
+                        {" · "}
+                        <time dateTime={m.date} className="whitespace-nowrap">
+                          {formatDate(m.date)}
+                        </time>
+                      </figcaption>
                     </figure>
                   </li>
                 ))}
@@ -266,7 +222,7 @@ export default async function PressPage() {
             )}
 
             {rest.length > 0 && (
-              <ul className="flex flex-col divide-y divide-tf-black/15 border-y border-tf-black/15">
+              <ul className="mx-auto flex w-full max-w-4xl flex-col divide-y divide-tf-black/15 border-y border-tf-black/15">
                 {rest.map((m) => (
                   <li key={m.url} className="flex flex-col gap-1 py-fluid-sm sm:flex-row sm:items-baseline sm:gap-fluid-md">
                     <p className="shrink-0 font-sans text-sm text-fg/70 sm:w-40">
