@@ -21,6 +21,8 @@ import type { PressMention, PressType } from "./types";
  *   Quote     optional, a short line from the piece to show on the page
  *   Author    optional, the writer or host
  *   Featured  Yes to pin it to the top with its quote
+ *   Logo      optional, a link to the outlet's logo image, shown on its
+ *             featured card (blank = the outlet site's own icon)
  *
  * The published tab is public, so it must only hold what the page
  * prints. Pitch notes, contacts and follow-ups belong in a different,
@@ -138,6 +140,7 @@ export function mentionsFromCsv(csv: string): PressMention[] {
 
     const quote = read(row, "quote").replace(/^["“”]+|["“”]+$/g, "");
     const author = read(row, "author");
+    const logo = normalizeUrl(read(row, "logo"));
     mentions.push({
       date,
       outlet,
@@ -146,6 +149,7 @@ export function mentionsFromCsv(csv: string): PressMention[] {
       type: TYPES[read(row, "type").toLowerCase()] ?? "Article",
       ...(quote ? { quote } : {}),
       ...(author ? { author } : {}),
+      ...(logo ? { logo } : {}),
       featured: /^(y|yes|true|x|1)$/i.test(read(row, "featured")),
     });
   }

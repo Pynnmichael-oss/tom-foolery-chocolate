@@ -10,6 +10,8 @@ export interface PressMention {
   type: PressType;
   quote?: string;
   author?: string;
+  /** Optional outlet logo image URL from the sheet's Logo column. */
+  logo?: string;
   featured: boolean;
 }
 

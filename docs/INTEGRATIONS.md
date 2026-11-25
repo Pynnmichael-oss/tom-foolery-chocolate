@@ -636,7 +636,9 @@ Google Sheet "Coverage" tab ──(published CSV, hourly)──▶ /press, llms.
 - **Columns** (matched by header name): Status (`Live` / `Draft` /
   `Hidden`, only Live shows), Date, Outlet, Headline, URL, Type (Article,
   Gift Guide, Podcast, Video, Award), Quote, Author, Featured (`Yes` pins
-  it to the top with its quote). A row missing an outlet, headline, valid
+  it to the top with its quote), Logo (optional image link shown on the
+  featured card; blank uses the outlet site's icon via Google's favicon
+  service). A row missing an outlet, headline, valid
   date or link is skipped.
 - **Connecting it:** File → Share → Publish to web → **Coverage** tab →
   **Comma-separated values (.csv)** → Publish. Put that link in

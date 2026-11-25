@@ -62,6 +62,43 @@ function FaqAnswer({ item }: { item: PressFaqItem }) {
   );
 }
 
+/** The outlet site's own icon, from the article's domain, for a featured
+ * card whose row has no Logo. Google's favicon service returns the best
+ * size the site offers, up to the one asked for. */
+function faviconUrl(articleUrl: string): string {
+  const host = new URL(articleUrl).hostname;
+  return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=128`;
+}
+
+/**
+ * Top of a featured card: the outlet's logo from the sheet when there is
+ * one, otherwise its site icon beside the outlet name. Plain <img>, not
+ * next/image: the sources are arbitrary outside hosts that can't all be
+ * listed in next.config's remotePatterns, and these are small.
+ */
+function OutletMark({ mention }: { mention: PressMention }) {
+  if (mention.logo) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={mention.logo}
+        alt={mention.outlet}
+        loading="lazy"
+        className="h-9 w-auto max-w-[12rem] self-start object-contain object-left"
+      />
+    );
+  }
+  return (
+    <div className="flex items-center gap-fluid-xs">
+      <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-[4px] border border-tf-black/15 bg-tf-white">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={faviconUrl(mention.url)} alt="" loading="lazy" width={28} height={28} className="size-7" />
+      </span>
+      <span className="font-sans font-black uppercase tracking-[0.075em]">{mention.outlet}</span>
+    </div>
+  );
+}
+
 function formatDate(iso: string): string {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
     year: "numeric",
@@ -193,13 +230,20 @@ export default async function PressPage() {
               >
                 {featured.map((m) => (
                   <li key={m.url} className="flex">
-                    <figure className="flex w-full flex-col gap-fluid-xs rounded-[4px] border-[1.5px] border-tf-black bg-tf-white p-fluid-md">
+                    <figure className="flex w-full flex-col gap-fluid-sm rounded-[4px] border-[1.5px] border-tf-black bg-tf-white p-fluid-md">
+                      <OutletMark mention={m} />
                       <blockquote cite={m.url} className="font-display text-xl leading-snug">
                         &ldquo;{m.quote}&rdquo;
                       </blockquote>
                       <figcaption className="mt-auto font-sans text-sm text-fg/80">
-                        <span className="font-black uppercase tracking-[0.075em]">{m.outlet}</span>
-                        {" · "}
+                        {/* The icon variant of OutletMark already names the
+                            outlet; a logo image only carries it as alt text. */}
+                        {m.logo && (
+                          <>
+                            <span className="font-black uppercase tracking-[0.075em]">{m.outlet}</span>
+                            {" · "}
+                          </>
+                        )}
                         <a
                           href={m.url}
                           target="_blank"
