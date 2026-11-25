@@ -1,4 +1,52 @@
 {
-  "updatedAt": null,
-  "mentions": []
+  "updatedAt": "2026-11-25",
+  "mentions": [
+    {
+      "date": "2026-11-23",
+      "outlet": "Block Club Chicago",
+      "headline": "Shop Local 2026: A Chicago Food Gift Guide",
+      "url": "https://blockclubchicago.org/2026/11/23/shop-local-2026-a-chicago-food-gift-guide/",
+      "type": "Gift Guide",
+      "quote": "The outside of the chocolate looks like a frosty igloo, and inside the chocolate shell is a hit of caramel.",
+      "author": "Jennifer Billock",
+      "featured": true
+    },
+    {
+      "date": "2026-11-12",
+      "outlet": "The Founder Spotlight",
+      "headline": "From a Little Craving to a Big Idea: The Story Behind a New Kind of Chocolate",
+      "url": "https://thefounderspotlight.substack.com/p/from-a-little-craving-to-a-big-idea",
+      "type": "Article",
+      "quote": "Today, Tom Foolery Chocolates is building a brand that brings together interesting flavors, distinctive branding and a refreshing sense of mischief.",
+      "featured": true
+    },
+    {
+      "date": "2026-11-21",
+      "outlet": "Consumer Queen",
+      "headline": "Gourmet Food Gifts and Baskets Worth Sharing",
+      "url": "https://consumerqueen.com/saving-money-2/gift-guides/food-gift-baskets-and-gourmet-gifts",
+      "type": "Gift Guide",
+      "quote": "The Tom Foolery Chocolate Signature Chocolate Bar Sampler Pack turns a holiday gift into a chocolate tasting.",
+      "featured": false
+    },
+    {
+      "date": "2026-11-21",
+      "outlet": "The Maria Liberati Show",
+      "headline": "Holiday Guide 2026",
+      "url": "https://www.themarialiberatishow.com/wp-content/uploads/2026/11/holiday-guide-2026.pdf",
+      "type": "Gift Guide",
+      "quote": "Sweet nostalgia, beautifully wrapped.",
+      "author": "Maria Liberati",
+      "featured": false
+    },
+    {
+      "date": "2026-10-09",
+      "outlet": "The Chicago Podcast",
+      "headline": "Ep. 46: Tom Foolery Chocolate",
+      "url": "https://podcasts.apple.com/us/podcast/tom-foolery-chocolate/id1856683095?i=1000794068685",
+      "type": "Podcast",
+      "quote": "Tom Foolery Chocolate founder Garrett is in studio to share the story of how his independent Chicago confectionery came into existence.",
+      "featured": false
+    }
+  ]
 }
