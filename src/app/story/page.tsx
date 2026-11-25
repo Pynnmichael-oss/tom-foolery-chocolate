@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Preheader, BodyText } from "@/components/ui/typography";
+import { buttonClasses } from "@/components/ui/buttonClasses";
 import { TomMeldrumStory } from "@/components/sections/TomMeldrumStory";
 import { StoryClosingCta } from "@/components/sections/StoryClosingCta";
 import { BASE_OPEN_GRAPH, DEFAULT_OG_IMAGE } from "@/lib/site";
@@ -44,6 +47,19 @@ export default function StoryPage() {
     <main id="main-content">
       <TomMeldrumStory />
       <StoryClosingCta />
+      {/* For writers researching the brand. Kept small so it doesn't
+          compete with the shop CTA above. */}
+      <section className="px-fluid-md py-fluid-xl">
+        <div className="mx-auto flex max-w-xl flex-col items-center gap-fluid-xs text-center">
+          <Preheader>For Press</Preheader>
+          <BodyText className="text-fg/80">
+            Writing about Tom Foolery? Our press kit has fast facts, photos and logos.
+          </BodyText>
+          <Link href="/press" className={buttonClasses("secondary", "mt-fluid-xs")}>
+            Visit the Press Kit
+          </Link>
+        </div>
+      </section>
     </main>
   );
 }

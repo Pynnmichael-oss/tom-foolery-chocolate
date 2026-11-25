@@ -666,5 +666,6 @@ press at once. If the folder is re-shared or moved, update the links in
 ### Fixed content
 
 Boilerplate, fast facts, founder bio, press FAQ and the press email are
-in `src/lib/press/kit.ts`. Only verified facts go there; the founder bio
-section and press email stay hidden until filled in.
+in `src/lib/press/kit.ts`. Only verified facts go there; the press email
+stays hidden until it's set. `/contact` and `/story` each link to the
+press kit for journalists.
