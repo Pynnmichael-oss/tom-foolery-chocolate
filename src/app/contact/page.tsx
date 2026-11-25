@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Preheader, Headline, BodyText } from "@/components/ui/typography";
+import Link from "next/link";
 import { ContactForm } from "@/components/sections/ContactForm";
 
 const BODY = "Questions, wholesale inquiries, or just want to talk chocolate? Send us a note.";
@@ -29,6 +30,15 @@ export default function ContactPage() {
       </div>
 
       <ContactForm />
+
+      {/* Journalists often land here first; point them at the press kit. */}
+      <p className="text-center font-sans text-sm text-fg/80">
+        Press or media?{" "}
+        <Link href="/press" className="underline underline-offset-2 hover:text-tf-cinnamon-strong">
+          See our press kit
+        </Link>{" "}
+        for facts, photos and logos.
+      </p>
     </main>
   );
 }

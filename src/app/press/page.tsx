@@ -101,7 +101,14 @@ function pressJsonLd(mentions: PressMention[]): Record<string, unknown> {
         "@type": "Organization",
         "@id": ORGANIZATION_ID,
         description: BOILERPLATE,
-        founder: { "@type": "Person", name: FOUNDER.name, jobTitle: FOUNDER.role },
+        foundingDate: "2026",
+        foundingLocation: { "@type": "Place", name: "Chicago, Illinois" },
+        founder: {
+          "@type": "Person",
+          name: FOUNDER.name,
+          jobTitle: FOUNDER.role,
+          description: FOUNDER.bio,
+        },
         ...(awards.length > 0
           ? { award: awards.map((a) => `${a.headline}, ${a.outlet} (${a.date.slice(0, 4)})`) }
           : {}),
@@ -285,7 +292,7 @@ export default async function PressPage() {
         </div>
       </section>
 
-      {/* Founder + heritage photo */}
+      {/* Founder bio + heritage photo */}
       <section className="bg-tf-juniper/30 px-fluid-md py-fluid-xl">
         <div className="mx-auto grid w-full max-w-4xl items-center gap-fluid-lg md:grid-cols-2">
           <Image
@@ -297,14 +304,11 @@ export default async function PressPage() {
             className="h-auto w-full rounded-[4px]"
           />
           <div className="flex flex-col gap-fluid-sm">
-            <Preheader>The Story</Preheader>
+            <Preheader>Meet the Founder</Preheader>
             <Headline as="h2" size="sm">
-              Before There Was Tom Foolery, There Was Tom Meldrum
+              {FOUNDER.name}
             </Headline>
-            <BodyText className="text-fg/80">
-              {FOUNDER.bio ||
-                "Tom Meldrum, our founder Garrett's grandfather, ran the Sugar Bowl, a good old-fashioned candy store in the heart of Massillon, Ohio. Tom Foolery carries his name and his idea of a little joy in your day."}
-            </BodyText>
+            <BodyText className="text-fg/80">{FOUNDER.bio}</BodyText>
             <Link href="/story" className={buttonClasses("secondary", "self-start")}>
               Read Our Story
             </Link>

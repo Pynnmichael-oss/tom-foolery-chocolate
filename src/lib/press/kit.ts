@@ -32,8 +32,8 @@ export const FAST_FACTS: PressFact[] = [
     value: "Small-batch chocolate bars, Malört caramels, and more, made with 100% real chocolate and designed with gifting in mind",
     href: "/shop",
   },
-  { label: "Founder", value: "Garrett, grandson of Tom Meldrum" },
-  // TODO(garrett): add { label: "Founded", value: "<year>" } once confirmed.
+  { label: "Founder", value: "Garrett Goehring, grandson of Tom Meldrum" },
+  { label: "Founded", value: "2026" },
   {
     label: "The name",
     value: "Tom Meldrum ran the Sugar Bowl, a candy store in Massillon, Ohio",
@@ -58,12 +58,11 @@ export const FAST_FACTS: PressFact[] = [
   },
 ];
 
-/** Founder bio. The section only renders once `bio` is filled in. */
+/** Founder bio, third person, for journalists to quote as-is. */
 export const FOUNDER = {
-  name: "Garrett",
+  name: "Garrett Goehring",
   role: "Founder",
-  // TODO(garrett): 2–3 sentences, third person, for journalists to quote.
-  bio: "",
+  bio: "Garrett Goehring is the founder of Tom Foolery Chocolate, a small-batch chocolate maker in Chicago. He grew up hearing about the Sugar Bowl, the old-fashioned candy store his grandfather, Tom Meldrum, ran in Massillon, Ohio, and the mischief that came with it. Before starting Tom Foolery in 2026, Garrett worked in marketing at a restaurant tech company, before realizing the world needed a chocolate brand that was both high quality and joyful. Today he makes chocolate bars, Malört caramels, and other confections built on real chocolate, nostalgic flavors and a little twist, with the goal of bringing a little fun to people's day, one piece of chocolate at a time.",
 };
 
 /**
