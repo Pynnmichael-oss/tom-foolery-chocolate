@@ -1,4 +1,6 @@
 import { GIFT_SETS, getGiftBuilderConfig } from "@/lib/gift-builder/queries";
+import { getPressMentions } from "@/lib/press";
+import { FAST_FACTS } from "@/lib/press/kit";
 import { formatMoney } from "@/lib/shopify/format";
 import { getProducts, getShopPolicies } from "@/lib/shopify/queries";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
@@ -21,11 +23,12 @@ async function giftSetIsLive(handle: string): Promise<boolean> {
  * from what the site itself shows.
  */
 export async function GET() {
-  const [products, policies, barsLive, caramelsLive] = await Promise.all([
+  const [products, policies, barsLive, caramelsLive, mentions] = await Promise.all([
     getProducts(),
     getShopPolicies(),
     giftSetIsLive(GIFT_SETS.bars),
     giftSetIsLive(GIFT_SETS.caramels),
+    getPressMentions(),
   ]);
 
   const productLines = products.map((product) => {
@@ -49,6 +52,11 @@ export async function GET() {
       : null,
     `- [Custom, branded and event gifting](${SITE_URL}/gifting): Custom packaging and assortments for companies, weddings and events, plus ready-to-ship options. Inquiry form on the page.`,
   ].filter(Boolean);
+
+  const factLines = FAST_FACTS.map((fact) => `- ${fact.label}: ${fact.value}`);
+  const pressLines = mentions.map(
+    (m) => `- [${m.headline}](${m.url}): ${m.outlet}, ${m.type.toLowerCase()}, ${m.date}.`
+  );
 
   const policyLines = [
     policies.privacyPolicy ? `- [Privacy Policy](${SITE_URL}/privacy)` : null,
@@ -77,7 +85,13 @@ export async function GET() {
     "",
     `- [Our story](${SITE_URL}/story): The family history behind the brand, from Tom Meldrum's Sugar Bowl to Tom Foolery.`,
     `- [Wholesale](${SITE_URL}/wholesale): For shops and other businesses. Retailers order through Faire; distributors, hospitality and volume buyers use the inquiry form on the page.`,
+    `- [Press](${SITE_URL}/press): Press coverage, fast facts, photos and logos, and media contact.`,
     `- [Contact](${SITE_URL}/contact): General questions.`,
+    "",
+    "## Fast facts",
+    "",
+    ...factLines,
+    ...(pressLines.length > 0 ? ["", "## Press coverage", "", ...pressLines] : []),
     ...(policyLines.length > 0 ? ["", "## Policies", "", ...policyLines] : []),
     "",
   ].join("\n");

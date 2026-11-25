@@ -48,6 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/mischief-society`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/wholesale`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/find-us`, changeFrequency: "weekly", priority: 0.6 },
+    { url: `${SITE_URL}/press`, changeFrequency: "weekly", priority: 0.6 },
     { url: `${SITE_URL}/contact`, changeFrequency: "yearly", priority: 0.5 },
     // The one page for gift sets — the gift-builder products themselves
     // redirect here. `?set=caramels` canonicalises to it, so it isn't
