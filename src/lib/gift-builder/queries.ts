@@ -88,7 +88,7 @@ const GIFT_BUILDER_PRODUCT_QUERY = `#graphql
               # description is shown on the flavor card. (The component's
               # own description is an internal note; never shown.)
               source: metafield(namespace: "gift_builder", key: "flavor_source") {
-                reference { ... on Product { description } }
+                reference { ... on Product { description featuredImage { url altText width height } } }
               }
             }
           }
@@ -214,7 +214,7 @@ type RawFlavor =
       tags: string[];
       featuredImage: Image | null;
       variants: { nodes: { id: string; sku: string | null; availableForSale: boolean }[] };
-      source: { reference: { description?: string } | null } | null;
+      source: { reference: { description?: string; featuredImage?: Image | null } | null } | null;
     }
   | Record<string, never>;
 
@@ -296,7 +296,9 @@ function toGiftBuilderConfig(p: RawProduct): GiftBuilderConfig | null {
       id: n.id,
       title: n.title,
       handle: n.handle,
-      featuredImage: n.featuredImage,
+      // A component added without a photo borrows its regular bar's — the
+      // Wild Cherry component was once published with none.
+      featuredImage: n.featuredImage ?? n.source?.reference?.featuredImage ?? null,
       description: n.source?.reference?.description?.trim() || null,
       variantId: n.variants.nodes[0].id,
       sku: n.variants.nodes[0].sku,

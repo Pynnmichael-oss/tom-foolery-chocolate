@@ -109,13 +109,15 @@ export function GiftBuilderFeature({
               <div className="grid grid-cols-3 gap-1.5">
                 {flavors.map((f) => (
                   <figure key={f.id} className="flex flex-col gap-1">
-                    <span className="relative aspect-square overflow-hidden rounded-xl bg-tf-black/5">
+                    {/* 3:2 + contain, same as the builder's flavor cards: the bar
+                     * photos are wide shots, and a square crop cut the ends off. */}
+                    <span className="relative aspect-[3/2] overflow-hidden rounded-xl bg-tf-black/5">
                       <Image
                         src={f.featuredImage!.url}
                         alt={`${shortFlavorName(f.title)} bar`}
                         fill
                         sizes="(min-width: 1024px) 180px, 30vw"
-                        className="object-cover"
+                        className="object-contain p-0.5"
                       />
                     </span>
                     <figcaption className="font-sans text-[0.7rem] leading-tight text-tf-black/75">
