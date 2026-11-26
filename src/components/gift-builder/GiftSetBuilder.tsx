@@ -253,8 +253,8 @@ export function GiftSetBuilder({
                       className="group grid h-full w-full scroll-mt-28 scroll-mb-36 cursor-pointer place-items-center gap-1 p-1.5 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-tf-cinnamon"
                     >
                       {f.featuredImage ? (
-                        <span className="relative h-3/5 w-3/5 overflow-hidden rounded-lg">
-                          <Image src={f.featuredImage.url} alt="" fill sizes="80px" className="object-cover" />
+                        <span className="relative aspect-[3/2] w-11/12">
+                          <Image src={f.featuredImage.url} alt="" fill sizes="110px" className="object-contain" />
                         </span>
                       ) : null}
                       <span className="font-sans text-xs font-semibold leading-tight">{shortFlavorName(f.title)}</span>
@@ -287,13 +287,17 @@ export function GiftSetBuilder({
                   aria-describedby={f.description ? `flavor-desc-${f.handle}` : undefined}
                 >
                   {f.featuredImage ? (
-                    <span className="relative aspect-square w-full overflow-hidden rounded-xl bg-tf-black/5">
+                    // 3:2 + object-contain: the bar photos are wide 3:2 shots on a
+                    // transparent background — a square frame cropped both
+                    // ends of the bar off. Contain shows the whole bar
+                    // whatever shape a future photo is.
+                    <span className="relative aspect-[3/2] w-full overflow-hidden rounded-xl bg-tf-black/5">
                       <Image
                         src={f.featuredImage.url}
                         alt={`${shortFlavorName(f.title)} bar`}
                         fill
                         sizes="(min-width: 640px) 220px, 45vw"
-                        className="object-cover"
+                        className="object-contain p-1"
                       />
                     </span>
                   ) : null}
