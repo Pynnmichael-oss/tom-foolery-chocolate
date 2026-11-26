@@ -82,11 +82,11 @@ const GIFT_BUILDER_PRODUCT_QUERY = `#graphql
               title
               handle
               tags
+              description
               featuredImage { url altText width height }
               variants(first: 1) { nodes { id sku availableForSale } }
-              # The regular product this component stands for — its
-              # description is shown on the flavor card. (The component's
-              # own description is an internal note; never shown.)
+              # The regular product this component stands for: fallback
+              # description and photo when the component has none.
               source: metafield(namespace: "gift_builder", key: "flavor_source") {
                 reference { ... on Product { description featuredImage { url altText width height } } }
               }
@@ -140,8 +140,9 @@ export type GiftBuilderFlavor = {
   title: string;
   handle: string;
   featuredImage: Image | null;
-  /** Shopper-facing description, from the regular product linked via the
-   * component's `gift_builder.flavor_source` metafield. Null if unlinked. */
+  /** Shopper-facing description: the "(Gift Set)" product's own
+   * description, else the first sentence of the regular bar's (linked via
+   * `gift_builder.flavor_source`). See flavorDescription(). */
   description: string | null;
   /** The $0 component variant added to the cart for each bar of this flavor. */
   variantId: string;
@@ -212,6 +213,7 @@ type RawFlavor =
       title: string;
       handle: string;
       tags: string[];
+      description: string;
       featuredImage: Image | null;
       variants: { nodes: { id: string; sku: string | null; availableForSale: boolean }[] };
       source: { reference: { description?: string; featuredImage?: Image | null } | null } | null;
@@ -257,6 +259,27 @@ function listedCount(field: { value: string } | null): number {
   }
 }
 
+/** The first sentence of a product description, for the flavor cards:
+ * the regular bar descriptions go on with shopping copy ("Grab a single
+ * bar or stock up with a 3-pack.") that doesn't fit inside a gift set. */
+export function firstSentence(text: string | null | undefined): string | null {
+  const t = text?.replace(/\s+/g, " ").trim();
+  if (!t) return null;
+  const m = t.match(/^.+?[.!?](?=\s|$)/);
+  return (m ? m[0] : t).trim();
+}
+
+/** The flavor card's description: the "(Gift Set)" product's own
+ * description, edited in Shopify admin. Falls back to the first sentence
+ * of the regular bar's description while the component's is empty or
+ * still the internal setup note ("Gift set component. …"), so a new flavor
+ * never shows that note to shoppers. */
+function flavorDescription(own: string | undefined, regular: string | undefined): string | null {
+  const text = own?.replace(/\s+/g, " ").trim();
+  if (text && !/^gift set component\b/i.test(text)) return text;
+  return firstSentence(regular);
+}
+
 /** A component variant's id/SKU if it's a visible gift-component variant. */
 function usableComponent(v: RawComponentVariant | null | undefined): { variantId: string | null; sku: string | null } {
   return v?.id && isGiftComponent(v.product?.tags) ? { variantId: v.id, sku: v.sku ?? null } : { variantId: null, sku: null };
@@ -299,7 +322,7 @@ function toGiftBuilderConfig(p: RawProduct): GiftBuilderConfig | null {
       // A component added without a photo borrows its regular bar's — the
       // Wild Cherry component was once published with none.
       featuredImage: n.featuredImage ?? n.source?.reference?.featuredImage ?? null,
-      description: n.source?.reference?.description?.trim() || null,
+      description: flavorDescription(n.description, n.source?.reference?.description),
       variantId: n.variants.nodes[0].id,
       sku: n.variants.nodes[0].sku,
       availableForSale: n.variants.nodes[0].availableForSale,
