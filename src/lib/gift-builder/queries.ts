@@ -257,6 +257,16 @@ function listedCount(field: { value: string } | null): number {
   }
 }
 
+/** The first sentence of a product description, for the flavor cards:
+ * the regular bar descriptions go on with shopping copy ("Grab a single
+ * bar or stock up with a 3-pack.") that doesn't fit inside a gift set. */
+export function firstSentence(text: string | null | undefined): string | null {
+  const t = text?.replace(/\s+/g, " ").trim();
+  if (!t) return null;
+  const m = t.match(/^.+?[.!?](?=\s|$)/);
+  return (m ? m[0] : t).trim();
+}
+
 /** A component variant's id/SKU if it's a visible gift-component variant. */
 function usableComponent(v: RawComponentVariant | null | undefined): { variantId: string | null; sku: string | null } {
   return v?.id && isGiftComponent(v.product?.tags) ? { variantId: v.id, sku: v.sku ?? null } : { variantId: null, sku: null };
@@ -299,7 +309,7 @@ function toGiftBuilderConfig(p: RawProduct): GiftBuilderConfig | null {
       // A component added without a photo borrows its regular bar's — the
       // Wild Cherry component was once published with none.
       featuredImage: n.featuredImage ?? n.source?.reference?.featuredImage ?? null,
-      description: n.source?.reference?.description?.trim() || null,
+      description: firstSentence(n.source?.reference?.description),
       variantId: n.variants.nodes[0].id,
       sku: n.variants.nodes[0].sku,
       availableForSale: n.variants.nodes[0].availableForSale,
