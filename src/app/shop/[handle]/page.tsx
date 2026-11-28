@@ -52,7 +52,7 @@ export async function generateMetadata(
 
   // Shopify's "Search engine listing" fields win when the merchant has
   // written them. The SEO title is used exactly as written (`absolute`
-  // skips the root layout's "— Tom Foolery Chocolate" template): those
+  // skips the root layout's "— Tom Foolery Chocolates" template): those
   // titles are already sized to what a search result shows.
   const seoTitle = product.seo?.title;
   const title = seoTitle ? { absolute: seoTitle } : product.title;

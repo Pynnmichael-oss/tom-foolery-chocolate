@@ -23,7 +23,7 @@ import { BASE_OPEN_GRAPH, DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/si
 
 const TITLE = "Press & Media Kit";
 const DESCRIPTION =
-  "Press coverage, fast facts, photos and logos for Tom Foolery Chocolate, the small-batch chocolate maker in Chicago. Media inquiries welcome.";
+  "Press coverage, fast facts, photos and logos for Tom Foolery Chocolates, the small-batch chocolate maker in Chicago. Media inquiries welcome.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -326,7 +326,7 @@ export default async function PressPage() {
             </Headline>
             <BodyText className="max-w-xl text-fg/80">
               High-resolution photos live in our press library on Google Drive. Free to use for
-              editorial coverage; please credit Tom Foolery Chocolate.
+              editorial coverage; please credit Tom Foolery Chocolates.
             </BodyText>
           </div>
 

@@ -11,7 +11,7 @@ const BODY =
 export const metadata: Metadata = {
   title: "Where to Find Us",
   description:
-    "Find a shop near you that carries Tom Foolery Chocolate — search by ZIP code or browse the map.",
+    "Find a shop near you that carries Tom Foolery Chocolates — search by ZIP code or browse the map.",
   alternates: { canonical: "/find-us" },
 };
 

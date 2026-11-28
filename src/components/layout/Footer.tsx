@@ -58,7 +58,7 @@ export async function Footer() {
     // needed.
     <footer id="shop" className="bg-black text-tf-white">
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-fluid-lg px-fluid-md py-fluid-2xl text-center">
-        <StackedSignature tone="negative" height={120} title="Tom Foolery Chocolate" />
+        <StackedSignature tone="negative" height={120} title="Tom Foolery Chocolates" />
       </div>
 
       <StripeDivider />
@@ -114,7 +114,7 @@ export async function Footer() {
 
         {/* /70 not /40 — WCAG AA (/40 measures 3.39:1, fails at this size) */}
         <p className="font-sans text-[length:var(--fs-preheader)] text-tf-white/70">
-          © {new Date().getFullYear()} Tom Foolery Chocolate. Live a little.
+          © {new Date().getFullYear()} Tom Foolery Chocolates. Live a little.
         </p>
       </div>
     </footer>
