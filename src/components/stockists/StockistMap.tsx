@@ -272,7 +272,7 @@ export default function StockistMap({
         ref={containerRef}
         className="h-full w-full"
         role="region"
-        aria-label="Map of shops that carry Tom Foolery Chocolate"
+        aria-label="Map of shops that carry Tom Foolery Chocolates"
       />
 
       {failed && (

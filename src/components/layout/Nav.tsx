@@ -22,7 +22,7 @@ export function Nav() {
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-fluid-md px-fluid-md py-fluid-sm">
         <Link
           href="/"
-          aria-label="Tom Foolery Chocolate — home"
+          aria-label="Tom Foolery Chocolates — home"
           className="flex min-w-[144px] items-center"
         >
           {/* decorative — the parent Link already carries the accessible name */}

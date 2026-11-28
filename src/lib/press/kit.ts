@@ -15,7 +15,7 @@ export const PRESS_EMAIL = "";
 
 /** About-us paragraph, written to be pasted into a story as-is. */
 export const BOILERPLATE =
-  "Tom Foolery Chocolate is a small-batch chocolate maker in Chicago, Illinois. We make chocolate bars, Malört caramels and gift sets with 100% real chocolate, nostalgic flavors and a little twist on it all. The brand is named for founder Garrett's grandfather, Tom Meldrum, who ran the Sugar Bowl, an old-fashioned candy store in Massillon, Ohio, and was a major tom fool himself. More than 50 years and three generations later, Tom Foolery is an ode to those days: curious chocolates made for mischief and merriment.";
+  "Tom Foolery Chocolates is a small-batch chocolate maker in Chicago, Illinois. We make chocolate bars, Malört caramels and gift sets with 100% real chocolate, nostalgic flavors and a little twist on it all. The brand is named for founder Garrett's grandfather, Tom Meldrum, who ran the Sugar Bowl, an old-fashioned candy store in Massillon, Ohio, and was a major tom fool himself. More than 50 years and three generations later, Tom Foolery is an ode to those days: curious chocolates made for mischief and merriment.";
 
 export interface PressFact {
   label: string;
@@ -25,7 +25,7 @@ export interface PressFact {
 }
 
 export const FAST_FACTS: PressFact[] = [
-  { label: "Company", value: "Tom Foolery Chocolate (also written Tom Foolery Chocolates)" },
+  { label: "Company", value: "Tom Foolery Chocolates" },
   { label: "Based in", value: "Chicago, Illinois" },
   {
     label: "What we make",
@@ -62,7 +62,7 @@ export const FAST_FACTS: PressFact[] = [
 export const FOUNDER = {
   name: "Garrett Goehring",
   role: "Founder",
-  bio: "Garrett Goehring is the founder of Tom Foolery Chocolate, a small-batch chocolate maker in Chicago. He grew up hearing about the Sugar Bowl, the old-fashioned candy store his grandfather, Tom Meldrum, ran in Massillon, Ohio, and the mischief that came with it. Before starting Tom Foolery in 2026, Garrett worked in marketing at a restaurant tech company, before realizing the world needed a chocolate brand that was both high quality and joyful. Today he makes chocolate bars, Malört caramels, and other confections built on real chocolate, nostalgic flavors and a little twist, with the goal of bringing a little fun to people's day, one piece of chocolate at a time.",
+  bio: "Garrett Goehring is the founder of Tom Foolery Chocolates, a small-batch chocolate maker in Chicago. He grew up hearing about the Sugar Bowl, the old-fashioned candy store his grandfather, Tom Meldrum, ran in Massillon, Ohio, and the mischief that came with it. Before starting Tom Foolery in 2026, Garrett worked in marketing at a restaurant tech company, before realizing the world needed a chocolate brand that was both high quality and joyful. Today he makes chocolate bars, Malört caramels, and other confections built on real chocolate, nostalgic flavors and a little twist, with the goal of bringing a little fun to people's day, one piece of chocolate at a time.",
 };
 
 /**
@@ -126,7 +126,7 @@ export const PRESS_FAQ: PressFaqItem[] = [
   {
     question: "Can I use these photos and logos?",
     answer:
-      "Yes, for editorial coverage of Tom Foolery Chocolate. Please credit Tom Foolery Chocolate and don't alter the logos.",
+      "Yes, for editorial coverage of Tom Foolery Chocolates. Please credit Tom Foolery Chocolates and don't alter the logos.",
   },
   {
     question: "Where is Tom Foolery made?",
@@ -135,7 +135,7 @@ export const PRESS_FAQ: PressFaqItem[] = [
   {
     question: "Where can readers buy it?",
     answer:
-      "Online at Tom Foolery Chocolate, and at independent shops across the U.S. The Where to Find Us page has a map of current stockists.",
+      "Online at Tom Foolery Chocolates, and at independent shops across the U.S. The Where to Find Us page has a map of current stockists.",
     link: { text: "Where to Find Us", href: "/find-us" },
   },
 ];

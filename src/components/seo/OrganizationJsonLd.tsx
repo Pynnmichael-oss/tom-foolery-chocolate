@@ -20,7 +20,10 @@ export function OrganizationJsonLd() {
         "@type": "Organization",
         "@id": ORGANIZATION_ID,
         name: SITE_NAME,
-        alternateName: ["Tom Foolery", "Tom Foolery Chocolates"],
+        // The brand is always "Tom Foolery Chocolates" on the site. The
+        // singular stays here only so searches and press that use it are
+        // matched to the same company.
+        alternateName: ["Tom Foolery", "Tom Foolery Chocolate"],
         url: SITE_URL,
         logo: `${SITE_URL}/logos/icon-positive.png`,
         description: SITE_DESCRIPTION,

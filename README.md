@@ -1,4 +1,4 @@
-# Tom Foolery Chocolate
+# Tom Foolery Chocolates
 
 Premium chocolate that doesn't take itself too seriously. This is the
 marketing site + headless storefront: a scroll-driven brand story built on

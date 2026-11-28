@@ -6,7 +6,7 @@ import { SITE_NAME } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Refund Policy",
-  description: `${SITE_NAME}'s return, refund, and exchange policy.`,
+  description: `The return, refund, and exchange policy for ${SITE_NAME}.`,
   alternates: { canonical: "/returns" },
 };
 

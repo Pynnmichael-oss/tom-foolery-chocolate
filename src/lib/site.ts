@@ -2,7 +2,7 @@
  * Falls back to localhost so dev/build never breaks without it. */
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
-export const SITE_NAME = "Tom Foolery Chocolate";
+export const SITE_NAME = "Tom Foolery Chocolates";
 
 /**
  * The site-wide OG/Twitter image (`app/opengraph-image.tsx`). Next
