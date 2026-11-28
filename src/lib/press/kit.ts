@@ -25,7 +25,9 @@ export interface PressFact {
 }
 
 export const FAST_FACTS: PressFact[] = [
-  { label: "Company", value: "Tom Foolery Chocolates" },
+  // The singular is listed as an alternate spelling, never used as the
+  // name, so press and AI answers that use it link back to the brand.
+  { label: "Company", value: "Tom Foolery Chocolates (also written Tom Foolery Chocolate)" },
   { label: "Based in", value: "Chicago, Illinois" },
   {
     label: "What we make",

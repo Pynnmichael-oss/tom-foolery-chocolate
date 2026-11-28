@@ -70,7 +70,7 @@ export async function GET() {
     "",
     `> ${SITE_DESCRIPTION}`,
     "",
-    "Tom Foolery Chocolates is a small-batch chocolate maker in Chicago, Illinois. It sells chocolate bars, Malört caramels, sampler packs and gift sets online, and takes custom orders for corporate, wedding and event gifting. The brand is named for Tom Meldrum, the grandfather of founder Garrett Goehring, who ran the Sugar Bowl candy store in Massillon, Ohio.",
+    "Tom Foolery Chocolates (also written Tom Foolery Chocolate) is a small-batch chocolate maker in Chicago, Illinois. It sells chocolate bars, Malört caramels, sampler packs and gift sets online, and takes custom orders for corporate, wedding and event gifting. The brand is named for Tom Meldrum, the grandfather of founder Garrett Goehring, who ran the Sugar Bowl candy store in Massillon, Ohio.",
     "",
     "## Products",
     "",
